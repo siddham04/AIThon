@@ -12,7 +12,7 @@ Manual SDLC breakdown from a messy requirement costs hours: stories, tasks, test
 
 ### Slide 2 — Demo screenshot A
 
-**Requirement ingestion** — Upload or paste a requirement; Helix parses clauses for traceability.
+**Requirement ingestion** — New project: paste, file, URL, or **Voice** (Chrome; Web Speech API). Then **Ingest** → workspace. Exact ports and checklist: **`docs/RUNBOOK.md`**.
 
 *(Insert screenshot: ingestion / new project.)*
 

@@ -59,15 +59,17 @@ copy .env.example .env   # configure DATABASE_URL, REDIS_URL, ANTHROPIC_API_KEY,
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Frontend** (`frontend/`):
+**Frontend** (`helix-frontend/` — the only UI tree in this repo):
 
 ```bash
-cd frontend
+cd helix-frontend
 npm ci
 npm run dev
 ```
 
-Vite dev server proxies `/api` to `http://127.0.0.1:8000` (see `vite.config.js`).
+Vite dev server proxies `/api` to **`http://127.0.0.1:8765`** by default (`helix-frontend/vite.config.ts`), matching `helix-backend\run.ps1`. For `uvicorn` on port **8000** instead, set `VITE_API_PROXY_TARGET=http://127.0.0.1:8000` when starting Vite.
+
+**Canonical runbook:** [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 
 **Manual seed (optional):**
 
@@ -81,7 +83,7 @@ python scripts/seed.py
 
 | Scope | Command |
 |-------|---------|
-| Frontend lint | `cd frontend && npm run lint` |
+| Frontend lint | `cd helix-frontend && npm run lint` |
 | Backend | No bundled pytest suite in-tree; use `/docs` interactive API or manual flows |
 
 Health check: `GET http://localhost:8000/api/health`

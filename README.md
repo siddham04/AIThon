@@ -78,9 +78,7 @@ Most "requirement summarizers" stop at bullet points. Helix is a true
 
 ### Tech stack
 
-**Frontend:** React 18 · TypeScript · Vite 5 · Tailwind CSS 3 · shadcn/ui
-patterns (Radix UI primitives) · Lucide React · Framer Motion · Web Speech
-API · SSE.
+**Frontend:** React 19 · TypeScript · Vite 8 · Web Speech
 
 **Backend:** Python 3.11 · FastAPI · Pydantic v2 · OpenAI SDK (Azure
 client) · pypdf · python-docx.
@@ -140,44 +138,31 @@ Or: `.\scripts\smoke_demo.ps1`
 
 Starts nothing automatically — run `helix-backend\run.ps1` in another terminal first.
 
-### 2. Frontend (canonical app)
+### 2. Frontend (this repo)
 
 ```powershell
-cd frontend
+cd helix-frontend
 npm ci
 npm run dev
 ```
 
-Opens at `http://localhost:5173`. Vite proxies `/api` to the backend (see `frontend/vite.config.js`; default **8000** when paired with `uvicorn` on that port).
+Opens at **`http://localhost:5173`**. Vite proxies **`/api`** to the API (`helix-frontend/vite.config.ts`; default **`http://127.0.0.1:8765`** to match `helix-backend\run.ps1`).
 
-The **`frontend/`** tree is the production UI (auth, dashboard, Docker image). **`helix-frontend/`** now contains the **same application** (copied `src/`, styles, and routes); use either folder for local dev—keep them in sync when you change UI code.
+**Single UI tree:** `helix-frontend/` only in this checkout.
+
+**Canonical runbook** (voice, ports, smoke test, GitHub): [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 
 ---
 
-## How to demo (5-minute script)
+## How to demo (5-minute script — matches current UI)
 
-1. **Click a sample brief** ("Checkout Revamp" / "Passwordless Auth" /
-   "Analytics Dashboard"). Or paste your own / upload a PDF / dictate
-   with the mic.
-2. Press **Analyze with Helix** — watch the live multi-agent timeline
-   stream as each stage completes.
-3. Land in the **Workspace**:
-   - **Overview** — the structured product brief + every source clause.
-   - **Ambiguities** — severity-scored gaps, each with a clarifying
-     question + suggested resolution. Click "trace →" to highlight the
-     exact source clause.
-   - **Stories & Tasks** — INVEST-shaped stories with Given/When/Then
-     acceptance criteria; expand to see tasks with skill tags, story
-     points, hours, and confidence pills.
-   - **Test plan** — Given/When/Then cases, filterable by type
-     (unit/integration/e2e/perf/security/a11y).
-   - **Risks** — non-functional risks with concrete mitigations.
-   - **Traceability** — interactive SVG graph: hover any node to light
-     up its lineage clauses ↔ artifacts.
-   - **Chat** — ask "which stories are highest risk?" or "summarize
-     test coverage for security" — answers cite artifact ids.
-4. Click **Export → Jira import CSV** (or ADO / GitHub) to drop the
-   whole plan into your tool of choice.
+1. **Sign in** → **New project** → **Paste text** (or **Upload file** / **URL import**). Optionally **Voice** (Chrome/Edge; see runbook).
+2. **Ingest** → opens **Workspace** for the project.
+3. **Generate artifacts** → wait for completion → review **summary**, **Kanban**, **readiness**.
+4. **Generate tests** / **Analyze ambiguity** as needed; use **Copilot** for Q&A.
+5. **Export** (CSV, Markdown, Jira/GitHub when configured) and **Stakeholder view** / **Analytics** from the sidebar.
+
+Command palette: **Ctrl+Shift+P** (jump menu; generation shortcuts when on a project).
 
 ---
 
@@ -185,11 +170,10 @@ The **`frontend/`** tree is the production UI (auth, dashboard, Docker image). *
 
 ```
 AI-Thon/
-├── helix-backend/                  FastAPI API + Dockerfile + seed (`scripts/seed.py`)
-├── frontend/                       React · Vite — production UI (Docker + auth + routes)
-├── ai/                             Pointer README → prompts under helix-backend/ai/
-├── docker-compose.yml              Postgres · Redis · Mongo · backend · frontend
-├── helix-frontend/                 Same UI codebase as `frontend/` (alternate checkout path)
+├── helix-backend/          FastAPI API + Dockerfile + seed (`scripts/seed.py`)
+├── helix-frontend/         React + Vite UI (local dev + Docker build context)
+├── docker-compose.yml      Postgres · Redis · Mongo · backend · frontend image build
+├── docs/                   RUNBOOK, GitHub push/deploy notes
 └── ...
 ```
 
@@ -208,5 +192,3 @@ AI-Thon/
 ---
 
 Built with care for **#BeEXIQO**. Be Curious. Be Bold. Be EXIQO.
-#   A I T h o n  
- 
