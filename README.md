@@ -152,6 +152,10 @@ Opens at **`http://localhost:5173`**. Vite proxies **`/api`** to the API (`helix
 
 **Canonical runbook** (voice, ports, smoke test, GitHub): [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 
+**Public demo URL (hackathon submission):** deploy the single-container image — step-by-step [`docs/DEMO_HOSTING.md`](docs/DEMO_HOSTING.md) (Render Blueprint + `render.yaml`). **Optional UI on Vercel** (GitHub import): [`docs/VERCEL.md`](docs/VERCEL.md).
+
+**Prebuilt PDFs for the portal:** [`docs/pdf/Helix-Implementation-Report.pdf`](docs/pdf/Helix-Implementation-Report.pdf) (implementation report) and [`docs/pdf/Helix-Executive-Summary.pdf`](docs/pdf/Helix-Executive-Summary.pdf) (optional custom attachment). Regenerate: `python scripts/build_submission_pdfs.py` (after `pip install -r scripts/requirements-docs-pdf.txt`).
+
 ---
 
 ## How to demo (5-minute script — matches current UI)
@@ -173,7 +177,7 @@ AI-Thon/
 ├── helix-backend/          FastAPI API + Dockerfile + seed (`scripts/seed.py`)
 ├── helix-frontend/         React + Vite UI (local dev + Docker build context)
 ├── docker-compose.yml      Postgres · Redis · Mongo · backend · frontend image build
-├── docs/                   RUNBOOK, GitHub push/deploy notes
+├── docs/                   RUNBOOK, VERCEL, demo hosting (Render), GitHub notes
 └── ...
 ```
 

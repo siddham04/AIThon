@@ -1,0 +1,9 @@
+# Speed up Vercel uploads (UI build does not compile the Python backend)
+helix-backend/**
+k8s/**
+.github/**
+docs/pdf/**
+**/__pycache__
+**/*.pyc
+.venv
+.venv2

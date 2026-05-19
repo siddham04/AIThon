@@ -58,6 +58,17 @@ class Settings(BaseSettings):
     helix_cors_origins: str = (
         "http://localhost:5173,http://localhost:5174,http://localhost:3000"
     )
+    helix_cors_origin_regex: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "HELIX_CORS_ORIGIN_REGEX",
+            "helix_cors_origin_regex",
+        ),
+        description=(
+            "Optional regex for extra allowed browser origins when the UI is on a "
+            "different host than the API (e.g. Vercel: https://.*.vercel.app with dots escaped for regex)."
+        ),
+    )
     helix_debug: bool = True
 
     helix_data_dir: str = Field(

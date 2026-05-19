@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
@@ -50,13 +51,24 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    _rx = (settings.helix_cors_origin_regex or "").strip()
+    if _rx:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_origin_regex=_rx,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+    else:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     gate = [Depends(helix_auth_gate)]
 
@@ -77,18 +89,28 @@ def create_app() -> FastAPI:
     app.include_router(export.router, prefix="/api/export", dependencies=gate, tags=["export"])
     app.include_router(ws.router, prefix="/api", tags=["ws"])
 
-    @app.get("/")
-    async def root() -> dict:
-        return {
-            "name": "Helix — Intelligent SDLC Copilot",
-            "tagline": "From idea to impact, with provenance.",
-            "docs": "/docs",
-        }
+    serve_spa = os.environ.get("HELIX_SERVE_SPA", "").lower() in ("1", "true", "yes")
+    static_dir = (os.environ.get("HELIX_STATIC_DIR") or "").strip()
+
+    if not (serve_spa and static_dir and os.path.isdir(static_dir)):
+
+        @app.get("/")
+        async def root() -> dict:
+            return {
+                "name": "Helix — Intelligent SDLC Copilot",
+                "tagline": "From idea to impact, with provenance.",
+                "docs": "/docs",
+            }
 
     @app.get("/health")
     async def root_health_probe() -> dict:
         """Minimal probe for legacy clients expecting GET /health (full probe: GET /api/health)."""
         return {"status": "ok"}
+
+    if serve_spa and static_dir and os.path.isdir(static_dir):
+        from starlette.staticfiles import StaticFiles
+
+        app.mount("/", StaticFiles(directory=static_dir, html=True), name="spa")
 
     return app
 

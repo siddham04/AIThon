@@ -96,6 +96,8 @@ See **`docs/GITHUB_PUSH.md`** (HTTPS PAT / Credential Manager / SSH).
 
 See **`docs/GITHUB_DEPLOY.md`** and root **`SETUP.md`** for Docker Compose and secrets.
 
+For a **public HTTPS URL** (hackathon “Demo link”), use **`docs/DEMO_HOSTING.md`** (`Dockerfile.all-in-one` + Render **`render.yaml`**).
+
 ---
 
 ## 8. Before every live demo (checkbox)

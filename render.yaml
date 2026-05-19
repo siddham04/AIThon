@@ -1,0 +1,23 @@
+# Render Blueprint — one Web service (SPA + API), SQLite by default.
+# Apply: https://dashboard.render.com/ → New → Blueprint → connect this repo.
+# After deploy, copy the service URL (https://<name>.onrender.com) into your hackathon "Demo Link".
+
+services:
+  - type: web
+    name: helix-demo
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile.all-in-one
+    healthCheckPath: /api/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      # Allow a separate Vercel-hosted UI to call this API (see docs/VERCEL.md).
+      - key: HELIX_CORS_ORIGIN_REGEX
+        value: "https://.*\\.vercel\\.app"
+      # Optional — add in dashboard if you want live LLM (not required for mock/demo path):
+      # - key: ANTHROPIC_API_KEY
+      #   sync: false
+
+databases: []

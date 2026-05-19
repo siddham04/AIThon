@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+# Single public URL: React SPA + FastAPI on one process (same-origin /api).
+# Used for free-tier PaaS (e.g. Render). Build context = repository root.
+
+FROM node:20-bookworm-slim AS frontend-build
+WORKDIR /app
+COPY helix-frontend/package.json helix-frontend/package-lock.json helix-frontend/.npmrc ./
+RUN npm ci
+COPY helix-frontend/ ./
+# Omit VITE_API_BASE so the browser uses same-origin `/api` (see src/api/client.js).
+RUN npm run build
+
+FROM python:3.11-slim AS pybuilder
+WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl build-essential \
+    && rm -rf /var/lib/apt/lists/*
+COPY helix-backend/requirements.txt .
+RUN python -m pip install --upgrade pip setuptools wheel
+RUN --mount=type=cache,target=/root/.cache/pip python -m pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip python -m spacy download en_core_web_sm
+COPY helix-backend/ /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
+FROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=pybuilder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=pybuilder /usr/local/bin /usr/local/bin
+COPY --from=pybuilder /app /app
+COPY --from=frontend-build /app/dist /app/static
+COPY deploy/all-in-one/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENV PYTHONPATH=/app
+ENV HELIX_SERVE_SPA=1
+ENV HELIX_STATIC_DIR=/app/static
+ENV HELIX_DEBUG=0
+# SQLite in container (ephemeral on free hosts unless you attach a disk).
+ENV DATABASE_URL=sqlite:////app/data/helix.db
+
+RUN mkdir -p /app/data
+
+EXPOSE 8000
+ENTRYPOINT ["/entrypoint.sh"]

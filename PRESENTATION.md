@@ -1,6 +1,8 @@
 # Presentation outline (≤ 7 slides)
 
-Use this content in Google Slides, PowerPoint, or Pitch. Paste the **mermaid** diagram from `ARCHITECTURE.md` as an image export if needed.
+**Generated deck:** `docs/Helix-AI-Thon-Pitch.pptx` — rebuild with `pip install -r scripts/requirements-presentation.txt` then `python scripts/build_pitch_deck.py`.
+
+Use this Markdown for edits, then regenerate the `.pptx`, or paste into Google Slides / PowerPoint. For the architecture slide, paste the **mermaid** diagram from `ARCHITECTURE.md` as an image export if needed.
 
 ---
 

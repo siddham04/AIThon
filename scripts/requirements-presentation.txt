@@ -1,0 +1,2 @@
+# Minimal deps to build docs/Helix-AI-Thon-Pitch.pptx from PRESENTATION.md
+python-pptx>=0.6.23
