@@ -107,8 +107,8 @@ export default function Landing() {
           </Link>
         </div>
         <p className="landing-demo-hint muted small">
-          Tip: after sign-in, press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> anywhere in the app
-          for the command palette — ideal for live demos.
+          Live path: <strong>New project</strong> → <strong>Load sample requirement</strong> → <strong>Ingest</strong>{' '}
+          (no microphone). Then <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> for the command palette.
         </p>
       </div>
       <section className="landing-features" aria-label="Product features">

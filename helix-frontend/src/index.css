@@ -1818,6 +1818,20 @@ html.dark .graph-inspector-kind.kind-test {
 }
 
 /* --- Phase 5 bonus: voice, versions, onboarding --- */
+.judge-demo-banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated, var(--bg));
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.judge-demo-banner code {
+  font-size: 0.82em;
+}
+
 .ingestion-extras {
   display: flex;
   flex-wrap: wrap;

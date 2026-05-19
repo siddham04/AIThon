@@ -44,47 +44,51 @@ Open **http://localhost:5173**.
 
 ---
 
-## 3. Five-minute demo path (actual UI labels)
+## 3. Judge gold path (recommended — no microphone)
 
-1. **Sign in** → **New project** (sidebar or landing).
-2. **Paste text** tab: paste a PRD *or* click **Load sample requirement** *or* use **Voice** (see §4).
-3. Click **Ingest** → lands on **Workspace** (`/project/:id`).
-4. Toolbar: **Generate artifacts** → wait for progress strip / toast → Kanban + summary populate.
-5. **Generate tests** / **Analyze ambiguity** as needed.
-6. **Export** panel: CSV / Markdown / etc. (Jira/GitHub need env — see `SETUP.md`).
-7. Optional: **Stakeholder view** / **Analytics** from sidebar.
+Use this in the room **every time** unless you explicitly want the voice beat.
 
-Keyboard: **Ctrl+Shift+P** command palette (see in-app shortcuts on New project / dashboard).
+1. **Sign in** (`demo@demo.com` / `demo123`) → **New project**.
+2. Stay on **Paste text** (default). Click **Load sample requirement** (fills a realistic PRD-style brief — no mic, no Chrome speech).
+3. Click **Ingest** → workspace opens for the new project.
+4. **Generate artifacts** → wait for toast / progress → **Kanban** + **summary** + **readiness** update.
+5. **Generate tests** and/or **Analyze ambiguity** as time allows.
+6. **Export** (CSV / Markdown always work; Jira/GitHub need env — see `SETUP.md`).
+7. Optional: **Stakeholder view** or **Analytics** from the sidebar.
+
+**Command palette:** **Ctrl+Shift+P** (jump, generate shortcuts on a project).
+
+This path is what **Playwright** exercises (`helix-frontend/e2e/smoke.spec.ts`): sample load + ingest + dashboard visibility.
 
 ---
 
-## 4. Voice → spec (30 seconds)
+## 4. Optional: voice → spec (same pipeline after Ingest)
 
-- **Where:** New project → **Paste text** → **Voice** button under Requirements.
-- **Browser:** **Chrome** or **Edge** (Chromium). Uses **Web Speech API** only — **no** Helix API until **Ingest**.
-- **URL:** Prefer **`http://localhost:5173`** (secure context for mic). Plain `http` on random LAN hostnames may block speech.
-- **Flow:** **Voice** → allow **microphone** → speak → text appears in textarea → **Stop** → **Ingest**.
+- **Where:** New project → **Paste text** → **Voice** (after or instead of typing / sample).
+- **Browser:** **Chrome** or **Edge** (Chromium). **Web Speech API** only — nothing hits Helix until **Ingest**.
+- **URL:** Prefer **`http://localhost:5173`** (mic + secure context).
+- **Flow:** **Voice** → allow **microphone** → speak → textarea updates → **Stop** → **Ingest**.
 
-If it fails, the UI shows a **toast** with the usual cause (mic blocked, network to speech service, etc.). Implementation: `helix-frontend/src/components/ingestion/VoiceInput.jsx`.
+Toasts explain mic/network issues. Code: `helix-frontend/src/components/ingestion/VoiceInput.jsx`.
 
 ---
 
 ## 5. Automated smoke (optional)
 
-From repo root, with API on **8765** and UI dev server on **5173** (Playwright can start UI — see `helix-frontend/playwright.config.ts`):
+With API on **8765** (Playwright can start the Vite dev server — see `helix-frontend/playwright.config.ts`):
 
 ```powershell
 cd helix-frontend
 npm run test:e2e
 ```
 
-Uses `demo@demo.com` / `demo123` and the sample ingest path (no microphone).
+Uses **Load sample requirement** + ingest (no microphone).
 
 ---
 
 ## 6. Push code to GitHub
 
-See **`docs/GITHUB_PUSH.md`** (HTTPS PAT / Credential Manager / SSH). This environment cannot store your token.
+See **`docs/GITHUB_PUSH.md`** (HTTPS PAT / Credential Manager / SSH).
 
 ---
 
@@ -98,6 +102,7 @@ See **`docs/GITHUB_DEPLOY.md`** and root **`SETUP.md`** for Docker Compose and s
 
 - [ ] Backend up: `/api/health` returns OK.
 - [ ] Frontend: `helix-frontend` dev or Compose UI on **5173**.
-- [ ] Browser: Chromium for voice; mic permission not “blocked”.
+- [ ] **Gold path ready:** New project → **Load sample requirement** → **Ingest** (no mic rehearsal).
+- [ ] If showing **voice:** Chromium + mic allowed for `localhost:5173`.
 - [ ] At least one LLM key or accept **demo mode** (mock pipeline) per `README.md`.
 - [ ] Optional: `npm run lint` + `npm run build` in `helix-frontend`.

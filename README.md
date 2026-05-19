@@ -156,7 +156,7 @@ Opens at **`http://localhost:5173`**. Vite proxies **`/api`** to the API (`helix
 
 ## How to demo (5-minute script — matches current UI)
 
-1. **Sign in** → **New project** → **Paste text** (or **Upload file** / **URL import**). Optionally **Voice** (Chrome/Edge; see runbook).
+1. **Sign in** → **New project** → **Paste text** → **Load sample requirement** → **Ingest** (no mic; same pipeline as paste). Optional: **Voice** (Chrome/Edge; see runbook) or **Upload file** / **URL import**.
 2. **Ingest** → opens **Workspace** for the project.
 3. **Generate artifacts** → wait for completion → review **summary**, **Kanban**, **readiness**.
 4. **Generate tests** / **Analyze ambiguity** as needed; use **Copilot** for Q&A.

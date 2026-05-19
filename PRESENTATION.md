@@ -12,7 +12,7 @@ Manual SDLC breakdown from a messy requirement costs hours: stories, tasks, test
 
 ### Slide 2 — Demo screenshot A
 
-**Requirement ingestion** — New project: paste, file, URL, or **Voice** (Chrome; Web Speech API). Then **Ingest** → workspace. Exact ports and checklist: **`docs/RUNBOOK.md`**.
+**Requirement ingestion** — New project: **Load sample requirement** (judge path, no mic), paste, file, URL, or optional **Voice** (Chrome; Web Speech API). Then **Ingest** → workspace. Exact ports and checklist: **`docs/RUNBOOK.md`**.
 
 *(Insert screenshot: ingestion / new project.)*
 

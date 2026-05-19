@@ -174,6 +174,12 @@ export default function NewProject() {
         <p className="muted">Ingest requirements — then generate artifacts on the dashboard.</p>
       </header>
 
+      <div className="judge-demo-banner" role="note">
+        <strong>Judge-ready (no mic):</strong> open <strong>Paste text</strong> →{' '}
+        <strong>Load sample requirement</strong> → <strong>Ingest</strong>. Same pipeline as paste/voice;
+        see <code>docs/RUNBOOK.md</code> in the repo.
+      </div>
+
       <div className="tabs">
         {['paste', 'file', 'url'].map((id) => (
           <button
@@ -202,10 +208,9 @@ export default function NewProject() {
             placeholder="Paste PRD / BRD / user flows…"
           />
           <div className="ingestion-extras">
-            <VoiceInput value={text} onChange={setText} disabled={busy} />
             <button
               type="button"
-              className="btn ghost small-btn"
+              className={`btn small-btn ${text.trim() ? 'ghost' : 'btn-primary'}`}
               disabled={busy}
               onClick={() => {
                 setText(SAMPLE_REQUIREMENT)
@@ -215,6 +220,7 @@ export default function NewProject() {
             >
               Load sample requirement
             </button>
+            <VoiceInput value={text} onChange={setText} disabled={busy} />
           </div>
         </label>
       )}
