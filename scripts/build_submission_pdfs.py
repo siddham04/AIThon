@@ -7,20 +7,22 @@ Usage (repo root):
   python scripts/build_submission_pdfs.py
 
 Outputs:
-  docs/pdf/Helix-Implementation-Report.pdf   -- portal field "Documentation or Implementation Report"
-  docs/pdf/Helix-Executive-Summary.pdf       -- optional "Custom Attachment" (1--2 pages)
+  docs/pdf/Helix-Implementation-Report.pdf          -- primary upload
+  docs/pdf/Helix-Implementation-Report-PORTAL.pdf     -- identical copy (re-upload if portal cached a bad file)
+  docs/pdf/Helix-Executive-Summary.pdf                -- optional custom attachment
 """
 from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
 
 try:
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_JUSTIFY
+    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
     from reportlab.lib.pagesizes import LETTER
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
@@ -188,8 +190,41 @@ def build_implementation_report(md_path: Path, out_path: Path) -> None:
         leftIndent=18,
         bulletIndent=8,
     )
+    cover_title = ParagraphStyle(
+        "CoverTitle",
+        parent=styles["Title"],
+        fontSize=24,
+        leading=30,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#0f172a"),
+        spaceAfter=14,
+    )
+    cover_sub = ParagraphStyle(
+        "CoverSub",
+        parent=styles["Normal"],
+        fontSize=12,
+        leading=17,
+        alignment=TA_CENTER,
+        spaceAfter=8,
+    )
 
-    story = parse_markdown_to_story(md, body, h2, h3, mono, bullet)
+    cover = [
+        Spacer(1, 1.35 * inch),
+        Paragraph("Helix", cover_title),
+        Paragraph("Implementation Report", cover_sub),
+        Paragraph(
+            escape("Intelligent SDLC Copilot | Code-AI-Thon 2026 Phase 2"),
+            cover_sub,
+        ),
+        Spacer(1, 0.25 * inch),
+        Paragraph(escape("https://github.com/siddham04/AIThon"), cover_sub),
+        Paragraph(escape("PDF for portal: Documentation / Implementation Report (under 50 MB)"), cover_sub),
+        Spacer(1, 0.4 * inch),
+        Paragraph(escape("Generated from docs/IMPLEMENTATION_REPORT.md"), cover_sub),
+        PageBreak(),
+    ]
+
+    story = cover + parse_markdown_to_story(md, body, h2, h3, mono, bullet)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     doc = SimpleDocTemplate(
         str(out_path),
@@ -202,15 +237,23 @@ def build_implementation_report(md_path: Path, out_path: Path) -> None:
         author="Helix / AI-Thon",
     )
 
-    def _footer(canvas, doc_):
+    _meta_done: list[bool] = [False]
+
+    def _on_page(canvas, doc_):
+        if not _meta_done[0]:
+            canvas.setTitle("Helix: Implementation Report (AI-Thon)")
+            canvas.setAuthor("Helix / GitHub siddham04/AIThon")
+            canvas.setSubject("Hackathon documentation and implementation report")
+            canvas.setCreator("Helix build script (ReportLab)")
+            _meta_done[0] = True
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.grey)
-        text = f"Page {doc_.page} | Helix -- AI-Thon Implementation Report"
+        text = f"Page {doc_.page} | Helix - AI-Thon Implementation Report"
         canvas.drawString(inch * 0.75, 0.5 * inch, text)
         canvas.restoreState()
 
-    doc.build(story, onFirstPage=_footer, onLaterPages=_footer)
+    doc.build(story, onFirstPage=_on_page, onLaterPages=_on_page)
 
 
 def build_executive_summary(out_path: Path) -> None:
@@ -337,10 +380,19 @@ def main() -> None:
         type=Path,
         default=root / "docs" / "pdf" / "Helix-Executive-Summary.pdf",
     )
+    ap.add_argument(
+        "--out-portal-copy",
+        type=Path,
+        default=root / "docs" / "pdf" / "Helix-Implementation-Report-PORTAL.pdf",
+        help="Duplicate PDF filename for re-upload if the portal cached a bad file",
+    )
     args = ap.parse_args()
 
     build_implementation_report(args.md, args.out_report)
-    print(f"Wrote {args.out_report} ({args.out_report.stat().st_size // 1024} KB)")
+    sz = args.out_report.stat().st_size
+    print(f"Wrote {args.out_report} ({sz // 1024} KB)")
+    shutil.copyfile(args.out_report, args.out_portal_copy)
+    print(f"Copy:  {args.out_portal_copy} ({sz // 1024} KB)")
     build_executive_summary(args.out_summary)
     print(f"Wrote {args.out_summary} ({args.out_summary.stat().st_size // 1024} KB)")
 

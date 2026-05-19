@@ -43,13 +43,15 @@ export default function Login() {
           <h1>Sign in</h1>
           <form onSubmit={onSubmit}>
             <label>
-              Email
+              Email or username
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
+                minLength={1}
+                maxLength={255}
+                autoComplete="username"
               />
             </label>
             <label>
@@ -59,6 +61,8 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={1}
+                maxLength={128}
                 autoComplete="current-password"
               />
             </label>

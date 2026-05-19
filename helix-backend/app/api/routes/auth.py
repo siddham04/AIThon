@@ -16,7 +16,10 @@ router = APIRouter()
 def register(payload: UserRegister, db: Session = Depends(get_db)) -> TokenResponse:
     exists = db.scalars(select(User).where(User.email == str(payload.email))).first()
     if exists:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "That username is already registered — sign in or pick a different one.",
+        )
     user = User(email=str(payload.email), hashed_password=hash_password(payload.password))
     db.add(user)
     db.commit()

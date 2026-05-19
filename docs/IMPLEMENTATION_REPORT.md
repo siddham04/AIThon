@@ -3,7 +3,7 @@
 **Project:** Helix (Intelligent SDLC Copilot)  
 **Event:** Code-AI-Thon 2026, Phase 2 (Prototype)  
 **Repository:** https://github.com/siddham04/AIThon  
-**Document version:** 1.0 (May 2026)  
+**Document version:** 1.1 (May 2026)  
 **Companion PDF:** Prebuilt under **`docs/pdf/Helix-Implementation-Report.pdf`**. Regenerate with `pip install -r scripts/requirements-docs-pdf.txt` then `python scripts/build_submission_pdfs.py`.
 
 ---
@@ -164,7 +164,19 @@ Helix addresses each of these explicitly (see Section 4).
 
 ---
 
-## 13. Sign-off
+## 13. Portal upload notes (implementation report field)
+
+Use this Markdown file as the source of truth. For the hackathon **Documentation or Implementation Report** upload (max 50 MB), submit the generated PDF:
+
+- **File:** `docs/pdf/Helix-Implementation-Report.pdf`
+- **Regenerate:** `pip install -r scripts/requirements-docs-pdf.txt` then `python scripts/build_submission_pdfs.py` from the repository root.
+- **Alternate filename:** the script also writes `Helix-Implementation-Report-PORTAL.pdf` (identical content) if your browser cached an old upload.
+
+The PDF includes embedded document properties (title, author, subject) for organizer tooling.
+
+---
+
+## 14. Sign-off
 
 This report describes the implementation as present in the **AIThon** repository at the time of writing. For the latest run instructions and submission packaging, prefer **`docs/RUNBOOK.md`** and **`docs/DEMO_HOSTING.md`**.
 

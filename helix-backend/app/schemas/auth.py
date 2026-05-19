@@ -1,16 +1,38 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class UserRegister(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=6, max_length=128)
+    """Loose validation so hackathon demos accept any handle + password."""
+
+    email: str = Field(min_length=1, max_length=255)
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _strip_email(cls, v: object) -> str:
+        if v is None:
+            raise ValueError("email is required")
+        s = str(v).strip()
+        if not s:
+            raise ValueError("email must not be empty")
+        return s
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+    email: str = Field(min_length=1, max_length=255)
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _strip_login_email(cls, v: object) -> str:
+        if v is None:
+            raise ValueError("email is required")
+        s = str(v).strip()
+        if not s:
+            raise ValueError("email must not be empty")
+        return s
 
 
 class TokenResponse(BaseModel):
@@ -20,4 +42,4 @@ class TokenResponse(BaseModel):
 
 class UserPublic(BaseModel):
     id: int
-    email: EmailStr
+    email: str
