@@ -46,7 +46,12 @@ export default function WorkingVsSnapshotDiff({ projectId, workingText, refreshK
 
   return (
     <div className="version-history working-snapshot-diff">
-      <h4>Working vs latest snapshot</h4>
+      <div className="working-snapshot-diff-head">
+        <h4>Working vs latest snapshot</h4>
+        <button type="button" className="btn ghost small-btn" disabled={loading} onClick={() => void load()}>
+          Refresh
+        </button>
+      </div>
       <p className="muted small">
         Compare your editor to the newest saved snapshot (green = added in working copy, red = removed vs
         snapshot).

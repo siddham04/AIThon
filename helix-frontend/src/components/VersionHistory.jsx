@@ -101,7 +101,7 @@ export default function VersionHistory({ projectId, refreshKey = 0 }) {
             </label>
           </>
         )}
-        <button type="button" className="btn ghost small-btn" onClick={() => void load()}>
+        <button type="button" className="btn ghost small-btn" disabled={loading} onClick={() => void load()}>
           Refresh
         </button>
       </div>

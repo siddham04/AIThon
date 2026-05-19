@@ -20,10 +20,12 @@ export default function StakeholderPreview() {
   const [projectName, setProjectName] = useState('')
   const [markdown, setMarkdown] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
 
   const load = useCallback(async () => {
     if (!id) return
     setLoading(true)
+    setLoadError(null)
     try {
       const [{ data: proj }, { data: art }] = await Promise.all([
         api.get(`/projects/${id}`),
@@ -40,7 +42,9 @@ export default function StakeholderPreview() {
         citationItemRate: art?.citation_item_rate,
       })
       setMarkdown(md)
-    } catch {
+    } catch (e) {
+      const msg = e.response?.data?.detail || e.message || 'Could not load preview'
+      setLoadError(String(msg))
       toast.error('Could not load preview')
       setMarkdown('')
     } finally {
@@ -85,6 +89,9 @@ export default function StakeholderPreview() {
           <h1>{projectName || 'Project'}</h1>
         </div>
         <div className="stakeholder-preview-actions">
+          <button type="button" className="btn ghost" disabled={loading} onClick={() => void load()}>
+            {loading ? 'Loading…' : 'Reload'}
+          </button>
           <button type="button" className="btn ghost" disabled={loading || !markdown} onClick={() => void copyMd()}>
             Copy Markdown
           </button>
@@ -98,6 +105,13 @@ export default function StakeholderPreview() {
       </header>
       {loading ? (
         <p className="muted">Loading…</p>
+      ) : loadError ? (
+        <div className="panel stakeholder-preview-error" role="alert">
+          <p className="muted">{loadError}</p>
+          <button type="button" className="btn btn-primary" onClick={() => void load()}>
+            Retry
+          </button>
+        </div>
       ) : (
         <article className="stakeholder-preview-body markdown-body">
           <ReactMarkdown>{markdown || '_No artifact content yet._'}</ReactMarkdown>

@@ -77,9 +77,16 @@ export default function Landing() {
         </p>
         <div className="landing-cta-row">
           <Link to="/login" className="btn btn-primary landing-cta">
-            Launch workspace
+            Sign in
+          </Link>
+          <Link to="/register" className="btn ghost landing-cta landing-cta-secondary">
+            Create account
           </Link>
         </div>
+        <p className="landing-demo-hint muted small">
+          Tip: after sign-in, press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> anywhere in the app
+          for the command palette — ideal for live demos.
+        </p>
       </div>
     </div>
   )

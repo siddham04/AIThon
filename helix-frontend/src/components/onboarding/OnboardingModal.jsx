@@ -63,9 +63,16 @@ export default function OnboardingModal({ onClose, onLoadSample }) {
           <p className="onboarding-body">{slides[step].body}</p>
         </div>
 
-        <div className="onboarding-dots">
+        <div className="onboarding-dots" role="tablist" aria-label="Onboarding steps">
           {slides.map((_, i) => (
-            <span key={i} className={`onboarding-dot ${i === step ? 'active' : ''}`} />
+            <button
+              key={i}
+              type="button"
+              className={`onboarding-dot ${i === step ? 'active' : ''}`}
+              aria-label={`Step ${i + 1} of ${slides.length}`}
+              aria-current={i === step ? 'step' : undefined}
+              onClick={() => setStep(i)}
+            />
           ))}
         </div>
 

@@ -17,6 +17,7 @@ export default function SummaryCard({
   stories = [],
   projectId,
   onStoryExportToggle,
+  onGenerateArtifacts,
 }) {
   const [open, setOpen] = useState(false)
   const [storyMeta, setStoryMeta] = useState({})
@@ -131,8 +132,13 @@ export default function SummaryCard({
 
   if (!summary) {
     return (
-      <div className="summary-card empty">
+      <div id="helix-panel-summary" className="summary-card empty">
         <p className="muted">No AI summary yet. Generate artifacts to populate this card.</p>
+        {onGenerateArtifacts ? (
+          <button type="button" className="btn btn-primary" onClick={() => onGenerateArtifacts()}>
+            Generate artifacts
+          </button>
+        ) : null}
       </div>
     )
   }
@@ -150,7 +156,7 @@ export default function SummaryCard({
   const approvedStoryExport = stories.filter((x) => x.approved_for_export).length
 
   return (
-    <div ref={rootRef} className="summary-card">
+    <div ref={rootRef} id="helix-panel-summary" className="summary-card">
       <div className="summary-head">
         <div>
           <h2>{summary.title || 'Project summary'}</h2>
@@ -177,13 +183,14 @@ export default function SummaryCard({
               {open ? 'Hide' : 'Show'} user stories ({stories.length} · {approvedStoryExport}{' '}
               approved for export)
             </button>
-            <span
-              className="export-gate-tip"
+            <button
+              type="button"
+              className="export-gate-tip-btn"
               title={EXPORT_GATE_HELP}
               aria-label={EXPORT_GATE_HELP}
             >
               ⓘ
-            </span>
+            </button>
           </div>
           {open && projectId ? (
             <div className="story-sort-row">

@@ -205,13 +205,14 @@ export default function ExportHub({ projectId, stories = [], tasks = [] }) {
     <div className="export-hub" id="export-hub">
       <div className="export-hub-title-row">
         <h4>Export</h4>
-        <span
-          className="export-gate-tip"
+        <button
+          type="button"
+          className="export-gate-tip-btn"
           title={EXPORT_SECTION_HELP}
           aria-label={EXPORT_SECTION_HELP}
         >
           ⓘ
-        </span>
+        </button>
       </div>
       <label
         className="export-approved-only"

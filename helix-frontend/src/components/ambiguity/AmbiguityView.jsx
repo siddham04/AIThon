@@ -4,12 +4,29 @@ function level(score) {
   return 'low'
 }
 
-export default function AmbiguityView({ text, hits }) {
+export default function AmbiguityView({ text, hits, onAnalyze, analyzing }) {
   if (!text) {
-    return <p className="muted">No requirement text loaded for this session.</p>
+    return (
+      <div id="helix-panel-ambiguity" className="ambiguity-view ambiguity-view--empty">
+        <h4>Ambiguity map</h4>
+        <p className="muted">No requirement text loaded for this session.</p>
+      </div>
+    )
   }
   if (!hits?.length) {
-    return <p className="muted">No ambiguities detected. Run analysis from the toolbar.</p>
+    return (
+      <div id="helix-panel-ambiguity" className="ambiguity-empty-cta">
+        <h4>Ambiguity map</h4>
+        <p className="muted">No ambiguities detected yet. Run a scan to highlight vague wording.</p>
+        {onAnalyze ? (
+          <button type="button" className="btn btn-primary" disabled={analyzing} onClick={() => onAnalyze()}>
+            {analyzing ? 'Scanning…' : 'Run ambiguity scan'}
+          </button>
+        ) : (
+          <p className="muted small">Use <strong>Analyze ambiguity</strong> in the toolbar above.</p>
+        )}
+      </div>
+    )
   }
 
   const segments = []
@@ -36,7 +53,7 @@ export default function AmbiguityView({ text, hits }) {
   if (i < text.length) segments.push({ type: 'plain', text: text.slice(i) })
 
   return (
-    <div className="ambiguity-view">
+    <div id="helix-panel-ambiguity" className="ambiguity-view">
       <h4>Ambiguity map</h4>
       <p className="muted small">Hover a highlight for a clarifying question.</p>
       <div className="ambiguity-text">

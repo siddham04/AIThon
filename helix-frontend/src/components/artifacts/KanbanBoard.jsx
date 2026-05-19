@@ -58,6 +58,7 @@ export default function KanbanBoard({
   if (!(tasks || []).length) {
     return (
       <motion.div
+        id="helix-panel-kanban"
         className="panel-empty kanban-empty"
         initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -81,7 +82,7 @@ export default function KanbanBoard({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="kanban">
+      <div id="helix-panel-kanban" className="kanban">
         {COLS.map((col) => (
           <Droppable droppableId={col.id} key={col.id}>
             {(provided, snap) => (

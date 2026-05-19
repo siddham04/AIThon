@@ -52,7 +52,7 @@ export default function TestCaseList({ testcases, onRefresh, onGenerateTests, lo
   }
 
   return (
-    <div className="testcase-list">
+    <div id="helix-panel-tests" className="testcase-list">
       <div className="row spread">
         <h3>Test cases</h3>
         <select

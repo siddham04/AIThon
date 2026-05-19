@@ -23,6 +23,7 @@ import { followTaskProgress } from '../lib/followTaskProgress'
 import { DashboardSkeleton } from '../components/ui/Skeleton'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
 import { buildHelixBundleMarkdown } from '../lib/buildHelixMarkdown'
+import KeyboardShortcutsHelp from '../components/ui/KeyboardShortcutsHelp'
 
 export default function Dashboard() {
   const { id } = useParams()
@@ -47,9 +48,12 @@ export default function Dashboard() {
     setLoadingTests,
     setStoryExportApproval,
     setTaskExportApproval,
+    resetArtifacts,
   } = useArtifactStore()
 
   const [boot, setBoot] = useState(true)
+  const [projectMissing, setProjectMissing] = useState(false)
+  const [ambiguityBusy, setAmbiguityBusy] = useState(false)
   const [workingReq, setWorkingReq] = useState('')
   const [sensitiveHints, setSensitiveHints] = useState([])
   const [reqFocusMode, setReqFocusMode] = useState(false)
@@ -202,30 +206,45 @@ export default function Dashboard() {
   }, [id, setTestcases, setLoadingTests])
 
   useEffect(() => {
+    if (!id) return
     let cancelled = false
+    resetArtifacts()
     ;(async () => {
       setBoot(true)
+      setProjectMissing(false)
+      let projectOk = false
       try {
         const { data } = await api.get(`/projects/${id}`)
-        if (!cancelled) setCurrent(data)
+        if (!cancelled) {
+          setCurrent(data)
+          projectOk = true
+        }
       } catch {
-        if (!cancelled) setCurrent(null)
+        if (!cancelled) {
+          setCurrent(null)
+          setProjectMissing(true)
+        }
       }
-      await Promise.all([loadArtifacts(), loadTests()])
+      if (!cancelled && projectOk) {
+        await Promise.all([loadArtifacts(), loadTests()])
+      }
       if (!cancelled) setBoot(false)
     })()
     return () => {
       cancelled = true
     }
-  }, [id, loadArtifacts, loadTests, setCurrent])
+  }, [id, loadArtifacts, loadTests, setCurrent, resetArtifacts])
 
   const runAmbiguity = async () => {
+    setAmbiguityBusy(true)
     try {
       const { data } = await api.post(`/ambiguity/analyze/${id}`)
       setAmbiguities(data)
       toast.success('Ambiguity scan complete')
     } catch {
       toast.error('Ambiguity analysis failed')
+    } finally {
+      setAmbiguityBusy(false)
     }
   }
 
@@ -306,7 +325,66 @@ export default function Dashboard() {
     }
   }
 
-  useKeyboardShortcuts({ enabled: true })
+  const jumpTo = useCallback((key) => {
+    const ids = {
+      summary: 'helix-panel-summary',
+      stories: 'helix-panel-summary',
+      tasks: 'helix-panel-kanban',
+      tests: 'helix-panel-tests',
+      trace: 'helix-panel-requirement',
+      ambiguity: 'helix-panel-ambiguity',
+      copilot: 'helix-panel-copilot',
+      export: 'export-hub',
+    }
+    const elId = ids[key]
+    if (!elId) return
+    document.getElementById(elId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (key === 'trace') {
+      window.setTimeout(() => {
+        document.querySelector('#helix-panel-requirement textarea')?.focus?.()
+      }, 480)
+    }
+    if (key === 'stories' || key === 'summary') {
+      window.setTimeout(() => {
+        document.querySelector('#helix-panel-summary .linkish')?.focus?.()
+      }, 320)
+    }
+    if (key === 'copilot') {
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent('helix:open-chat')), 200)
+    }
+    if (key === 'export') {
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent('helix:open-export')), 200)
+    }
+  }, [])
+
+  const genArtifactsRef = useRef(null)
+  const genTestsRef = useRef(null)
+  const runAmbiguityRef = useRef(null)
+
+  useEffect(() => {
+    genArtifactsRef.current = genArtifacts
+    genTestsRef.current = genTests
+    runAmbiguityRef.current = runAmbiguity
+  }, [genArtifacts, genTests, runAmbiguity])
+
+  useEffect(() => {
+    const onA = () => void genArtifactsRef.current()
+    const onT = () => void genTestsRef.current()
+    const onM = () => void runAmbiguityRef.current()
+    window.addEventListener('helix:generate-artifacts', onA)
+    window.addEventListener('helix:generate-tests', onT)
+    window.addEventListener('helix:analyze-ambiguity', onM)
+    return () => {
+      window.removeEventListener('helix:generate-artifacts', onA)
+      window.removeEventListener('helix:generate-tests', onT)
+      window.removeEventListener('helix:analyze-ambiguity', onM)
+    }
+  }, [])
+
+  const { helpOpen, setHelpOpen } = useKeyboardShortcuts({
+    onSubmit: () => void genArtifacts(),
+    enabled: true,
+  })
 
   const reduceMotion = useReducedMotion()
   const stagger = useMemo(
@@ -336,10 +414,48 @@ export default function Dashboard() {
     [boot, loadingArtifacts, tasks],
   )
 
-  if (showSkeleton) return <DashboardSkeleton />
+  const shortcutsModal = (
+    <KeyboardShortcutsHelp
+      open={helpOpen}
+      onClose={() => setHelpOpen(false)}
+      variant="dashboard"
+    />
+  )
+
+  if (showSkeleton) {
+    return (
+      <>
+        <DashboardSkeleton />
+        {shortcutsModal}
+      </>
+    )
+  }
+
+  if (projectMissing) {
+    return (
+      <>
+        <div className="page dashboard dashboard--error">
+          <div className="panel project-missing-card">
+            <h2>Project not found</h2>
+            <p className="muted">This link may be invalid or the project was removed.</p>
+            <div className="project-missing-actions">
+              <Link to="/new" className="btn btn-primary">
+                New project
+              </Link>
+              <Link to="/login" className="btn ghost">
+                Sign in
+              </Link>
+            </div>
+          </div>
+        </div>
+        {shortcutsModal}
+      </>
+    )
+  }
 
   return (
-    <div className={`page dashboard${reqFocusMode ? ' dashboard--req-focus' : ''}`}>
+    <>
+      <div className={`page dashboard${reqFocusMode ? ' dashboard--req-focus' : ''}`}>
       <SensitiveHintsBanner projectId={id} hints={sensitiveHints} />
       <motion.div
         className="toolbar"
@@ -347,16 +463,45 @@ export default function Dashboard() {
         initial="hidden"
         animate="show"
       >
-        <button type="button" className="btn" onClick={() => void genArtifacts()}>
+        <button
+          type="button"
+          className="btn"
+          disabled={!!artifactProgress}
+          title={artifactProgress ? 'Artifact generation in progress' : undefined}
+          onClick={() => void genArtifacts()}
+        >
           Generate artifacts
         </button>
-        <button type="button" className="btn" onClick={() => void genTests()}>
+        <button
+          type="button"
+          className="btn"
+          disabled={!!testProgress}
+          title={testProgress ? 'Test generation in progress' : undefined}
+          onClick={() => void genTests()}
+        >
           Generate tests
         </button>
-        <button type="button" className="btn ghost" onClick={() => void runAmbiguity()}>
-          Analyze ambiguity
+        <button
+          type="button"
+          className="btn ghost"
+          onClick={() => void runAmbiguity()}
+          disabled={ambiguityBusy || !!artifactProgress || !!testProgress}
+          title={
+            ambiguityBusy
+              ? 'Scan running'
+              : artifactProgress || testProgress
+                ? 'Wait for generation to finish'
+                : undefined
+          }
+        >
+          {ambiguityBusy ? 'Analyzing…' : 'Analyze ambiguity'}
         </button>
-        <button type="button" className="btn ghost" onClick={() => void loadArtifacts()}>
+        <button
+          type="button"
+          className="btn ghost"
+          disabled={loadingArtifacts}
+          onClick={() => void loadArtifacts()}
+        >
           Refresh
         </button>
         <button type="button" className="btn ghost" onClick={() => setReqFocusMode((v) => !v)}>
@@ -368,6 +513,9 @@ export default function Dashboard() {
         <Link to={`/project/${id}/preview`} className="btn ghost">
           Stakeholder view
         </Link>
+        <button type="button" className="btn ghost" onClick={() => setHelpOpen(true)} title="Keyboard shortcuts">
+          Shortcuts (?)
+        </button>
       </motion.div>
 
       {artifactProgress ? (
@@ -399,6 +547,7 @@ export default function Dashboard() {
             stories={stories}
             projectId={id}
             onStoryExportToggle={patchStoryExport}
+            onGenerateArtifacts={() => void genArtifacts()}
           />
         </motion.div>
         <motion.div variants={fadeUp} className="summary-row-card">
@@ -409,6 +558,7 @@ export default function Dashboard() {
             testcases={testcases}
             ambiguities={ambiguities}
             citationItemRate={citationItemRate}
+            onJump={jumpTo}
           />
         </motion.div>
         <motion.div variants={fadeUp} className="summary-row-card">
@@ -443,7 +593,7 @@ export default function Dashboard() {
           whileHover={reduceMotion ? undefined : { y: -2 }}
           transition={{ type: 'spring', stiffness: 460, damping: 38 }}
         >
-          <section ref={requirementSectionRef} className="panel requirement-editor-panel">
+          <section ref={requirementSectionRef} id="helix-panel-requirement" className="panel requirement-editor-panel">
             <h4>Working requirement</h4>
             <p className="muted small">Edits are snapshotted to MongoDB (debounced) for version history.</p>
             <textarea
@@ -461,7 +611,12 @@ export default function Dashboard() {
           />
           <WorkingVsSnapshotDiff projectId={id} workingText={workingReq} refreshKey={snapRefresh} />
           <VersionHistory projectId={id} refreshKey={snapRefresh} />
-          <AmbiguityView text={workingReq} hits={ambiguities} />
+          <AmbiguityView
+            text={workingReq}
+            hits={ambiguities}
+            onAnalyze={() => void runAmbiguity()}
+            analyzing={ambiguityBusy}
+          />
           <TestCaseList
             testcases={testcases}
             onRefresh={() => void loadTests()}
@@ -471,6 +626,7 @@ export default function Dashboard() {
         </motion.section>
 
         <motion.section
+          id="helix-panel-copilot"
           className="panel chat-wrap panel--motion"
           variants={fadeUp}
           whileHover={reduceMotion ? undefined : { y: -2 }}
@@ -480,5 +636,7 @@ export default function Dashboard() {
         </motion.section>
       </motion.div>
     </div>
+    {shortcutsModal}
+    </>
   )
 }

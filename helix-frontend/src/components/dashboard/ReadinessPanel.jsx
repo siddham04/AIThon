@@ -1,16 +1,35 @@
 import { useMemo } from 'react'
 
-function Item({ ok, label, hint }) {
-  return (
-    <li className={`readiness-item ${ok ? 'readiness-item--ok' : 'readiness-item--warn'}`}>
+function Item({ ok, label, hint, jump, onJump }) {
+  const content = (
+    <>
       <span className="readiness-ico" aria-hidden>
         {ok ? '✓' : '○'}
       </span>
-      <span>
+      <span className="readiness-item-text">
         <strong>{label}</strong>
         {hint ? <span className="muted small"> — {hint}</span> : null}
       </span>
-    </li>
+    </>
+  )
+
+  if (onJump && jump) {
+    return (
+      <li>
+        <button
+          type="button"
+          className={`readiness-item readiness-item-btn ${ok ? 'readiness-item--ok' : 'readiness-item--warn'}`}
+          onClick={() => onJump(jump)}
+          title="Jump to related panel"
+        >
+          {content}
+        </button>
+      </li>
+    )
+  }
+
+  return (
+    <li className={`readiness-item ${ok ? 'readiness-item--ok' : 'readiness-item--warn'}`}>{content}</li>
   )
 }
 
@@ -21,6 +40,7 @@ export default function ReadinessPanel({
   testcases = [],
   ambiguities = [],
   citationItemRate,
+  onJump,
 }) {
   const { rows, score } = useMemo(() => {
     const storyGoals = stories.map((s) => (s.goal || '').trim().length)
@@ -32,11 +52,13 @@ export default function ReadinessPanel({
         ok: !!summary?.one_liner,
         label: 'Executive summary',
         hint: !summary?.one_liner ? 'Generate artifacts' : null,
+        jump: 'summary',
       },
       {
         ok: stories.length > 0,
         label: 'User stories drafted',
         hint: stories.length === 0 ? 'Need at least one story' : `${stories.length} story(ies)`,
+        jump: 'stories',
       },
       {
         ok: stories.length === 0 || avgGoal >= 24,
@@ -47,16 +69,19 @@ export default function ReadinessPanel({
             : stories.length
               ? `Avg goal length ${Math.round(avgGoal)} chars`
               : null,
+        jump: 'stories',
       },
       {
         ok: tasks.length > 0,
         label: 'Tasks on the board',
         hint: tasks.length === 0 ? 'Break work into tasks' : `${tasks.length} task(s)`,
+        jump: 'tasks',
       },
       {
         ok: testcases.length > 0,
         label: 'Test coverage started',
         hint: testcases.length === 0 ? 'Generate tests' : `${testcases.length} case(s)`,
+        jump: 'tests',
       },
       {
         ok: cite == null || cite >= 0.35,
@@ -67,6 +92,7 @@ export default function ReadinessPanel({
             : cite < 0.35
               ? `${Math.round(cite * 100)}% — tie work to requirement clauses`
               : `${Math.round(cite * 100)}% cited`,
+        jump: 'trace',
       },
       {
         ok: ambiguities.length <= 2,
@@ -77,6 +103,7 @@ export default function ReadinessPanel({
             : ambiguities.length
               ? `${ambiguities.length} flagged (review in panel below)`
               : 'None flagged (or not scanned yet)',
+        jump: 'ambiguity',
       },
     ]
     const n = list.filter((r) => r.ok).length
@@ -92,10 +119,13 @@ export default function ReadinessPanel({
         </span>
       </div>
       <p className="muted small readiness-lede">
-        PM-style checklist (inspired by reviewer flows): surface gaps before export or stakeholder
-        review.
+        PM-style checklist: click any row to jump to the panel that fixes it.
       </p>
-      <ul className="readiness-list">{rows.map((r) => <Item key={r.label} {...r} />)}</ul>
+      <ul className="readiness-list">
+        {rows.map((r) => (
+          <Item key={r.label} {...r} onJump={onJump} />
+        ))}
+      </ul>
     </section>
   )
 }

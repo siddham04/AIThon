@@ -183,12 +183,17 @@ export default function Analytics() {
 
   return (
     <div className="page analytics-page">
-      <header className="page-head">
-        <h1>Analytics</h1>
-        <p className="muted">
-          Traceability KPIs, effort and priority views, last-run pipeline timings, and an interactive 3D
-          requirement → story → task → test graph with legends.
-        </p>
+      <header className="page-head page-head--row">
+        <div>
+          <h1>Analytics</h1>
+          <p className="muted">
+            Traceability KPIs, effort and priority views, last-run pipeline timings, and an interactive 3D
+            requirement → story → task → test graph with legends.
+          </p>
+        </div>
+        <button type="button" className="btn ghost" onClick={() => void load()}>
+          Refresh data
+        </button>
       </header>
 
       <section className="analytics-kpi-strip" aria-label="Project metrics">

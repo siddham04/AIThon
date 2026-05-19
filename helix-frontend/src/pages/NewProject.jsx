@@ -8,6 +8,7 @@ import FileDropzone from '../components/ingestion/FileDropzone'
 import VoiceInput from '../components/ingestion/VoiceInput'
 import { SAMPLE_REQUIREMENT } from '../constants/sampleRequirement'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
+import KeyboardShortcutsHelp from '../components/ui/KeyboardShortcutsHelp'
 
 const SAMPLE_PREFILL_KEY = 'helix_prefill_sample'
 
@@ -260,34 +261,7 @@ export default function NewProject() {
         Keyboard shortcuts (?)
       </button>
 
-      {helpOpen && (
-        <dialog open className="modal" onClick={() => setHelpOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Shortcuts</h3>
-            <ul className="shortcuts-list">
-              <li>
-                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> — submit ingest
-              </li>
-              <li>
-                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> — command palette (jump
-                menu)
-              </li>
-              <li>
-                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd> — focus copilot
-              </li>
-              <li>
-                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>E</kbd> — open export hub
-              </li>
-              <li>
-                <kbd>?</kbd> — toggle this panel
-              </li>
-            </ul>
-            <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
-              Close
-            </button>
-          </div>
-        </dialog>
-      )}
+      <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} variant="ingest" />
     </div>
   )
 }
