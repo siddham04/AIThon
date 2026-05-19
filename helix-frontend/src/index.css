@@ -178,7 +178,85 @@ html.dark .landing-theme-bar .btn.ghost {
   padding: 4rem 6vw;
   max-width: 720px;
   text-align: left;
-  background: linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.45));
+  background: linear-gradient(90deg, rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.35));
+  border-bottom-right-radius: 40px;
+  border-top-right-radius: 40px;
+  box-shadow: 0 40px 120px rgba(15, 23, 42, 0.08);
+}
+
+html.dark .landing-overlay {
+  background: linear-gradient(90deg, rgba(2, 6, 23, 0.96), rgba(2, 6, 23, 0.28));
+}
+
+.landing-features {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  padding: 2.25rem 6vw 4rem;
+  max-width: 1220px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  padding: 1.25rem 1.3rem;
+  box-shadow: 0 16px 50px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+html.dark .feature-card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.22);
+}
+
+.feature-card h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.feature-card p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+html.dark .feature-card p {
+  color: #cbd5e1;
+}
+
+.feature-badge {
+  display: inline-flex;
+  margin-bottom: 0.95rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #0369a1;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html.dark .feature-badge {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
+}
+
+@media (max-width: 860px) {
+  .landing-overlay {
+    padding: 3rem 4vw;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .landing-title {
+    font-size: clamp(2rem, 6vw, 2.8rem);
+  }
 }
 
 html.dark .landing-overlay {

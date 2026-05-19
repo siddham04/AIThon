@@ -34,6 +34,29 @@ export default function Landing() {
     { scope: root },
   )
 
+  const features = [
+    {
+      title: 'AI-surface ambiguity',
+      description:
+        'Automatically flag unclear requirements, hidden dependencies, and risky gaps before they hit development.',
+    },
+    {
+      title: 'End-to-end traceability',
+      description:
+        'Connect requirements, tasks, tests, and stakeholder feedback in one transparent workflow.',
+    },
+    {
+      title: 'Instant project insights',
+      description:
+        'Visualize status, effort, and risk with dashboards built for teams, product owners, and QA.',
+    },
+    {
+      title: 'Polished collaboration',
+      description:
+        'Share project previews, comments, and progress reports with one click for rapid demos.',
+    },
+  ]
+
   return (
     <div ref={root} className="landing">
       <div className="landing-theme-bar">
@@ -88,6 +111,15 @@ export default function Landing() {
           for the command palette — ideal for live demos.
         </p>
       </div>
+      <section className="landing-features" aria-label="Product features">
+        {features.map((feature) => (
+          <article key={feature.title} className="feature-card">
+            <p className="feature-badge">Hackathon-ready</p>
+            <h2>{feature.title}</h2>
+            <p>{feature.description}</p>
+          </article>
+        ))}
+      </section>
     </div>
   )
 }
