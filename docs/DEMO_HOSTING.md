@@ -63,7 +63,7 @@ Use this if you want a **`*.vercel.app`** URL for the UI while the API stays on 
 
 1. Complete **Option A** so you have `https://<service>.onrender.com` (API + optional same-origin UI).
 2. Import the **same** GitHub repo into [Vercel](https://vercel.com/) and follow **`docs/VERCEL.md`**.
-3. Set **`VITE_API_BASE`** on Vercel to `https://<service>.onrender.com/api` (Production + Preview).
-4. Ensure the Render service has **`HELIX_CORS_ORIGIN_REGEX`** (already set in root `render.yaml`) or add your Vercel URL to **`HELIX_CORS_ORIGINS`**.
+3. On Vercel, set **`HELIX_BACKEND_ORIGIN`** = `https://<service>.onrender.com` (no `/api` suffix) and **redeploy**. Leave **`VITE_API_BASE` unset** so the UI uses same-origin `/api` (proxied by `middleware.js`).
+4. *(Alternative)* Set **`VITE_API_BASE`** = `https://<service>.onrender.com/api` instead of using the proxy; then ensure the Render API allows your Vercel origin (**`HELIX_CORS_ORIGIN_REGEX`** is already set in root `render.yaml` for `*.vercel.app`).
 
-**Demo Link:** you can submit either the **Render** URL (full app in one) or the **Vercel** URL (UI only, API on Render).
+**Demo Link:** you can submit either the **Render** URL (full app in one) or the **Vercel** URL (UI on Vercel, API on Render).

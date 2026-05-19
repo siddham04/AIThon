@@ -5,6 +5,10 @@ import { api } from '../api/client'
 import { useAuthStore } from '../store/useStore'
 
 function formatApiError(ex) {
+  const ct = ex.response?.headers?.['content-type'] || ex.response?.headers?.['Content-Type']
+  if (typeof ct === 'string' && ct.includes('text/html')) {
+    return 'Received HTML instead of API JSON — on Vercel set HELIX_BACKEND_ORIGIN or VITE_API_BASE (see docs/VERCEL.md).'
+  }
   const d = ex.response?.data?.detail
   if (typeof d === 'string') return d
   if (Array.isArray(d)) {

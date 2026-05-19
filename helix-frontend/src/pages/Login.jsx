@@ -3,6 +3,18 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/useStore'
 
+function formatLoginError(ex) {
+  const ct = ex.response?.headers?.['content-type'] || ex.response?.headers?.['Content-Type']
+  if (typeof ct === 'string' && ct.includes('text/html')) {
+    return 'Received HTML instead of API JSON — on Vercel set HELIX_BACKEND_ORIGIN or VITE_API_BASE (see docs/VERCEL.md).'
+  }
+  if (ex.response?.status === 401) return 'Invalid credentials'
+  const d = ex.response?.data?.detail
+  if (typeof d === 'string') return d
+  if (ex.message === 'Network Error') return 'Cannot reach API — is the backend running?'
+  return 'Sign in failed'
+}
+
 const WorkspaceAmbient = lazy(() => import('../components/layout/WorkspaceAmbient'))
 
 export default function Login() {
@@ -19,13 +31,23 @@ export default function Login() {
   async function onSubmit(e) {
     e.preventDefault()
     setErr('')
+    const id = email.trim()
+    if (!id) {
+      setErr('Enter a username or email.')
+      return
+    }
+    if (!password) {
+      setErr('Enter a password.')
+      return
+    }
     setLoading(true)
     try {
-      const { data } = await api.post('/auth/login', { email, password })
-      setAuth({ email }, data.access_token)
+      const { data } = await api.post('/auth/login', { email: id, password })
+      setAuth({ email: id }, data.access_token)
       nav(from, { replace: true })
-    } catch {
-      setErr('Invalid credentials')
+    } catch (ex) {
+      const msg = formatLoginError(ex)
+      setErr(msg)
     } finally {
       setLoading(false)
     }

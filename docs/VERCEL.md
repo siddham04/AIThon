@@ -1,82 +1,61 @@
 # Deploy Helix on Vercel (GitHub import)
 
-Vercel is **excellent for the React (Vite) frontend**. It does **not** run the full Helix stack (FastAPI, long SSE streams, WebSockets, SQLite/Postgres, background jobs) in the same way as Docker or Render. For a **working demo with zero extra servers**, use **Render only** with `render.yaml` + `Dockerfile.all-in-one` (see [`DEMO_HOSTING.md`](DEMO_HOSTING.md)).
-
-This guide covers the common **split** setup:
-
-| Layer | Where | URL example |
-|-------|--------|--------------|
-| **API + optional same-origin UI** | Render (`Dockerfile.all-in-one` or Compose) | `https://helix-demo.onrender.com` |
-| **UI only on Vercel** (optional) | Vercel imports this GitHub repo | `https://your-app.vercel.app` |
+Vercel hosts the **React (Vite) static build**. The **FastAPI API** still runs on **Render**, Docker, or your machine.
 
 ---
 
-## What you get after connecting GitHub to Vercel
+## Why register / login “does not work” on Vercel
 
-With the files in this repo, Vercel will:
+The browser loads the UI from `https://<your-app>.vercel.app`. By default the app calls **same-origin** `https://<your-app>.vercel.app/api/...` (see `helix-frontend/src/api/client.js` when `VITE_API_BASE` is unset).
 
-1. Run `npm ci` in `helix-frontend/`
-2. Run `npm run build` (Vite) there
-3. Publish `helix-frontend/dist` as a static site
-4. Apply SPA rewrites so `/project/...` and `/login` load `index.html`
+Vercel was **only** serving the SPA — there was **no FastAPI** behind `/api`, so `/api/auth/register` returned **HTML (index.html)** or **404**, and registration failed.
 
-You still need a **running API**. Point the UI at it with **`VITE_API_BASE`** (build-time variable).
+**Fix (in this repo):** Edge **`middleware.js`** proxies every `/api/*` request to your real API host. You must set **`HELIX_BACKEND_ORIGIN`** on Vercel (see below).
 
 ---
 
-## One-time Vercel project settings (Dashboard)
+## Path A — Same-origin `/api` (recommended for Vercel + Render)
 
-1. **Import** the GitHub repository (`siddham04/AIThon` or your fork).
-2. **Root Directory**  
-   - **Recommended (simplest):** leave **empty** (repo root). The root **`vercel.json`** already sets `installCommand`, `buildCommand`, and `outputDirectory`.  
-   - **Alternative:** set Root Directory to **`helix-frontend`**. Then Vercel uses **`helix-frontend/vercel.json`** instead; you can delete or ignore the root `vercel.json` to avoid duplication.
-3. **Framework Preset** — *Other* or *Vite* is fine; root `vercel.json` pins commands explicitly.
-4. **Node.js Version** — **24.x** (matches your build settings) or **20.x** / **22.x**; Helix requires **>= 18**.
-5. **Build & Development Settings** — leave defaults unless you override; root `vercel.json` supplies:
-   - `installCommand`: `npm ci --prefix helix-frontend`
-   - `buildCommand`: `npm run build --prefix helix-frontend`
-   - `outputDirectory`: `helix-frontend/dist`
-6. **Fluid Compute / Build machine** — your choices are fine; they only affect build/runtime performance on Vercel’s side.
+1. Deploy the API (e.g. Render `render.yaml` / `Dockerfile.all-in-one`). Copy the service root, e.g. `https://helix-demo.onrender.com` (**no** `/api` suffix, **no** trailing slash).
+2. In **Vercel → Project → Settings → Environment Variables** (Production **and** Preview):
+   - **`HELIX_BACKEND_ORIGIN`** = `https://helix-demo.onrender.com`
+3. **Do not** set `VITE_API_BASE` (or remove it), so the UI keeps using `/api` on the Vercel host.
+4. **Redeploy** Vercel after saving env vars (middleware reads them at the edge).
 
----
+`middleware.js` lives at the **repo root** and is duplicated under **`helix-frontend/middleware.js`** so it still runs if Vercel **Root Directory** is set to **`helix-frontend`**.
 
-## Required environment variable (Vercel)
+### If you see JSON `503` with “HELIX_BACKEND_ORIGIN is not set”
 
-Add under **Settings → Environment Variables** (for **Production** and **Preview**):
-
-| Name | Example value | Notes |
-|------|----------------|--------|
-| **`VITE_API_BASE`** | `https://helix-demo.onrender.com/api` | **No trailing slash** issues: use exactly `.../api` so REST hits `/api/...` and WebSocket becomes `wss://.../api/ws/...` (see `src/lib/helixProgressWsUrl.js`). |
-
-Redeploy after changing `VITE_API_BASE` (Vite bakes it in at build time).
+The variable is missing or not redeployed. Add it and trigger a new deployment.
 
 ---
 
-## CORS on the API (Render / Docker)
+## Path B — Cross-origin `VITE_API_BASE` (no proxy)
 
-When the UI is on `https://*.vercel.app` and the API on another host, the browser sends **cross-origin** requests. The API must allow your Vercel origin.
+1. In Vercel env, set **`VITE_API_BASE`** = `https://your-service.onrender.com/api` (must end with `/api`).
+2. Redeploy (Vite bakes this at **build** time).
+3. On the **API** host, allow your Vercel origin (`HELIX_CORS_ORIGIN_REGEX` or `HELIX_CORS_ORIGINS`). Root `render.yaml` already sets a Vercel-friendly regex for the sample service.
 
-- **`HELIX_CORS_ORIGIN_REGEX`** — set on the **API** host, e.g.  
-  `https://.*\.vercel\.app`  
-  The Render blueprint in **`render.yaml`** already adds this for the `helix-demo` service.
-- **`HELIX_CORS_ORIGINS`** — keep including `http://localhost:5173` for local dev.
-
-If you use a **custom domain** on Vercel, add that full origin to **`HELIX_CORS_ORIGINS`** on the API (comma-separated) or extend the regex.
+WebSockets use `wss://…/api/ws/…` on the **API host** in this mode, which is better for long-running progress than the edge proxy.
 
 ---
 
-## Recommended flows
+## Import checklist (Vercel Dashboard)
 
-### A — Single URL (simplest for judges)
+| Setting | Value |
+|--------|--------|
+| **Root Directory** | **Empty** (repo root) *or* `helix-frontend` (middleware exists in both places) |
+| **Framework** | Other / Vite (root `vercel.json` pins install/build) |
+| **Node** | 20.x or 24.x (≥ 18) |
+| **Env (Path A)** | `HELIX_BACKEND_ORIGIN` = `https://…onrender.com` |
+| **Env (Path B)** | `VITE_API_BASE` = `https://…onrender.com/api` |
 
-1. Deploy **only** on Render with **`render.yaml`**.  
-2. Use the Render URL as **Demo Link**; **do not require Vercel**.
+---
 
-### B — Vercel “marketing” URL + Render API
+## Limits
 
-1. Deploy API on Render; copy base like `https://helix-demo.onrender.com`.  
-2. Connect the same repo to Vercel; set **`VITE_API_BASE`** = `https://helix-demo.onrender.com/api`.  
-3. Use the **Vercel** URL as **Demo Link** if you want `*.vercel.app` branding.
+- **Edge proxy (Path A):** Great for REST (register, login, ingest). **WebSocket / long SSE** through the proxy can be flaky or time out. For a full “Generate artifacts” streaming demo, prefer **Render-only** (`docs/DEMO_HOSTING.md`) or **Path B** with `VITE_API_BASE` pointing at the API.
+- **Helix API key:** If `HELIX_API_KEY` is set on the backend, the browser must send that key; the proxy forwards `Authorization` and other headers as sent.
 
 ---
 
@@ -84,13 +63,14 @@ If you use a **custom domain** on Vercel, add that full origin to **`HELIX_CORS_
 
 | Symptom | Fix |
 |---------|-----|
-| Blank page / 404 on refresh | Ensure `vercel.json` **rewrites** are present (included in repo). |
-| Network error calling API | Check **`VITE_API_BASE`**, HTTPS, and CORS regex on API. |
-| WebSocket / progress stuck | `VITE_API_BASE` must be full `https://host/api` so `wss://host/api/ws/...` is used. |
-| Build fails on Vercel | Use Node **20+**; run `npm ci && npm run build` locally in `helix-frontend` and fix errors. |
+| Register returns HTML / JSON parse error | You were hitting the SPA, not the API. Use **Path A** (`HELIX_BACKEND_ORIGIN` + redeploy) or **Path B** (`VITE_API_BASE`). |
+| `503` + message about `HELIX_BACKEND_ORIGIN` | Set that env on Vercel and **redeploy**. |
+| CORS errors (Path B only) | Fix `HELIX_CORS_ORIGIN_REGEX` / origins on the API. |
+| Blank page on refresh | `vercel.json` SPA rewrite should still apply; `/api` is handled by middleware first. |
+| Build fails | Run `npm ci && npm run build` in `helix-frontend` locally. |
 
 ---
 
-## Why not “only Vercel” for everything?
+## Why not only Vercel for everything?
 
-Helix needs a **long-lived Python process**, **database**, and **WebSocket/SSE** behavior that does not map cleanly to Vercel Serverless defaults without a large rewrite. The supported path is **API on Render (or Docker)** + **optional UI on Vercel**.
+Helix needs a **Python API**, **database**, and **long-lived** streaming behaviour. The supported split is **API on Render (or Docker)** + **UI on Vercel** (optional).
