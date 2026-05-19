@@ -1,0 +1,16 @@
+.git
+.gitignore
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+.venv2
+*.db
+.helix-data
+.env
+*.egg-info
+.pytest_cache
+.mypy_cache
+htmlcov
+dist
+build

@@ -1,0 +1,10 @@
+# Docker build context is repository root (for backend image)
+**/.git
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.venv2
+**/node_modules
+**/.helix-data
+**/*.db
+.gitignore

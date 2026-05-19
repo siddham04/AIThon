@@ -1,0 +1,109 @@
+import { useRef, useState } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { markOnboardingSeen } from './onboardingStorage'
+
+const slides = [
+  {
+    title: 'Welcome to Helix',
+    body: 'Turn messy requirements into stories, tasks, tests, and ambiguity maps — with full traceability.',
+  },
+  {
+    title: 'Ingest → Generate',
+    body: 'Start on New project: paste text, upload a file, or use voice. Then generate artifacts and tests from the dashboard.',
+  },
+  {
+    title: 'Try the demo',
+    body: 'Load a sample payment & auth brief full of intentional gaps, or bring your own PRD. Keyboard shortcuts: ⌘/Ctrl+Enter to ingest.',
+  },
+]
+
+export default function OnboardingModal({ onClose, onLoadSample }) {
+  const [step, setStep] = useState(0)
+  const isLast = step === slides.length - 1
+  const cardRef = useRef(null)
+  const slideRef = useRef(null)
+
+  const finish = () => {
+    markOnboardingSeen()
+    onClose?.()
+  }
+
+  useGSAP(
+    () => {
+      if (!cardRef.current) return
+      gsap.from(cardRef.current, {
+        opacity: 0,
+        y: 12,
+        duration: 0.28,
+        ease: 'power2.out',
+      })
+    },
+    { scope: cardRef },
+  )
+
+  useGSAP(
+    () => {
+      const el = slideRef.current
+      if (!el) return
+      gsap.fromTo(
+        el,
+        { opacity: 0, x: 28 },
+        { opacity: 1, x: 0, duration: 0.32, ease: 'power2.out' },
+      )
+    },
+    { dependencies: [step] },
+  )
+
+  return (
+    <dialog open className="modal onboarding-modal-wrap" aria-labelledby="onb-title">
+      <div ref={cardRef} className="modal-card onboarding-card">
+        <div ref={slideRef} key={step}>
+          <h3 id="onb-title">{slides[step].title}</h3>
+          <p className="onboarding-body">{slides[step].body}</p>
+        </div>
+
+        <div className="onboarding-dots">
+          {slides.map((_, i) => (
+            <span key={i} className={`onboarding-dot ${i === step ? 'active' : ''}`} />
+          ))}
+        </div>
+
+        <div className="row spread onboarding-actions">
+          <button type="button" className="btn ghost" onClick={finish}>
+            Skip
+          </button>
+          <div className="row">
+            {step > 0 && (
+              <button type="button" className="btn" onClick={() => setStep((s) => s - 1)}>
+                Back
+              </button>
+            )}
+            {!isLast && (
+              <button type="button" className="btn btn-primary" onClick={() => setStep((s) => s + 1)}>
+                Next
+              </button>
+            )}
+            {isLast && (
+              <>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => {
+                    onLoadSample?.()
+                    finish()
+                  }}
+                >
+                  Load sample
+                </button>
+                <button type="button" className="btn btn-primary" onClick={finish}>
+                  Got it
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </dialog>
+  )
+}
