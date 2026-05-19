@@ -37,6 +37,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:latest
             ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:cache,mode=max
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -48,6 +50,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/ai-thon-backend:latest
             ghcr.io/${{ github.repository_owner }}/ai-thon-backend:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ai-thon-backend:cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ai-thon-backend:cache,mode=max
 
   deploy-to-k8s:
     if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
@@ -117,4 +121,11 @@ jobs:
           kubectl -n helix rollout status deployment/mongo --timeout=180s
           kubectl -n helix rollout status deployment/helix-backend --timeout=180s
           kubectl -n helix rollout status deployment/helix-frontend --timeout=180s
+        shell: bash
+
+      - name: Verify deployment
+        run: |
+          kubectl -n helix get all
+          kubectl -n helix get svc
+          kubectl -n helix get pods -o wide
         shell: bash

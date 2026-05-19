@@ -46,3 +46,20 @@ To deploy:
 1. Add the Kubernetes secrets to GitHub.
 2. Push to `main`.
 3. The workflow will build and push Docker images, then apply the manifests to your cluster.
+
+Verification
+
+- The deploy job now checks rollout status and runs `kubectl get all`, `kubectl get svc`, and `kubectl get pods -o wide` in the target namespace.
+- If your cluster does not expose a `LoadBalancer` IP, use port forwarding locally:
+  - `kubectl -n helix port-forward svc/frontend 8080:80`
+  - then open `http://localhost:8080`
+- To inspect runtime health manually:
+  - `kubectl -n helix get pods`
+  - `kubectl -n helix logs deployment/helix-backend`
+  - `kubectl -n helix describe svc frontend`
+
+Build optimization
+
+- The backend Dockerfile now uses a multi-stage build.
+- It caches pip packages using BuildKit mount cache and upgrades pip/setuptools/wheel before installing requirements.
+- The GitHub Actions workflow now uses registry cache layers for both frontend and backend image builds.
