@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import toast from 'react-hot-toast'
 
 function pickSR() {
   return window.SpeechRecognition || window.webkitSpeechRecognition
@@ -15,6 +16,7 @@ export default function VoiceInput({ value, onChange, disabled }) {
   const finalsRef = useRef('')
   const stopRequestedRef = useRef(false)
   const waveRef = useRef(null)
+  const startRef = useRef(() => {})
 
   useEffect(() => {
     if (!recording) return
@@ -75,7 +77,21 @@ export default function VoiceInput({ value, onChange, disabled }) {
         .replace(/\s+/g, ' ')
       onChange(merged)
     }
-    rec.onerror = () => stop()
+    rec.onerror = (ev) => {
+      const code = ev?.error || 'unknown'
+      const hints = {
+        'not-allowed': 'Microphone blocked — allow mic for this site in the browser lock icon.',
+        network: 'Speech service unreachable — check network / try again (Chrome uses Google speech).',
+        'no-speech': 'No speech detected — speak closer to the mic or check input device.',
+        aborted: 'Recognition stopped.',
+        'audio-capture': 'No microphone found — plug in or enable a mic.',
+        'service-not-allowed': 'Speech recognition disabled — try Chrome or HTTPS.',
+      }
+      if (!['no-speech', 'aborted'].includes(code)) {
+        toast.error(hints[code] || `Voice error: ${code}`)
+      }
+      stop()
+    }
     rec.onend = () => {
       const didStop = stopRequestedRef.current
       recRef.current = null
@@ -86,13 +102,17 @@ export default function VoiceInput({ value, onChange, disabled }) {
       }
       // Some browsers stop recognition after silence; restart automatically
       setTimeout(() => {
-        if (!stopRequestedRef.current) start()
+        if (!stopRequestedRef.current) startRef.current()
       }, 150)
     }
     rec.start()
     recRef.current = rec
     setRecording(true)
   }, [disabled, onChange, stop, value])
+
+  useEffect(() => {
+    startRef.current = start
+  }, [start])
 
   useEffect(() => () => stop(), [stop])
 
