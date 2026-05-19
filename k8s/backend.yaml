@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: helix
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: helix-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helix-backend
+  namespace: helix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helix-backend
+  template:
+    metadata:
+      labels:
+        app: helix-backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: backend
+          image: ghcr.io/REPLACE_OWNER/ai-thon-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: postgresql://helix:helix@postgres:5432/helix
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: MONGO_URL
+              value: mongodb://mongo:27017/helix
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: JWT_SECRET
+            - name: AZURE_OPENAI_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: AZURE_OPENAI_ENDPOINT
+            - name: AZURE_OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: AZURE_OPENAI_API_KEY
+            - name: AZURE_OPENAI_DEPLOYMENT
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: AZURE_OPENAI_DEPLOYMENT
+            - name: AZURE_OPENAI_API_VERSION
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: AZURE_OPENAI_API_VERSION
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: helix-backend-secrets
+                  key: ANTHROPIC_API_KEY
+                  optional: true
+            - name: HELIX_CORS_ORIGINS
+              value: http://localhost:5173,http://localhost:5174,http://localhost:3000
+            - name: HELIX_DEBUG
+              value: "false"
+            - name: HELIX_USE_CELERY
+              value: "0"

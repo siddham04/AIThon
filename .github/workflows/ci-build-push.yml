@@ -1,0 +1,120 @@
+name: Build and Publish Docker Images
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./helix-frontend
+          file: ./helix-frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/ai-thon-frontend:${{ github.sha }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./helix-backend
+          file: ./helix-backend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ai-thon-backend:latest
+            ghcr.io/${{ github.repository_owner }}/ai-thon-backend:${{ github.sha }}
+
+  deploy-to-k8s:
+    if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+        shell: bash
+
+      - name: Substitute GHCR owner in manifests
+        run: |
+          sed -i "s|REPLACE_OWNER|${{ github.repository_owner }}|g" k8s/backend.yaml k8s/frontend.yaml
+        shell: bash
+
+      - name: Apply Kubernetes namespace
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+        shell: bash
+
+      - name: Create GHCR image pull secret
+        run: |
+          kubectl -n helix create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username="${{ secrets.GHCR_USERNAME }}" \
+            --docker-password="${{ secrets.GHCR_PAT }}" \
+            --docker-email="${{ secrets.GHCR_EMAIL }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+        shell: bash
+
+      - name: Create backend runtime secrets
+        run: |
+          kubectl -n helix create secret generic helix-backend-secrets \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --from-literal=AZURE_OPENAI_ENDPOINT="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+            --from-literal=AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}" \
+            --from-literal=AZURE_OPENAI_DEPLOYMENT="${{ secrets.AZURE_OPENAI_DEPLOYMENT }}" \
+            --from-literal=AZURE_OPENAI_API_VERSION="${{ secrets.AZURE_OPENAI_API_VERSION }}" \
+            --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+        shell: bash
+
+      - name: Apply remaining Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/data-services.yaml
+          kubectl apply -f k8s/backend.yaml
+          kubectl apply -f k8s/frontend.yaml
+        shell: bash
+
+      - name: Wait for work loads
+        run: |
+          kubectl -n helix rollout status deployment/postgres --timeout=180s
+          kubectl -n helix rollout status deployment/redis --timeout=180s
+          kubectl -n helix rollout status deployment/mongo --timeout=180s
+          kubectl -n helix rollout status deployment/helix-backend --timeout=180s
+          kubectl -n helix rollout status deployment/helix-frontend --timeout=180s
+        shell: bash
