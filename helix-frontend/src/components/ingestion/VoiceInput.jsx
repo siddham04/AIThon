@@ -13,6 +13,7 @@ export default function VoiceInput({ value, onChange, disabled }) {
   const recRef = useRef(null)
   const baseRef = useRef('')
   const finalsRef = useRef('')
+  const stopRequestedRef = useRef(false)
   const waveRef = useRef(null)
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function VoiceInput({ value, onChange, disabled }) {
   }, [recording])
 
   const stop = useCallback(() => {
+    stopRequestedRef.current = true
     try {
       recRef.current?.stop?.()
     } catch {
@@ -53,6 +55,7 @@ export default function VoiceInput({ value, onChange, disabled }) {
   const start = useCallback(() => {
     const SR = pickSR()
     if (!SR || disabled) return
+    stopRequestedRef.current = false
     baseRef.current = value || ''
     finalsRef.current = ''
     const rec = new SR()
@@ -73,7 +76,19 @@ export default function VoiceInput({ value, onChange, disabled }) {
       onChange(merged)
     }
     rec.onerror = () => stop()
-    rec.onend = () => setRecording(false)
+    rec.onend = () => {
+      const didStop = stopRequestedRef.current
+      recRef.current = null
+      if (didStop) {
+        stopRequestedRef.current = false
+        setRecording(false)
+        return
+      }
+      // Some browsers stop recognition after silence; restart automatically
+      setTimeout(() => {
+        if (!stopRequestedRef.current) start()
+      }, 150)
+    }
     rec.start()
     recRef.current = rec
     setRecording(true)
