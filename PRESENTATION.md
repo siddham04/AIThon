@@ -6,9 +6,9 @@ Use this Markdown for edits, then regenerate the `.pptx`, or paste into Google S
 
 ---
 
-### Slide 1 — Problem
+### Slide 1 — Problem (AI for SDLC productivity)
 
-Manual SDLC breakdown from a messy requirement costs hours: stories, tasks, tests, and ambiguity review are duplicated across tools with weak traceability back to the original text.
+Engineering teams receive **unstructured requirements** from documents, email, meetings, and chat. Manual translation into backlog items, tests, and shared understanding is slow, error-prone, and weak on **traceability** back to the source — exactly the gap the hackathon brief calls out: move from raw input to **structured SDLC artifacts** faster, with **ambiguity detection** and a **dashboard** to refine outputs before delivery.
 
 ---
 

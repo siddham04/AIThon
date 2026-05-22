@@ -1,0 +1,36 @@
+"Work Item Type","Title","Description","Parent","Priority","Story Points","Remaining Work","Tags","Helix ID"
+"Epic","Checkout Revamp","Increase conversion and trust by showing upfront delivery dates, offering premium payment processing, and simplifying B2B access while guaranteeing enterprise-grade performance and privacy compliance.","","2","","","","epic_64ac3202"
+"User Story","Show delivery date estimate before payment within 200 ms (P95)","As a Customer, I want know the expected delivery date before committing to payment, so that gain confidence and reduce cart abandonment.
+
+Acceptance criteria:
+- Given a customer has items in the cart, when they reach the shipping step of checkout, then the system displays an accurate delivery date estimate before the payment section appears.
+- The system shall return the delivery-date estimate in ≤200 ms for at least 95% of requests measured over any 1-hour window.
+- If inventory or carrier data is unavailable, the system shall display “Estimate unavailable—check again later” without blocking checkout.
+- Delivery estimates shall update automatically when the customer changes shipping address or speed.","epic_64ac3202","2","","","","story_32676d15"
+"User Story","Process payments via Stripe Premium without storing raw card data","As a Customer, I want pay for an order securely and reliably, so that complete purchase with confidence that card data is protected.
+
+Acceptance criteria:
+- The system shall tokenize card details directly with Stripe Premium using client-side elements, ensuring no raw card data touches the platform’s servers.
+- Given a valid payment token, when the customer confirms payment, then the system records a successful transaction and progresses the order status to 'Paid'.
+- Given a declined or failed tokenization/payment, when the customer attempts payment, then the system surfaces Stripe’s error message and allows retry.
+- PCI-DSS scans confirm zero raw PAN or CVV data stored in application logs, databases, or memory snapshots.","epic_64ac3202","2","","","","story_60bf1274"
+"User Story","Enable SMS-based OTP login for B2B portal","As a B2B User, I want log in quickly without remembering a password, so that gain secure access to the portal with minimal friction.
+
+Acceptance criteria:
+- Given a registered phone number, when a B2B user requests login, then the system sends a one-time password via the SMS Gateway.
+- Given the user enters the correct OTP within 5 minutes, then the system grants an authenticated session.
+- If an incorrect OTP is entered three times, the system shall lock the login attempt for 10 minutes and display an error.
+- OTP codes shall be single-use and automatically expire after the 5-minute window.","epic_64ac3202","2","","","","story_e238a8da"
+"User Story","Support 10 k concurrent sessions with p99 response time <500 ms","As a Site Reliability Engineer, I want assure the platform scales under peak traffic, so that maintain fast, reliable service during high demand.
+
+Acceptance criteria:
+- Load tests simulating 10,000 concurrent authenticated sessions shall complete with overall p99 response time <500 ms for all endpoints, including checkout and OTP flows.
+- No error rate above 0.1% shall be observed during the load test window.
+- Auto-scaling events shall not cause response times to exceed the 500 ms p99 threshold.","epic_64ac3202","2","","","","story_c51fd353"
+"User Story","Fulfill GDPR data-erasure requests within 30 days","As a Data Protection Officer, I want ensure personal data is deleted promptly upon request, so that maintain regulatory compliance and user trust.
+
+Acceptance criteria:
+- Given a verified erasure request, when the request is submitted, then the system schedules deletion of all personal data tied to the user within 30 days.
+- Upon completion of deletion, the system shall send an audit log entry and a confirmation notification to the requestor.
+- Any attempt to access deleted user data after completion shall return 'User Not Found'.
+- Automated nightly jobs shall report any pending deletions older than 25 days for manual review.","epic_64ac3202","2","","","","story_a8828307"

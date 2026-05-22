@@ -5,16 +5,16 @@ import { markOnboardingSeen } from './onboardingStorage'
 
 const slides = [
   {
-    title: 'Welcome to Helix',
-    body: 'Turn messy requirements into stories, tasks, tests, and ambiguity maps — with full traceability.',
+    title: 'Autonomous by default',
+    body: 'Upload a requirement and launch the AI team. PM, Architect, QA, and Scrum agents generate stories, tasks, tests, and plans — you do not write the backlog.',
   },
   {
-    title: 'Ingest → Generate',
-    body: 'Start on New project: paste text, upload a file, or use voice. Then generate artifacts and tests from the dashboard.',
+    title: 'AI does the SDLC work',
+    body: 'Analysis → architecture → stories → sprint plan → tests → risks. The pipeline runs without you clicking through every tool.',
   },
   {
-    title: 'Try the demo',
-    body: 'Load a sample payment & auth brief full of intentional gaps, or bring your own PRD. Keyboard shortcuts: ⌘/Ctrl+Enter to ingest.',
+    title: 'You approve before export',
+    body: 'AI Workspace shows a checklist of what was generated. Approve & Export downloads Jira CSV — Helix does not auto-push without your sign-off.',
   },
 ]
 

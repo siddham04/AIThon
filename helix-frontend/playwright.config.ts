@@ -17,15 +17,17 @@ export default defineConfig({
   reporter: [["list"]],
   globalSetup: "./e2e/global-setup.ts",
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: process.env.E2E_BASE_URL || "http://127.0.0.1:5173",
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "npm run dev",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: !process.env.CI,
-    cwd: __dirname,
-    timeout: 120_000,
-  },
+  webServer: process.env.E2E_SKIP_WEB_SERVER
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: process.env.E2E_BASE_URL || "http://127.0.0.1:5173",
+        reuseExistingServer: true,
+        cwd: __dirname,
+        timeout: 120_000,
+      },
 });

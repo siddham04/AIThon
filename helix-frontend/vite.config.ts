@@ -4,6 +4,23 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("mermaid")) return "vendor-mermaid";
+          if (id.includes("three") || id.includes("@react-three")) return "vendor-three";
+          if (id.includes("recharts") || id.includes("chart.js") || id.includes("d3-"))
+            return "vendor-charts";
+          if (id.includes("gsap")) return "vendor-gsap";
+          if (id.includes("framer-motion")) return "vendor-motion";
+          if (id.includes("@xyflow") || id.includes("reactflow")) return "vendor-flow";
+          if (id.includes("react-dom") || id.includes("react-router")) return "vendor-react";
+        },
+      },
+    },
+  },
   /** Pre-bundle GSAP subpaths so dev server does not return 504 "Outdated Optimize Dep" after cache churn. */
   optimizeDeps: {
     include: ["gsap", "gsap/ScrollTrigger", "@gsap/react"],

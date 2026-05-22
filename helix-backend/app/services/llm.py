@@ -5,6 +5,7 @@ mock when no key is configured so the UI is fully demo-able offline.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Any, Dict, List, Optional
@@ -14,6 +15,33 @@ from openai import AsyncAzureOpenAI
 from ..config import get_settings
 
 logger = logging.getLogger("helix.llm")
+
+_LLM_MAX_ATTEMPTS = 3
+_LLM_RETRY_BASE_SEC = 0.75
+
+
+async def _retry_llm(coro_factory, *, label: str = "llm"):
+    """Retry transient Azure OpenAI failures with exponential backoff."""
+    last: Exception | None = None
+    for attempt in range(1, _LLM_MAX_ATTEMPTS + 1):
+        try:
+            return await coro_factory()
+        except Exception as exc:
+            last = exc
+            if attempt >= _LLM_MAX_ATTEMPTS:
+                break
+            delay = _LLM_RETRY_BASE_SEC * (2 ** (attempt - 1))
+            logger.warning(
+                "%s attempt %s/%s failed (%s); retry in %.1fs",
+                label,
+                attempt,
+                _LLM_MAX_ATTEMPTS,
+                exc,
+                delay,
+            )
+            await asyncio.sleep(delay)
+    assert last is not None
+    raise last
 
 
 class LLMService:
@@ -73,14 +101,19 @@ class LLMService:
             "max_completion_tokens": max_completion_tokens,
         }
 
-        try:
-            resp = await self._client.chat.completions.create(**kwargs)
-        except Exception as exc:  # pragma: no cover - surfaced to API layer
-            logger.exception("LLM call failed: %s", exc)
-            raise
+        resp = await _retry_llm(
+            lambda: self._client.chat.completions.create(**kwargs),
+            label="chat_json",
+        )
 
         content = resp.choices[0].message.content or "{}"
-        return _safe_json(content)
+        parsed = _safe_json(content)
+        if not parsed and (content or "").strip() not in ("", "{}"):
+            logger.warning(
+                "chat_json: unparseable model output (%d chars)",
+                len(content),
+            )
+        return parsed
 
     async def chat_text(
         self,
@@ -98,10 +131,13 @@ class LLMService:
             messages.extend(history)
         messages.append({"role": "user", "content": user})
 
-        resp = await self._client.chat.completions.create(
-            model=self._deployment,
-            messages=messages,
-            max_completion_tokens=max_completion_tokens,
+        resp = await _retry_llm(
+            lambda: self._client.chat.completions.create(
+                model=self._deployment,
+                messages=messages,
+                max_completion_tokens=max_completion_tokens,
+            ),
+            label="chat_text",
         )
         return resp.choices[0].message.content or ""
 
@@ -164,7 +200,11 @@ def _safe_json(text: str) -> Dict[str, Any]:
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        logger.error("Failed to parse JSON from LLM. Raw=%s", text[:500])
+        settings = get_settings()
+        if settings.helix_debug:
+            logger.error("Failed to parse JSON from LLM. Raw=%s", text[:500])
+        else:
+            logger.error("Failed to parse JSON from LLM (%d chars)", len(text))
         return {}
 
 

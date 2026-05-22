@@ -7,19 +7,36 @@ while the OpenAI/Azure docs use `AZURE_OPENAI_*`):
   AZURE_OAI_ENDPOINT     |  AZURE_OPENAI_ENDPOINT
   AZURE_OAI_KEY          |  AZURE_OPENAI_API_KEY
   PLANNING_MODEL         |  AZURE_OPENAI_DEPLOYMENT
+
+We also probe ``../.env`` so a single ``.env`` checked into the repo root
+(next to ``docker-compose.yml``) works regardless of whether the API is
+launched from the repo root or from the ``helix-backend/`` folder.
 """
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from typing import List
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_REPO_ROOT = os.path.dirname(_BACKEND_ROOT)
+
+# Load order: backend-local .env first, then repo-root .env. Pydantic-Settings
+# applies later files on top of earlier ones, and OS-level env vars trump both
+# — so a developer can keep the master Azure key in the repo-root file and
+# override per-shell when needed.
+_ENV_FILES: tuple[str, ...] = (
+    os.path.join(_BACKEND_ROOT, ".env"),
+    os.path.join(_REPO_ROOT, ".env"),
+)
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILES,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -69,7 +86,24 @@ class Settings(BaseSettings):
             "different host than the API (e.g. Vercel: https://.*.vercel.app with dots escaped for regex)."
         ),
     )
-    helix_debug: bool = True
+    helix_debug: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("HELIX_DEBUG", "helix_debug"),
+    )
+    helix_allow_insecure_jwt: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("HELIX_ALLOW_INSECURE_JWT"),
+        description="Allow default JWT_SECRET for local dev only (never in production).",
+    )
+    helix_hackathon_auth: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("HELIX_HACKATHON_AUTH"),
+        description="Guest accounts + login auto-register (off when HELIX_PRODUCTION=1).",
+    )
+    helix_max_upload_bytes: int = Field(
+        default=20 * 1024 * 1024,
+        validation_alias=AliasChoices("HELIX_MAX_UPLOAD_BYTES"),
+    )
 
     helix_data_dir: str = Field(
         default=".helix-data",
@@ -149,9 +183,37 @@ class Settings(BaseSettings):
         default="change-me-in-production-use-openssl-rand",
         validation_alias=AliasChoices("JWT_SECRET", "jwt_secret"),
     )
+    helix_jwt_expire_minutes: int = Field(
+        default=60 * 24 * 7,
+        validation_alias=AliasChoices("HELIX_JWT_EXPIRE_MINUTES"),
+        description="Access token TTL; rotate JWT_SECRET to revoke all tokens.",
+    )
     mongo_url: str = Field(
         default="",
         validation_alias=AliasChoices("MONGO_URL", "MONGODB_URL", "mongo_url"),
+    )
+    helix_default_developers: int = Field(
+        default=4,
+        validation_alias=AliasChoices("HELIX_DEFAULT_DEVELOPERS"),
+        description="Default team size for delivery cost estimates.",
+    )
+    helix_hourly_rate_usd: float = Field(
+        default=75.0,
+        validation_alias=AliasChoices("HELIX_HOURLY_RATE_USD"),
+        description="Blended hourly rate for cost estimates.",
+    )
+    helix_hours_per_dev_week: float = Field(
+        default=40.0,
+        validation_alias=AliasChoices("HELIX_HOURS_PER_DEV_WEEK"),
+    )
+    helix_points_per_dev_per_sprint: int = Field(
+        default=12,
+        validation_alias=AliasChoices("HELIX_POINTS_PER_DEV_PER_SPRINT"),
+    )
+    helix_cost_per_story_point_usd: float = Field(
+        default=135.0,
+        validation_alias=AliasChoices("HELIX_COST_PER_STORY_POINT_USD"),
+        description="Management cost rollup: story_points × this rate (89 pts ≈ $12,050).",
     )
     helix_export_model_label: str = Field(
         default="",
@@ -161,10 +223,44 @@ class Settings(BaseSettings):
         ),
         description="Shown in Markdown export audit footer (falls back to deployment name).",
     )
+    helix_demo_fast: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("HELIX_DEMO_FAST", "helix_demo_fast"),
+        description="When true, demo SSE uses heuristics (use_ai=false) for ~3–4 min judge timing.",
+    )
+    helix_showcase_project_id: str = Field(
+        default="proj_demo_seed01",
+        validation_alias=AliasChoices(
+            "HELIX_SHOWCASE_PROJECT_ID",
+            "helix_showcase_project_id",
+        ),
+        description="Pre-baked backup project id (scripts/seed.py).",
+    )
+    helix_rate_limit_per_minute: int = Field(
+        default=120,
+        validation_alias=AliasChoices("HELIX_RATE_LIMIT_PER_MINUTE"),
+        description="POST rate limit per client per minute on /generate, /analyze, /demo (0=off).",
+    )
+    helix_demo_parallel: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("HELIX_DEMO_PARALLEL", "helix_demo_parallel"),
+        description="Run independent demo orchestrator steps in parallel batches.",
+    )
+    helix_production: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("HELIX_PRODUCTION", "helix_production"),
+        description="When true, refuse startup if JWT_SECRET is still the insecure default.",
+    )
 
     @property
     def cors_origins(self) -> List[str]:
         return [o.strip() for o in self.helix_cors_origins.split(",") if o.strip()]
+
+    @property
+    def allow_hackathon_auth(self) -> bool:
+        if self.helix_production:
+            return False
+        return bool(self.helix_hackathon_auth)
 
     @property
     def is_configured(self) -> bool:

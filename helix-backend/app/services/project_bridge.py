@@ -17,6 +17,16 @@ def pydantic_from_db_row(row: ProjectRecord | None) -> Project | None:
     return Project.model_validate_json(row.pipeline_json)
 
 
+def ensure_engineering_tasks(project: Project) -> bool:
+    """Fill tasks from stories when the Scrum step left none (export + Jira CSV)."""
+    if not project.stories or project.tasks:
+        return False
+    from ..agents.scrum_master import _heuristic_tasks_from_stories
+
+    project.tasks = _heuristic_tasks_from_stories(project)
+    return True
+
+
 def save_project_to_db(db: Session, row: ProjectRecord, project: Project) -> None:
     row.name = project.name
     row.pipeline_json = project.model_dump_json()

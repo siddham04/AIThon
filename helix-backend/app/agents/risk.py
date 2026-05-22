@@ -40,7 +40,7 @@ SCHEMA = """{
 
 class RiskAgent(Agent):
     name = "risk"
-    stage = "Surfacing risks"
+    stage = "Risk & Ambiguity · Risk"
 
     async def run(self, project: Project) -> Dict[str, Any]:
         summary_block = ""

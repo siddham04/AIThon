@@ -1,0 +1,3781 @@
+{
+  "id": "proj_42e2147b88",
+  "name": "Phase3 Workflow",
+  "created_at": "2026-05-22T09:25:48.489135",
+  "raw_input": "Checkout Revamp Initiative. Customers abandon cart when shipping estimates are unclear. We must show delivery dates before payment within 200ms P95. Security: PCI scope must not store raw card data. OTP login via SMS for B2B portal. Integrate Stripe Premium tier. Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days.",
+  "source_clauses": [
+    {
+      "id": "clause_4ced7788",
+      "index": 0,
+      "text": "Checkout Revamp Initiative."
+    },
+    {
+      "id": "clause_7158719b",
+      "index": 1,
+      "text": "Customers abandon cart when shipping estimates are unclear."
+    },
+    {
+      "id": "clause_b9a63716",
+      "index": 2,
+      "text": "We must show delivery dates before payment within 200ms P95."
+    },
+    {
+      "id": "clause_081084a5",
+      "index": 3,
+      "text": "Security: PCI scope must not store raw card data."
+    },
+    {
+      "id": "clause_b04994a3",
+      "index": 4,
+      "text": "OTP login via SMS for B2B portal."
+    },
+    {
+      "id": "clause_d88d4f1a",
+      "index": 5,
+      "text": "Integrate Stripe Premium tier."
+    },
+    {
+      "id": "clause_5c5afbda",
+      "index": 6,
+      "text": "Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days."
+    }
+  ],
+  "requirement_brief": {
+    "cleaned_summary": "The checkout flow will be revamped to include upfront delivery date estimates and integrate Stripe Premium payments while ensuring PCI compliance by avoiding storage of raw card data. An SMS-based OTP login mechanism will be added for the B2B portal. The platform must support 10,000 concurrent sessions with a p99 response time under 500 ms and guarantee GDPR-compliant data deletion within 30 days. Delivery date estimates must render in under 200 ms at the 95th percentile.",
+    "features": [
+      {
+        "name": "Upfront Delivery Date Estimates",
+        "description": "Display accurate delivery dates to customers before payment is initiated, rendering within 200 ms at P95 latency.",
+        "priority": "critical"
+      },
+      {
+        "name": "Stripe Premium Integration",
+        "description": "Connect checkout flow to Stripe Premium tier for payment processing without storing raw card data locally.",
+        "priority": "high"
+      },
+      {
+        "name": "SMS-based OTP Login for B2B Portal",
+        "description": "Enable one-time-password authentication via SMS for users accessing the B2B portal.",
+        "priority": "high"
+      },
+      {
+        "name": "High-Concurrency Performance Support",
+        "description": "Handle 10,000 concurrent sessions with overall p99 response time below 500 ms.",
+        "priority": "high"
+      }
+    ],
+    "actors": [
+      {
+        "name": "Customer",
+        "role": "Shopper using the public storefront",
+        "responsibilities": [
+          "Initiate checkout",
+          "View delivery estimates",
+          "Provide payment details"
+        ]
+      },
+      {
+        "name": "B2B User",
+        "role": "Authenticated business partner accessing the B2B portal",
+        "responsibilities": [
+          "Log in using SMS OTP",
+          "Perform business-specific operations"
+        ]
+      },
+      {
+        "name": "Stripe Payment Gateway",
+        "role": "External payment processor",
+        "responsibilities": [
+          "Process card transactions",
+          "Return payment status"
+        ]
+      },
+      {
+        "name": "SMS Gateway",
+        "role": "External service for delivering one-time passwords",
+        "responsibilities": [
+          "Send OTP messages",
+          "Confirm delivery status"
+        ]
+      }
+    ],
+    "business_rules": [
+      {
+        "description": "Delivery dates must be shown before payment step within acceptable latency.",
+        "condition": "When a customer reaches the payment section of checkout",
+        "outcome": "System displays delivery date estimate in \u2264200 ms at P95 latency."
+      },
+      {
+        "description": "No raw card data may be stored on the platform.",
+        "condition": "During or after payment processing",
+        "outcome": "System does not write raw card PAN, CVV, or expiry data to any storage."
+      },
+      {
+        "description": "System performance requirements for concurrency.",
+        "condition": "Under peak load of 10,000 simultaneous sessions",
+        "outcome": "p99 response time remains below 500 ms."
+      },
+      {
+        "description": "Personal data erasure per GDPR.",
+        "condition": "When a data-deletion request is received",
+        "outcome": "All related personal data is removed within 30 days."
+      }
+    ],
+    "entities": [
+      {
+        "name": "Checkout Flow",
+        "kind": "system",
+        "description": "Frontend and backend components handling cart review, shipping, and payment steps."
+      },
+      {
+        "name": "Delivery Date Estimate",
+        "kind": "data",
+        "description": "Calculated expected arrival date presented to the shopper."
+      },
+      {
+        "name": "Stripe Premium",
+        "kind": "external",
+        "description": "Third-party payment processing service tier used for transactions."
+      },
+      {
+        "name": "OTP (One-Time Password)",
+        "kind": "concept",
+        "description": "Single-use code sent via SMS to authenticate B2B users."
+      },
+      {
+        "name": "GDPR Deletion Request",
+        "kind": "data",
+        "description": "User request to erase personal data per GDPR regulations."
+      }
+    ],
+    "stakeholders": [
+      "Checkout Product Team",
+      "Security & Compliance Team",
+      "B2B Portal Team"
+    ],
+    "target_users": [
+      "Customers",
+      "B2B Users"
+    ],
+    "key_constraints": [
+      "Delivery estimates must render \u2264200 ms at P95 latency.",
+      "Platform must handle 10,000 concurrent sessions with p99 < 500 ms.",
+      "No raw card data may be stored (PCI scope).",
+      "Personal data must be deleted within 30 days to satisfy GDPR."
+    ],
+    "glossary": [
+      {
+        "term": "P95",
+        "meaning": "95th percentile of response times; 95% of requests must be faster than this value."
+      },
+      {
+        "term": "p99",
+        "meaning": "99th percentile of response times; 99% of requests must be faster than this value."
+      },
+      {
+        "term": "PCI",
+        "meaning": "Payment Card Industry standards governing handling of cardholder data."
+      },
+      {
+        "term": "OTP",
+        "meaning": "One-Time Password used for authentication."
+      },
+      {
+        "term": "GDPR",
+        "meaning": "General Data Protection Regulation, EU privacy law requiring timely data deletion."
+      },
+      {
+        "term": "Stripe Premium",
+        "meaning": "Paid tier of Stripe providing advanced payment processing features."
+      }
+    ],
+    "open_questions": [
+      "Which shipping carriers or services will provide data for delivery date estimates, and what is their SLA?",
+      "Is an existing SMS gateway available, or should a new provider be procured for OTP delivery?",
+      "What specific Stripe Premium features (e.g., Radar, Billing) must be enabled in this integration?",
+      "Are there regional considerations (e.g., multi-currency, localization) affecting delivery estimate calculations?"
+    ]
+  },
+  "pipeline_epic": {
+    "id": "epic_a38726b2",
+    "title": "Seamless & Compliant Checkout Revamp",
+    "description": "Revamp the checkout and authentication flows to display real-time delivery dates, integrate Stripe Premium payments without local card storage, enable SMS-based OTP for B2B users, and meet strict performance and data-privacy SLAs.",
+    "key_results": [
+      "Delivery-date estimate API responds within 200 ms for \u226595% of requests",
+      "0 instances of raw card data stored locally; Stripe Premium processing passes PCI audit",
+      "Platform sustains 10,000 concurrent user sessions with p99 latency <500 ms in load tests",
+      "100% of GDPR data-erasure requests fulfilled within 30 days"
+    ],
+    "labels": [],
+    "jira_key": null
+  },
+  "summary": {
+    "title": "Checkout Revamp",
+    "one_liner": "Faster, clearer, and fully compliant checkout and login experiences.",
+    "objective": "Increase conversion and trust by showing upfront delivery dates, offering premium payment processing, and simplifying B2B access while guaranteeing enterprise-grade performance and privacy compliance.",
+    "in_scope": [
+      "Upfront Delivery Date Estimates",
+      "Stripe Premium Integration",
+      "SMS-based OTP Login for B2B Portal",
+      "High-Concurrency Performance Support"
+    ],
+    "out_of_scope": [],
+    "primary_personas": [
+      "Customer",
+      "B2B User",
+      "Stripe Payment Gateway",
+      "SMS Gateway"
+    ],
+    "success_metrics": [],
+    "assumptions": []
+  },
+  "architecture_brief": {
+    "overview": "Micro-service oriented checkout stack running in AWS eu-west-1. A React SPA and B2B Next.js portal invoke Delivery-Estimate, Payment-Proxy, Order, Auth and User services exposed through an API Gateway. Stripe Checkout handles payment UI to keep us out of PCI scope; Twilio delivers OTP codes. Redis fronts the Delivery-Estimate service to stay \u2264200 ms P95, while Aurora Postgres stores canonical order, user and audit data. All services run containerised on ECS Fargate with autoscaling to 10 k concurrent sessions.",
+    "apis": [
+      {
+        "method": "GET",
+        "path": "/delivery-estimate",
+        "description": "Return delivery date estimate for SKU + destination. Response \u2264200 ms P95.",
+        "component": "delivery-estimate-service"
+      },
+      {
+        "method": "POST",
+        "path": "/checkout/intent",
+        "description": "Create Stripe PaymentIntent and associate cart + delivery estimate.",
+        "component": "payment-proxy-service"
+      },
+      {
+        "method": "POST",
+        "path": "/checkout/complete",
+        "description": "Finalize order once Stripe webhook confirms payment.",
+        "component": "order-service"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/otp/request",
+        "description": "Send SMS OTP to B2B user phone.",
+        "component": "auth-service"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/otp/verify",
+        "description": "Verify OTP and return JWT access token.",
+        "component": "auth-service"
+      },
+      {
+        "method": "GET",
+        "path": "/user/profile",
+        "description": "Fetch profile for authenticated user.",
+        "component": "user-service"
+      },
+      {
+        "method": "DELETE",
+        "path": "/user",
+        "description": "GDPR delete request. Triggers 30-day deletion workflow.",
+        "component": "user-service"
+      }
+    ],
+    "components": [
+      {
+        "name": "web-frontend",
+        "responsibility": "Customer checkout SPA rendering cart, delivery estimate, Stripe Checkout modal.",
+        "layer": "frontend",
+        "tech": [
+          "React",
+          "Redux",
+          "Stripe JS"
+        ]
+      },
+      {
+        "name": "b2b-portal",
+        "responsibility": "OTP-secured portal for B2B users.",
+        "layer": "frontend",
+        "tech": [
+          "Next.js",
+          "React Query"
+        ]
+      },
+      {
+        "name": "delivery-estimate-service",
+        "responsibility": "Compute & cache delivery dates from carrier SLA tables.",
+        "layer": "service",
+        "tech": [
+          "Node.js 18",
+          "NestJS",
+          "Redis client"
+        ]
+      },
+      {
+        "name": "payment-proxy-service",
+        "responsibility": "Server-side creation of Stripe PaymentIntents, webhook validation, no card data stored.",
+        "layer": "service",
+        "tech": [
+          "Node.js 18",
+          "Stripe SDK"
+        ]
+      },
+      {
+        "name": "order-service",
+        "responsibility": "Persist orders, link payment status, publish events.",
+        "layer": "service",
+        "tech": [
+          "Go 1.21",
+          "gRPC internally",
+          "PostgreSQL driver"
+        ]
+      },
+      {
+        "name": "auth-service",
+        "responsibility": "SMS OTP, JWT issuance, refresh token rotation.",
+        "layer": "service",
+        "tech": [
+          "Python 3.11",
+          "FastAPI",
+          "PyJWT"
+        ]
+      },
+      {
+        "name": "user-service",
+        "responsibility": "User profiles, GDPR delete, phone validation.",
+        "layer": "service",
+        "tech": [
+          "Go 1.21",
+          "Echo"
+        ]
+      },
+      {
+        "name": "redis-cache",
+        "responsibility": "Low-latency cache for delivery estimates & OTP attempts.",
+        "layer": "data",
+        "tech": [
+          "AWS ElastiCache Redis"
+        ]
+      },
+      {
+        "name": "relational-db",
+        "responsibility": "Canonical storage of orders, users, audit logs.",
+        "layer": "data",
+        "tech": [
+          "AWS Aurora PostgreSQL"
+        ]
+      },
+      {
+        "name": "api-gateway",
+        "responsibility": "Single public entrypoint, routing, rate-limit, JWT validation.",
+        "layer": "infra",
+        "tech": [
+          "AWS API Gateway HTTP API"
+        ]
+      },
+      {
+        "name": "message-bus",
+        "responsibility": "Async events for payment-succeeded, gdpr-delete, etc.",
+        "layer": "infra",
+        "tech": [
+          "AWS SNS/SQS"
+        ]
+      },
+      {
+        "name": "observability-stack",
+        "responsibility": "Metrics, tracing, log aggregation.",
+        "layer": "infra",
+        "tech": [
+          "AWS X-Ray",
+          "CloudWatch",
+          "Datadog Agent"
+        ]
+      },
+      {
+        "name": "gdpr-deletion-worker",
+        "responsibility": "Scheduled job purging personal data \u226430 days after request.",
+        "layer": "service",
+        "tech": [
+          "AWS Lambda",
+          "Go"
+        ]
+      },
+      {
+        "name": "stripe-webhook-endpoint",
+        "responsibility": "Receive and verify Stripe events over HTTPS.",
+        "layer": "integration",
+        "tech": [
+          "payment-proxy-service"
+        ]
+      }
+    ],
+    "integrations": [
+      "Stripe Premium API",
+      "Twilio Verify / SMS Gateway",
+      "Carrier SLA/Shipping API",
+      "AWS Secrets Manager"
+    ],
+    "data_entities": [
+      "User",
+      "OTPChallenge",
+      "Order",
+      "PaymentIntentRef",
+      "DeliveryEstimateCache",
+      "GDPRDeletionRequest",
+      "AuditLog"
+    ],
+    "non_functional_requirements": [
+      "Performance: \u2264200 ms P95 for /delivery-estimate, \u2264500 ms P99 overall",
+      "Scalability: 10 k concurrent sessions; autoscale services on CPU/RPS",
+      "Security: No raw card data stored (PCI SAQ-A), TLS 1.2+, JWT signed with RS256",
+      "Privacy: GDPR delete executed within 30 days, data encrypted at rest (AES-256)",
+      "Availability: 99.9 % monthly uptime target",
+      "Observability: 99 % of requests traced, error budget alarms",
+      "Compliance: PCI-DSS SAQ-A, GDPR Article 17 support"
+    ],
+    "suggested_stack": [
+      "React 18 + TypeScript",
+      "Node.js 18 + NestJS",
+      "Go 1.21 (core services)",
+      "Python 3.11 + FastAPI (auth)",
+      "AWS ECS Fargate",
+      "AWS Aurora PostgreSQL Serverless v2",
+      "AWS ElastiCache Redis cluster-mode",
+      "AWS API Gateway",
+      "Stripe Checkout & Webhooks",
+      "Twilio Verify",
+      "AWS SNS/SQS",
+      "AWS CloudWatch/X-Ray",
+      "Terraform for IaC"
+    ],
+    "decisions": [
+      {
+        "decision": "Use Stripe Checkout & PaymentElement instead of custom card forms.",
+        "rationale": "Keeps us in SAQ-A scope; avoids handling cardholder data.",
+        "trade_offs": "Less control over UI; dependency on Stripe availability."
+      },
+      {
+        "decision": "Cache delivery estimates in Redis with 5-minute TTL.",
+        "rationale": "Guarantees \u2264200 ms P95 even under high load.",
+        "trade_offs": "Potential staleness; need cache-invalidation strategy when carrier SLAs change."
+      },
+      {
+        "decision": "Adopt JWT stateless sessions for B2B portal.",
+        "rationale": "Horizontal scalability and no server-side session storage.",
+        "trade_offs": "Requires robust token revocation strategy for compromised accounts."
+      },
+      {
+        "decision": "Run services on ECS Fargate rather than Kubernetes.",
+        "rationale": "Reduced ops overhead, fast scaling, fits team skillset.",
+        "trade_offs": "Less flexibility for custom scheduling; vendor lock-in."
+      }
+    ],
+    "deployment": "All services containerised and deployed on AWS ECS Fargate in eu-west-1 across 3 AZs; frontends served via CloudFront + S3. API Gateway fronts public APIs with WAF. Aurora Postgres in Multi-AZ with autoscaling writers/readers. ElastiCache Redis cluster in cluster-mode for high throughput. Auto-scaling policies on CPU and RPS enable 10 k concurrent sessions. CI/CD via GitHub Actions \u2192 ECR \u2192 ECS rolling deployments with one-minute health checks."
+  },
+  "stories": [
+    {
+      "id": "story_32676d15",
+      "title": "Show delivery date estimate before payment within 200 ms (P95)",
+      "persona": "Customer",
+      "goal": "know the expected delivery date before committing to payment",
+      "benefit": "gain confidence and reduce cart abandonment",
+      "acceptance_criteria": [
+        "Given a customer has items in the cart, when they reach the shipping step of checkout, then the system displays an accurate delivery date estimate before the payment section appears.",
+        "The system shall return the delivery-date estimate in \u2264200 ms for at least 95% of requests measured over any 1-hour window.",
+        "If inventory or carrier data is unavailable, the system shall display \u201cEstimate unavailable\u2014check again later\u201d without blocking checkout.",
+        "Delivery estimates shall update automatically when the customer changes shipping address or speed."
+      ],
+      "source_clause_ids": [
+        "clause_7158719b",
+        "clause_b9a63716",
+        "clause_4ced7788"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "story_60bf1274",
+      "title": "Process payments via Stripe Premium without storing raw card data",
+      "persona": "Customer",
+      "goal": "pay for an order securely and reliably",
+      "benefit": "complete purchase with confidence that card data is protected",
+      "acceptance_criteria": [
+        "The system shall tokenize card details directly with Stripe Premium using client-side elements, ensuring no raw card data touches the platform\u2019s servers.",
+        "Given a valid payment token, when the customer confirms payment, then the system records a successful transaction and progresses the order status to 'Paid'.",
+        "Given a declined or failed tokenization/payment, when the customer attempts payment, then the system surfaces Stripe\u2019s error message and allows retry.",
+        "PCI-DSS scans confirm zero raw PAN or CVV data stored in application logs, databases, or memory snapshots."
+      ],
+      "source_clause_ids": [
+        "clause_081084a5",
+        "clause_d88d4f1a",
+        "clause_4ced7788"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "story_e238a8da",
+      "title": "Enable SMS-based OTP login for B2B portal",
+      "persona": "B2B User",
+      "goal": "log in quickly without remembering a password",
+      "benefit": "gain secure access to the portal with minimal friction",
+      "acceptance_criteria": [
+        "Given a registered phone number, when a B2B user requests login, then the system sends a one-time password via the SMS Gateway.",
+        "Given the user enters the correct OTP within 5 minutes, then the system grants an authenticated session.",
+        "If an incorrect OTP is entered three times, the system shall lock the login attempt for 10 minutes and display an error.",
+        "OTP codes shall be single-use and automatically expire after the 5-minute window."
+      ],
+      "source_clause_ids": [
+        "clause_b04994a3"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "story_c51fd353",
+      "title": "Support 10 k concurrent sessions with p99 response time <500 ms",
+      "persona": "Site Reliability Engineer",
+      "goal": "assure the platform scales under peak traffic",
+      "benefit": "maintain fast, reliable service during high demand",
+      "acceptance_criteria": [
+        "Load tests simulating 10,000 concurrent authenticated sessions shall complete with overall p99 response time <500 ms for all endpoints, including checkout and OTP flows.",
+        "No error rate above 0.1% shall be observed during the load test window.",
+        "Auto-scaling events shall not cause response times to exceed the 500 ms p99 threshold."
+      ],
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "story_a8828307",
+      "title": "Fulfill GDPR data-erasure requests within 30 days",
+      "persona": "Data Protection Officer",
+      "goal": "ensure personal data is deleted promptly upon request",
+      "benefit": "maintain regulatory compliance and user trust",
+      "acceptance_criteria": [
+        "Given a verified erasure request, when the request is submitted, then the system schedules deletion of all personal data tied to the user within 30 days.",
+        "Upon completion of deletion, the system shall send an audit log entry and a confirmation notification to the requestor.",
+        "Any attempt to access deleted user data after completion shall return 'User Not Found'.",
+        "Automated nightly jobs shall report any pending deletions older than 25 days for manual review."
+      ],
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ],
+      "approved_for_export": false
+    }
+  ],
+  "tasks": [],
+  "test_cases": [
+    {
+      "id": "test_6486c7b1",
+      "title": "Customer sees delivery estimate within 200 ms at shipping step",
+      "type": "e2e",
+      "given": "Given a logged-in customer has items in the cart and reaches the shipping step of checkout",
+      "when": "When the page requests a delivery-date estimate for the selected address and shipping speed",
+      "then": "Then the system returns an accurate delivery-date estimate in \u2264200 ms and displays it before the payment section appears",
+      "edge_cases": [],
+      "story_id": "story_32676d15",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_f92f455d",
+      "title": "Inventory or carrier data unavailable shows fallback message",
+      "type": "e2e",
+      "given": "Given carrier API is unreachable or inventory service times out",
+      "when": "When the customer reaches the shipping step",
+      "then": "Then the system displays \u201cEstimate unavailable\u2014check again later\u201d without blocking checkout flow",
+      "edge_cases": [],
+      "story_id": "story_32676d15",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_6793e767",
+      "title": "Rapid address change updates estimate and meets P95 latency",
+      "type": "performance",
+      "given": "Given a customer rapidly toggles between two different shipping addresses/speeds 100 times within a minute",
+      "when": "When each estimate is requested",
+      "then": "Then 95% of the 100 requests complete in \u2264200 ms and each displayed estimate matches the latest selected address/speed",
+      "edge_cases": [
+        "High-frequency address changes",
+        "P95 latency boundary"
+      ],
+      "story_id": "story_32676d15",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC2",
+        "AC4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_4b71fe51",
+      "title": "Unauthorized user cannot query delivery estimates for another cart",
+      "type": "security",
+      "given": "Given an unauthenticated or differently authenticated user crafts an API call referencing another customer\u2019s cart ID",
+      "when": "When the request for a delivery-date estimate is sent",
+      "then": "Then the system returns HTTP 401/403 without revealing any delivery or inventory data",
+      "edge_cases": [],
+      "story_id": "story_32676d15",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_20e7810f",
+      "title": "Successful Stripe token payment marks order as Paid",
+      "type": "integration",
+      "given": "Given the client obtains a valid Stripe Premium payment token for the customer\u2019s card",
+      "when": "When the customer confirms payment with that token",
+      "then": "Then the platform creates a charge via Stripe, records the transaction, and updates order status to \u201cPaid\u201d",
+      "edge_cases": [],
+      "story_id": "story_60bf1274",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_58b31c10",
+      "title": "Declined payment surfaces Stripe error and allows retry",
+      "type": "integration",
+      "given": "Given Stripe responds with a declined_card error for the token",
+      "when": "When the customer attempts to pay",
+      "then": "Then the system shows the exact Stripe error message, leaves order in \u201cPayment Pending\u201d, and allows another attempt",
+      "edge_cases": [],
+      "story_id": "story_60bf1274",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_8679cbf5",
+      "title": "Double-click payment button charges only once",
+      "type": "e2e",
+      "given": "Given a customer double-clicks the Pay button causing two nearly simultaneous submissions with the same token",
+      "when": "When the backend processes the requests",
+      "then": "Then only one successful charge is created and the second response returns idempotency acknowledgement without duplicate billing",
+      "edge_cases": [
+        "Idempotent token reuse",
+        "Race condition"
+      ],
+      "story_id": "story_60bf1274",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_befaa9ee",
+      "title": "No raw PAN or CVV stored or logged",
+      "type": "security",
+      "given": "Given a PCI-DSS forensic scan of databases, logs, and memory after 10k payment attempts",
+      "when": "When the scan searches for PAN or CVV patterns",
+      "then": "Then zero instances of raw card data are found on the platform\u2019s infrastructure",
+      "edge_cases": [],
+      "story_id": "story_60bf1274",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_055c1561",
+      "title": "Correct OTP within 5 minutes grants session",
+      "type": "e2e",
+      "given": "Given a registered phone number requests login and receives an OTP via SMS",
+      "when": "When the user enters the correct OTP within 5 minutes",
+      "then": "Then the system authenticates the user and starts an authenticated session",
+      "edge_cases": [],
+      "story_id": "story_e238a8da",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_0edb7072",
+      "title": "Three wrong OTP attempts lock login for 10 minutes",
+      "type": "e2e",
+      "given": "Given the user enters an incorrect OTP three times in a row",
+      "when": "When the third incorrect entry is submitted",
+      "then": "Then the system locks further attempts for 10 minutes and shows an error message",
+      "edge_cases": [],
+      "story_id": "story_e238a8da",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_9832cfa7",
+      "title": "OTP expires exactly at 5-minute boundary and is single-use",
+      "type": "unit",
+      "given": "Given an OTP generated at T0",
+      "when": "When the same OTP is submitted once at T0+5 min\u22121 sec (accepted) and again at T0+5 min (boundary)",
+      "then": "Then the first submission succeeds and the second is rejected as expired or already used",
+      "edge_cases": [
+        "Boundary expiration time",
+        "Replay attempt"
+      ],
+      "story_id": "story_e238a8da",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC2",
+        "AC4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_b6475b42",
+      "title": "Rate-limit prevents OTP brute-force across numbers",
+      "type": "security",
+      "given": "Given an attacker sends OTP verify requests with random codes for 50 phone numbers within 1 minute",
+      "when": "When the request volume exceeds the configured threshold",
+      "then": "Then the system throttles responses, logs the abuse, and does not reveal whether numbers are registered",
+      "edge_cases": [],
+      "story_id": "story_e238a8da",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC3",
+        "AC4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_91f6d6e7",
+      "title": "10 k concurrent sessions meet p99 <500 ms and error rate <0.1%",
+      "type": "performance",
+      "given": "Given a load test simulating 10,000 authenticated sessions across all critical endpoints",
+      "when": "When the test runs for the defined peak window",
+      "then": "Then measured p99 response time is <500 ms and overall error rate is <0.1%",
+      "edge_cases": [],
+      "story_id": "story_c51fd353",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_070942d2",
+      "title": "Auto-scaling delay causing p99 breach fails test",
+      "type": "performance",
+      "given": "Given auto-scaling is intentionally slowed by 2 minutes during a repeat of the load test",
+      "when": "When traffic spikes to 10 k sessions",
+      "then": "Then p99 response time exceeds 500 ms and the test records failure as per SLA",
+      "edge_cases": [],
+      "story_id": "story_c51fd353",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_aa6c1963",
+      "title": "10,001 concurrent sessions still maintain SLA margin",
+      "type": "performance",
+      "given": "Given a load test with 10,001 concurrent authenticated sessions (boundary +1)",
+      "when": "When all endpoints are exercised",
+      "then": "Then p99 response time remains \u2264500 ms or the single additional session is gracefully queued without error",
+      "edge_cases": [
+        "Boundary concurrency"
+      ],
+      "story_id": "story_c51fd353",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_39664734",
+      "title": "DoS spike of unauthenticated traffic does not degrade authenticated p99",
+      "type": "security",
+      "given": "Given 20,000 unauthenticated requests per second flood the public endpoints while 10,000 valid sessions remain active",
+      "when": "When the platform mitigates via rate-limiting and WAF",
+      "then": "Then authenticated traffic still meets p99 <500 ms and error rate <0.1%",
+      "edge_cases": [],
+      "story_id": "story_c51fd353",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_ed4b7fb4",
+      "title": "Verified erasure request schedules and completes within 30 days",
+      "type": "e2e",
+      "given": "Given a Data Protection Officer submits a verified data-erasure request for user U on Day 0",
+      "when": "When the system processes scheduled deletion jobs",
+      "then": "Then all personal data for user U is deleted by Day 30, an audit log entry is created, and a confirmation notification is sent",
+      "edge_cases": [],
+      "story_id": "story_a8828307",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_690bc458",
+      "title": "Unverified erasure request is rejected",
+      "type": "unit",
+      "given": "Given an erasure request is submitted without proper identity verification",
+      "when": "When the system validates the request",
+      "then": "Then the request is rejected with a verification required error and no deletion task is scheduled",
+      "edge_cases": [],
+      "story_id": "story_a8828307",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_8ade7e5c",
+      "title": "Pending deletions older than 25 days trigger nightly alert",
+      "type": "integration",
+      "given": "Given a deletion task for user U has been pending for 26 days",
+      "when": "When the automated nightly reporting job runs",
+      "then": "Then the task appears in the report for manual review",
+      "edge_cases": [
+        "25-day threshold"
+      ],
+      "story_id": "story_a8828307",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "test_1d0db110",
+      "title": "Unauthorized user cannot erase another user\u2019s data",
+      "type": "security",
+      "given": "Given an authenticated user A attempts to submit an erasure request for user B\u2019s account",
+      "when": "When the system processes the request",
+      "then": "Then the system returns HTTP 403 and logs the incident without scheduling deletion",
+      "edge_cases": [],
+      "story_id": "story_a8828307",
+      "task_id": null,
+      "source_clause_ids": [
+        "AC1",
+        "AC3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "amb_23ba1879",
+      "kind": "missing_criteria",
+      "severity": "high",
+      "excerpt": "Checkout Revamp Initiative.",
+      "explanation": "No subject is specified for who is responsible for driving, designing, or implementing the initiative, making accountability and scope unclear.",
+      "suggested_question": "Who (team/department/role) owns the Checkout Revamp Initiative and what deliverables are expected?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_4ced7788"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_23031ed7",
+      "kind": "missing_criteria",
+      "severity": "medium",
+      "excerpt": "Customers abandon cart when shipping estimates are unclear.",
+      "explanation": "The sentence states a problem but does not assign any responsibility for solving it, leaving the required action undefined.",
+      "suggested_question": "Which team is responsible for addressing unclear shipping estimates, and what measurable outcome is expected?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_7158719b"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_ff71b43a",
+      "kind": "missing_criteria",
+      "severity": "high",
+      "excerpt": "PCI scope must not store raw card data.",
+      "explanation": "Passive construction omits who must ensure raw card data is not stored, creating compliance risk because no team is clearly accountable.",
+      "suggested_question": "Which system component or team is responsible for guaranteeing that raw card data is never stored within PCI scope?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_081084a5"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_69c75b8d",
+      "kind": "undefined_term",
+      "severity": "medium",
+      "excerpt": "PCI scope must not store raw card data.",
+      "explanation": "The acronym 'PCI' (Payment Card Industry) is not expanded on first use, which may confuse stakeholders unfamiliar with compliance terminology.",
+      "suggested_question": "Please confirm that 'PCI' refers to the Payment Card Industry Data Security Standard (PCI-DSS) scope.",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_081084a5"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_93b2edd5",
+      "kind": "missing_criteria",
+      "severity": "high",
+      "excerpt": "OTP login via SMS for B2B portal.",
+      "explanation": "No responsible system or service is identified for generating, sending, or validating OTPs, which affects security design and implementation.",
+      "suggested_question": "Which service is responsible for generating, sending, and verifying the OTPs for the B2B portal?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_b04994a3"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_31a049a4",
+      "kind": "undefined_term",
+      "severity": "medium",
+      "excerpt": "OTP login via SMS for B2B portal.",
+      "explanation": "'OTP' (One-Time Password) and 'B2B' (Business-to-Business) are not expanded on first occurrence, which may hinder understanding for some readers.",
+      "suggested_question": "Can we confirm that 'OTP' stands for One-Time Password and 'B2B' stands for Business-to-Business?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_b04994a3"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_be27c650",
+      "kind": "missing_criteria",
+      "severity": "medium",
+      "excerpt": "Integrate Stripe Premium tier.",
+      "explanation": "The directive omits who is responsible for the integration and what specific functionality of the 'Premium tier' must be implemented, risking scope creep.",
+      "suggested_question": "Which team/system must perform the Stripe Premium tier integration, and what specific Premium features are required?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_d88d4f1a"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_9e5b1591",
+      "kind": "missing_criteria",
+      "severity": "medium",
+      "excerpt": "Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days.",
+      "explanation": "The clause bundles multiple requirements but does not assign responsibility for ensuring performance or GDPR deletion, making ownership ambiguous.",
+      "suggested_question": "Which component or team is accountable for meeting the 10k concurrent sessions target, p99 latency, and GDPR deletion timeline?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_e884989c",
+      "kind": "undefined_term",
+      "severity": "medium",
+      "excerpt": "GDPR deletion within 30 days.",
+      "explanation": "The acronym 'GDPR' (General Data Protection Regulation) is not expanded on first mention, which could confuse readers unfamiliar with the regulation.",
+      "suggested_question": "Please confirm that 'GDPR' refers to the General Data Protection Regulation and specify which data must be deleted within 30 days.",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ],
+      "resolved": false
+    },
+    {
+      "id": "amb_9724f51d",
+      "kind": "undefined_term",
+      "severity": "low",
+      "excerpt": "p99 < 500ms",
+      "explanation": "'p99' (99th percentile) is referenced without definition, which could be unclear to non-technical stakeholders.",
+      "suggested_question": "Can we clarify that 'p99' refers to the 99th percentile response time over the measurement interval?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ],
+      "resolved": false
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk_05da2a1b",
+      "category": "performance",
+      "severity": "high",
+      "title": "Delivery-date SLA may exceed 200ms P95",
+      "description": "Calculating and rendering delivery dates requires live calls to shipping-rate and inventory services. Without dedicated caching and parallelization, the new checkout path is unlikely to meet the 200 ms P95 budget, directly impacting cart conversion.",
+      "mitigation": "Begin this sprint by setting up a synthetic benchmark for the full delivery-date call chain, add in-memory/L2 cache for static carrier data, and profile query hotspots before feature freeze.",
+      "source_clause_ids": [
+        "clause_7158719b",
+        "clause_b9a63716"
+      ]
+    },
+    {
+      "id": "risk_31ed1b4b",
+      "category": "scalability",
+      "severity": "high",
+      "title": "Checkout path untested for 10k concurrent sessions, p99 < 500 ms",
+      "description": "The revamp introduces new DB queries and third-party calls. If connection pools, thread pools, and autoscaling policies are not tuned, latency will spike past the 500 ms p99 requirement under peak load, causing timeouts and lost revenue.",
+      "mitigation": "Add a Gatling/K6 load test that simulates 10k concurrent sessions this sprint, profile the bottlenecks, and set autoscaling thresholds plus DB pool limits based on the results.",
+      "source_clause_ids": [
+        "clause_4ced7788",
+        "clause_5c5afbda"
+      ]
+    },
+    {
+      "id": "risk_1ead2858",
+      "category": "security",
+      "severity": "critical",
+      "title": "Accidental storage of raw card data violates PCI scope",
+      "description": "New logging in the checkout flow and Stripe integration could capture PAN or CVV in application logs, analytics events, or DB snapshots, expanding PCI scope and creating a breach vector.",
+      "mitigation": "Introduce a logging filter this sprint that redacts card fields, run a secrets-scanner over existing logs, and add an automated test that fails the build if raw card patterns are detected.",
+      "source_clause_ids": [
+        "clause_081084a5",
+        "clause_d88d4f1a"
+      ]
+    },
+    {
+      "id": "risk_3e5f80a3",
+      "category": "security",
+      "severity": "medium",
+      "title": "OTP login via SMS lacks rate-limiting and fallback",
+      "description": "Brute-force OTP attempts or SMS delivery outages can lock out legitimate B2B users or allow account takeover, leading to incident response and support escalations.",
+      "mitigation": "Implement per-user/IP rate limiting and a maximum retry counter this sprint; add email-based OTP as a fallback path and monitor SMS provider delivery metrics.",
+      "source_clause_ids": [
+        "clause_b04994a3"
+      ]
+    },
+    {
+      "id": "risk_fea4b3e0",
+      "category": "dependency",
+      "severity": "medium",
+      "title": "Single-point dependency on Stripe Premium API",
+      "description": "Checkout now relies solely on Stripe Premium endpoints; any API degradation or quota issue will block payments and expose us to downtime outside our control.",
+      "mitigation": "Add a circuit breaker with automatic downgrade to the existing Standard tier endpoints this sprint, and publish Prometheus alerts on Stripe latency/error rates.",
+      "source_clause_ids": [
+        "clause_d88d4f1a",
+        "clause_4ced7788"
+      ]
+    },
+    {
+      "id": "risk_794a63a0",
+      "category": "compliance",
+      "severity": "high",
+      "title": "GDPR deletion SLA (30 days) not enforced across caches & backups",
+      "description": "User data removed from primary DB may still reside in read replicas, Redis caches, and object-store backups, breaching the 30-day GDPR requirement and risking fines.",
+      "mitigation": "Create a data-map this sprint that lists every store containing PII, add TTLs or scheduled purge jobs for each, and validate with an integration test that deletes propagate within 24 h.",
+      "source_clause_ids": [
+        "clause_5c5afbda"
+      ]
+    }
+  ],
+  "sprint_plan": {
+    "velocity_points_per_sprint": 20.0,
+    "total_sprints": 0,
+    "total_points": 0,
+    "total_weeks": 0.0,
+    "items": [],
+    "rationale": "Allocated 0 tasks across 0 sprints."
+  },
+  "team_sprint_plan": null,
+  "auto_sprint_plan": {
+    "requirement": "Checkout Revamp Initiative. Customers abandon cart when shipping estimates are unclear. We must show delivery dates before payment within 200ms P95. Security: PCI scope must not store raw card data. OTP login via SMS for B2B portal. Integrate Stripe Premium tier. Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days.",
+    "tasks": [
+      {
+        "task": "Login API",
+        "story_points": 3,
+        "category": "api"
+      },
+      {
+        "task": "Registration API",
+        "story_points": 3,
+        "category": "api"
+      },
+      {
+        "task": "JWT Auth",
+        "story_points": 2,
+        "category": "auth"
+      },
+      {
+        "task": "UI Screens",
+        "story_points": 3,
+        "category": "ui"
+      },
+      {
+        "task": "Testing",
+        "story_points": 2,
+        "category": "testing"
+      }
+    ],
+    "total_story_points": 13,
+    "suggested_sprint": "Sprint 1",
+    "suggested_sprint_number": 1,
+    "sprint_capacity": 24,
+    "utilization_pct": 54,
+    "fits_in_sprint": true,
+    "rationale": "13 story points across 5 tasks \u2014 fits a 24-point sprint capacity (4 engineers \u00d7 6 sp \u00d7 2w).",
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:02.650711"
+  },
+  "sprint_kanban": null,
+  "review_board_report": {
+    "project_id": "proj_42e2147b88",
+    "confidence": 49.6,
+    "grade": "D",
+    "summary": "Requirement is not yet build-ready. Weakest reviews: security & compliance 20, product manager 20.",
+    "generated_at": "2026-05-22T09:26:09.405614",
+    "reviews": [
+      {
+        "agent": "ba",
+        "role": "Business Analyst",
+        "score": 71.0,
+        "summary": "The requirement mixes multiple initiatives and gives clear latency targets but lacks detailed scope, making clarity moderate.",
+        "findings": {
+          "stories": [
+            {
+              "title": "Customer sees delivery date estimate pre-payment",
+              "acceptance_criteria": [
+                "Given a filled cart with valid shipping address, when the customer proceeds to the checkout page, then an estimated delivery date is displayed before any payment details are requested.",
+                "The delivery-date component must render with P95 <= 200 ms for the API call that supplies the estimate, measured under a load of 10 k concurrent sessions.",
+                "If the shipping service is unreachable, the UI must show a graceful fallback message (\u2018Delivery estimate unavailable\u2019) and log the error.",
+                "Estimates must reflect the shipping method the customer selects (standard, expedited, etc.).",
+                "Unit and integration tests cover at least the top three shipping methods for the five primary regions we serve."
+              ]
+            },
+            {
+              "title": "Platform performance under peak load",
+              "acceptance_criteria": [
+                "Under 10 000 concurrent authenticated sessions, overall page response time (TTFB) for checkout flow is < 500 ms at the 99th percentile.",
+                "Load tests are executed in a staging environment that mirrors production hardware and network configuration.",
+                "Results are published to the performance dashboard and reviewed by the SRE team before go-live.",
+                "Any regression above 10 % of the threshold blocks release."
+              ]
+            },
+            {
+              "title": "Stripe Premium payment processing",
+              "acceptance_criteria": [
+                "Stripe Premium account is configured in test and production with correct API keys managed via secret vault.",
+                "The checkout flow successfully creates PaymentIntents via Stripe API and receives confirmation callbacks.",
+                "All mandatory Premium-tier features (Radar fraud signals, advanced dispute data) are enabled and surfaced in our admin portal.",
+                "Rollback plan exists to switch to current payment provider within 30 minutes if Stripe is unavailable.",
+                "End-to-end payment test transactions (Visa, Mastercard, Amex) pass in test and live modes."
+              ]
+            },
+            {
+              "title": "PCI scope exclusion: never store raw card data",
+              "acceptance_criteria": [
+                "No service, log, or database table stores PAN, CVV, or magnetic-strip data in plain text or encrypted form.",
+                "Card data is tokenized client-side via Stripe Elements or equivalent and only tokens reach our backend.",
+                "Static code analysis and secret-scan pipelines fail the build if card patterns are detected.",
+                "Quarterly external PCI audit confirms zero storage of raw card data."
+              ]
+            },
+            {
+              "title": "SMS OTP login for B2B portal",
+              "acceptance_criteria": [
+                "User enters company email, receives a 6-digit OTP via SMS to their registered phone number.",
+                "OTP is valid for 5 minutes and for a single use; expired or reused codes are rejected.",
+                "Rate limiting: max 3 OTP requests per user per 10 minutes; excess attempts return HTTP 429.",
+                "Successful OTP authentication issues a JWT valid for the session policy of the portal.",
+                "Audit logs capture OTP send, verification success/failure, and are retained per security policy."
+              ]
+            },
+            {
+              "title": "GDPR right-to-erasure within 30 days",
+              "acceptance_criteria": [
+                "When a data-deletion request is received, all personally identifiable information for that user is removed or anonymized in production and backups within 30 calendar days.",
+                "Process is automated and exposes a progress API for compliance reporting.",
+                "Deletion jobs are idempotent and logged; failures trigger alerting within 1 hour.",
+                "Quarterly audit demonstrates 100 % compliance with the 30-day SLA."
+              ]
+            }
+          ],
+          "concerns": [
+            "No definition of which markets or shipping carriers are in scope for delivery-date estimates.",
+            "200 ms P95 requirement omits load pattern details (e.g., peak hour profiles) and measurement method.",
+            "Stripe Premium \u2018integration\u2019 is broad\u2014unclear which features are mandatory and how success is measured beyond basic payment flow.",
+            "PCI clause asserts a rule but omits validation approach and scope of third-party tools.",
+            "OTP login does not specify SMS provider, fallback for delivery failures, or accessibility considerations.",
+            "GDPR deletion process does not define data categories, archival constraints, or responsibility assignment.",
+            "Concurrency requirement (10 k sessions) lacks environment specs (geo distribution, device mix) and whether read-only or transactional load."
+          ]
+        },
+        "elapsed_ms": 17686,
+        "error": null
+      },
+      {
+        "agent": "architect",
+        "role": "Solution Architect",
+        "score": 65.0,
+        "summary": "Implementable but requires a new Shipping Estimator microservice, SMS OTP flow, and Stripe migration while meeting strict latency/concurrency and PCI/GDPR constraints.",
+        "findings": {
+          "components_affected": [
+            {
+              "component": "Checkout Web/App Front-End",
+              "impact": "UI/UX changes to surface delivery dates before payment; must call new shipping-estimate API and respect 200 ms SLA.",
+              "is_new": false
+            },
+            {
+              "component": "Checkout Orchestrator / Service Layer",
+              "impact": "Sequence change: call Shipping Estimator prior to payment; propagate deliveryDate to front-end and Order record; enforce 200 ms P95.",
+              "is_new": false
+            },
+            {
+              "component": "Shipping Estimator Service",
+              "impact": "Real-time calculation or cache lookup of delivery dates for a cart; meet 200 ms P95; fan-out to carrier/warehouse APIs.",
+              "is_new": true
+            },
+            {
+              "component": "Cart Service",
+              "impact": "Expose cart contents (SKUs, quantities, addresses) to Shipping Estimator; may add caching hooks.",
+              "is_new": false
+            },
+            {
+              "component": "Payment Service / Gateway Adapter",
+              "impact": "Integrate Stripe Premium tier; remove any legacy PSP logic; ensure no raw PAN stored.",
+              "is_new": false
+            },
+            {
+              "component": "PCI Tokenization/Proxy",
+              "impact": "Continue to vault tokens; verify Stripe tokens flow; no raw card data persisted.",
+              "is_new": false
+            },
+            {
+              "component": "Auth Service",
+              "impact": "Add SMS-based OTP flow for B2B portal login.",
+              "is_new": false
+            },
+            {
+              "component": "SMS Gateway Connector",
+              "impact": "Send OTP messages; handle delivery status callbacks.",
+              "is_new": true
+            },
+            {
+              "component": "Observability Stack (APM + Metrics)",
+              "impact": "Track P95 (200 ms) and P99 (<500 ms) for checkout endpoints; monitor 10 k concurrent sessions.",
+              "is_new": false
+            },
+            {
+              "component": "GDPR Data-Erasure Job",
+              "impact": "Ensure new tables (shipping_estimates, otp_tokens) are purged within 30 days.",
+              "is_new": false
+            }
+          ],
+          "apis": [
+            {
+              "method": "GET",
+              "path": "/shipping/estimate",
+              "description": "Return delivery date and shipping options for given cartId or SKU list; SLA 200 ms P95.",
+              "is_new": true
+            },
+            {
+              "method": "POST",
+              "path": "/auth/otp/send",
+              "description": "Trigger SMS OTP to user\u2019s registered phone for B2B portal login.",
+              "is_new": true
+            },
+            {
+              "method": "POST",
+              "path": "/auth/otp/verify",
+              "description": "Validate OTP code and issue auth token.",
+              "is_new": true
+            },
+            {
+              "method": "POST",
+              "path": "/checkout/payment",
+              "description": "Submit payment via Stripe Premium; response includes Stripe token; replaces legacy PSP fields.",
+              "is_new": false
+            },
+            {
+              "method": "DELETE",
+              "path": "/gdpr/purge/{customerId}",
+              "description": "Internal job hook to delete all customer data (including new entities) within 30 days.",
+              "is_new": false
+            }
+          ],
+          "database_changes": [
+            {
+              "entity": "shipping_estimates",
+              "change": "create",
+              "description": "Cache deliveryDate, shippingCost, cartId, ttl to meet 200 ms SLA."
+            },
+            {
+              "entity": "orders",
+              "change": "alter",
+              "description": "Add expected_delivery_date, shipping_method fields."
+            },
+            {
+              "entity": "otp_tokens",
+              "change": "create",
+              "description": "Store hashed OTP, expiry, phone, userId for SMS login."
+            },
+            {
+              "entity": "customers",
+              "change": "alter",
+              "description": "Add stripe_customer_id, stripe_payment_method_token; ensure encrypted at rest."
+            }
+          ],
+          "concerns": [
+            "Shipping date logic unspecified: carrier APIs, cut-off times, inventory locations\u2014risk to 200 ms SLA.",
+            "10 k concurrent sessions vs existing capacity unknown; load-test environment and DB sizing required.",
+            "Stripe Premium contract and feature mapping (tokenization, webhooks) not detailed.",
+            "SMS provider selection, throughput, and fallback strategy not defined; GDPR implications for phone numbers.",
+            "PCI scope verification: need formal assessment that new flows still keep us SAQ-A; storage of stripe_payment_method_token must be encrypted.",
+            "No non-functional acceptance criteria for OTP (expiry, retry, lockout).",
+            "GDPR deletion within 30 days: clarify whether soft-delete suffices or physical purge needed for backups."
+          ]
+        },
+        "elapsed_ms": 18828,
+        "error": null
+      },
+      {
+        "agent": "qa",
+        "role": "QA Engineer",
+        "score": 72.0,
+        "summary": "Requirement is moderately testable but lacks detailed specs (APIs, error handling, metrics scope) needed for comprehensive validation.",
+        "findings": {
+          "scenarios": [
+            {
+              "title": "Display delivery date before payment when items are in cart",
+              "type": "functional",
+              "description": "Verify that the checkout flow surfaces a delivery-date estimate on the payment page load for a standard logged-in customer."
+            },
+            {
+              "title": "Delivery date API response time \u2264200 ms at P95",
+              "type": "performance",
+              "description": "Load-test the shipping-estimate service with realistic mix to confirm 95th-percentile latency does not exceed 200 ms."
+            },
+            {
+              "title": "Delivery date still visible when cart contents change",
+              "type": "integration",
+              "description": "Add/remove items during checkout and ensure delivery dates refresh appropriately without exceeding latency SLA."
+            },
+            {
+              "title": "No raw card data stored in any system components",
+              "type": "security",
+              "description": "Conduct static code analysis, DB scans and packet captures to ensure PAN, CVV, and expiry are never persisted or logged (PCI DSS)."
+            },
+            {
+              "title": "Stripe Premium payment succeeds with tokenized card info",
+              "type": "functional",
+              "description": "Complete a purchase through Stripe Premium tier using tokenization and confirm order creation, payment capture, and no card data storage."
+            },
+            {
+              "title": "Stripe webhook failure and retry logic",
+              "type": "negative",
+              "description": "Simulate 500 errors and network timeouts on Stripe webhooks and verify exponential back-off and eventual consistency of payment status."
+            },
+            {
+              "title": "OTP login via SMS happy path",
+              "type": "functional",
+              "description": "Request OTP, receive SMS, enter code, and gain access to B2B portal within validity window."
+            },
+            {
+              "title": "OTP expiration and retry",
+              "type": "edge",
+              "description": "Attempt login with expired OTP and verify proper error messaging and ability to request a new code with rate limiting."
+            },
+            {
+              "title": "Concurrent sessions 10k, p99 <500 ms across entire checkout",
+              "type": "performance",
+              "description": "Stress test full checkout flow (browse\u2192cart\u2192shipping\u2192payment) with 10,000 simultaneous users and validate 99th percentile response time."
+            },
+            {
+              "title": "GDPR Right-to-erasure processed within 30 days",
+              "type": "functional",
+              "description": "Submit deletion request and ensure all personal data (orders, payment tokens, SMS logs) are purged or anonymized inside 30 days."
+            },
+            {
+              "title": "Accessibility of delivery-date component",
+              "type": "accessibility",
+              "description": "Use screen readers and keyboard navigation to confirm delivery-date text is announced and reachable."
+            },
+            {
+              "title": "High-latency SMS gateway impact on OTP flow",
+              "type": "performance",
+              "description": "Inject 5-10 s SMS delivery delay and ensure UI handles waiting state and code validity timers gracefully."
+            },
+            {
+              "title": "Simulate malicious card data entry attempts",
+              "type": "security",
+              "description": "Input XSS payloads or excessively long strings into payment fields and ensure data is sanitized and not echoed in responses or logs."
+            },
+            {
+              "title": "Checkout flow when shipping estimate service is down",
+              "type": "negative",
+              "description": "Force 503 from shipping service and verify user messaging, retry behavior, and that payment cannot proceed without delivery date."
+            }
+          ],
+          "edge_cases": [
+            "Cart with items shipping to multiple regions/time zones requiring different delivery dates.",
+            "User switches shipping address after seeing estimate; confirm new estimate under 200 ms.",
+            "Customer on 2G/slow network where 200 ms target is unrealistic\u2014how handled?",
+            "Simultaneous OTP requests from same user/device leading to SMS collision or code mismatch.",
+            "Clock skew between client and server causing OTP to appear expired prematurely.",
+            "Stripe webhook sent twice (duplicate event IDs) and idempotency handling.",
+            "GDPR deletion request while an order is in fraud-review or chargeback workflow.",
+            "10k sessions during partial CDN outage\u2014does p99 still hold?",
+            "Payment attempt with network drop after authorization but before confirmation page.",
+            "Accessibility for color-blind users when delivery date uses color cues."
+          ],
+          "concerns": [
+            "No definition of measurement window, environment, or tooling for 200 ms P95 and p99 <500 ms targets.",
+            "Unclear which pages must display delivery date ('before payment' could be several steps).",
+            "Missing details on supported carriers, time-zone logic, and how cutoff times affect estimates.",
+            "PCI compliance clause lacks specific scope boundaries (e.g., logs, analytics).",
+            "GDPR deletion workflows and data mapping across integrated systems (Stripe, SMS provider) not provided.",
+            "OTP SMS provider SLA, resend limits, and localization rules unspecified.",
+            "Accessibility requirements limited\u2014need WCAG level, language, formatting guidance."
+          ]
+        },
+        "elapsed_ms": 13516,
+        "error": null
+      },
+      {
+        "agent": "security",
+        "role": "Security & Compliance",
+        "score": 20.0,
+        "summary": "The requirement is directionally secure and compliant but needs stronger controls around PCI data flow, SMS OTP hardening, and GDPR deletion to avoid critical gaps.",
+        "findings": {
+          "security_concerns": [
+            {
+              "title": "Improper handling/logging of payment card data",
+              "severity": "critical",
+              "description": "Although clause_081084a5 says no raw card data will be stored, accidental logging of full PAN/CVV in application logs, error traces, or analytics can still occur, breaching PCI DSS and exposing sensitive data.",
+              "mitigation": "Implement strict data-masking middleware, disable verbose logging on payment fields, scan logs for PAN patterns in CI/CD, and apply tokenization or Stripe Elements so card data never touches backend servers."
+            },
+            {
+              "title": "Weaknesses in SMS-based OTP authentication",
+              "severity": "high",
+              "description": "SMS OTP is vulnerable to SIM-swap, SS7 attacks, and phishing. An attacker could hijack sessions or perform account takeovers in the B2B portal.",
+              "mitigation": "Add rate-limiting (\u22645 attempts/10 min/IP & phone), short OTP TTL (\u22645 min), bind OTP to device/browser fingerprint, support stronger second factors (TOTP, WebAuthn) as an alternative, and monitor for anomalous login patterns."
+            },
+            {
+              "title": "Unverified Stripe webhooks and key exposure",
+              "severity": "high",
+              "description": "Integrating Stripe Premium tier requires inbound webhooks; if signatures are not verified or keys are mishandled, attackers could spoof events or exfiltrate revenue data.",
+              "mitigation": "Use Stripe-provided signing secrets, validate event signatures, rotate API keys regularly, store secrets in a vault (AWS Secrets Manager, HashiCorp Vault), and restrict outbound network access for egress filtering."
+            },
+            {
+              "title": "Race conditions & session fixation at 10k concurrent sessions",
+              "severity": "medium",
+              "description": "High concurrency can expose race conditions in cart or checkout flow enabling double-spend, lost updates, or session fixation attacks.",
+              "mitigation": "Adopt atomic cart operations with optimistic locking, generate new session IDs post-authentication, and run concurrency stress tests focusing on authentication and payment paths."
+            },
+            {
+              "title": "Insufficient input validation on shipping estimator",
+              "severity": "medium",
+              "description": "To meet 200 ms P95 latency, engineers may skip validation, allowing malicious users to inject oversized or malformed addresses leading to service degradation or SSRF to shipping APIs.",
+              "mitigation": "Apply strict schema validation (e.g., JSON Schema), set length limits on address fields, sanitize external API requests, and implement circuit breakers/throttling for estimator calls."
+            },
+            {
+              "title": "Denial-of-Service via OTP or shipping estimate endpoints",
+              "severity": "low",
+              "description": "Automated abuse could flood OTP SMS or shipping-quote endpoints, exhausting SMS credits or degrading latency SLOs.",
+              "mitigation": "Implement CAPTCHA or proof-of-work on high-risk endpoints, apply IP and device-based rate limits, and monitor for anomalous traffic spikes."
+            }
+          ],
+          "compliance_concerns": [
+            {
+              "title": "PCI DSS Scope Control",
+              "framework": "PCI DSS v4.0",
+              "severity": "critical",
+              "description": "Handling payments with Stripe still places systems that touch card data in PCI scope; failure to segment environment or use SAQ-A could require full PCI audit.",
+              "mitigation": "Use Stripe Elements/Checkout to keep card data exclusively in Stripe-hosted fields, maintain network segmentation, complete SAQ-A annually, and run quarterly ASV scans."
+            },
+            {
+              "title": "GDPR Right-to-Erasure Implementation",
+              "framework": "GDPR Art. 17",
+              "severity": "high",
+              "description": "Clause_5c5afbda mandates deletion within 30 days, but no process is defined to propagate deletes to Stripe, logs, backups, and analytics.",
+              "mitigation": "Implement a data-deletion orchestration service with audit logging, ensure backups are encrypted and have differential deletion or max 30-day retention, and sign a GDPR-compliant DPA with Stripe."
+            },
+            {
+              "title": "Data Residency & Cross-Border Transfers",
+              "framework": "GDPR / Schrems II",
+              "severity": "medium",
+              "description": "Stripe may process data in the US; transferring EU customer data without SCCs could violate GDPR.",
+              "mitigation": "Use Stripe\u2019s EU-only data processing option or sign SCCs, update privacy notice, and document TIA (Transfer Impact Assessment)."
+            },
+            {
+              "title": "Auditability for SOC 2 Availability & Security Trust Criteria",
+              "framework": "SOC 2",
+              "severity": "medium",
+              "description": "Performance SLOs (200 ms P95, 500 ms P99) and high concurrency must be monitored and logged; lack of evidence jeopardizes SOC 2 controls for availability.",
+              "mitigation": "Implement centralized logging (e.g., ELK/Splunk), retain logs \u22651 year, configure real-time alerts on SLO breaches, and document incident response runbooks."
+            }
+          ],
+          "concerns": [
+            "Accidental storage or logging of cardholder data breaks PCI compliance",
+            "SMS OTP susceptible to hijacking without additional protections",
+            "Lack of automated GDPR deletion across all data stores and backups"
+          ]
+        },
+        "elapsed_ms": 16813,
+        "error": null
+      },
+      {
+        "agent": "pm",
+        "role": "Product Manager",
+        "score": 20.0,
+        "summary": "Too many open questions on metrics, rollback, and third-party dependencies; I would not green-light without another iteration.",
+        "findings": {
+          "business_risks": [
+            {
+              "title": "Stripe Premium dependency",
+              "severity": "high",
+              "description": "Entire payment flow hinges on a 3rd-party service whose roadmap, pricing, and SLA we do not control; an outage or fee change directly impacts revenue and margins."
+            },
+            {
+              "title": "Shipping ETA accuracy vs. performance",
+              "severity": "high",
+              "description": "Showing delivery dates in \u2264200 ms may require caching or approximation; inaccurate ETAs can increase returns and erode trust, while missing the latency target negates the stated goal of reducing abandonment."
+            },
+            {
+              "title": "SMS OTP reliability and cost",
+              "severity": "medium",
+              "description": "SMS delivery success varies by carrier and geography; high per-message fees and potential SIM-swap fraud expose us to unexpected costs and security holes that could block B2B adoption."
+            },
+            {
+              "title": "Scalability projection",
+              "severity": "medium",
+              "description": "Assuming 10 k concurrent sessions may be optimistic or insufficient; under-estimating demand risks downtime during peak seasons, hurting conversion rates."
+            },
+            {
+              "title": "GDPR non-compliance exposure",
+              "severity": "medium",
+              "description": "Meeting the 30-day deletion SLA requires end-to-end data lineage across Stripe and SMS vendors; failure could result in regulatory fines."
+            }
+          ],
+          "missing_requirements": [
+            {
+              "title": "Success metrics / KPI baseline",
+              "severity": "critical",
+              "description": "No target reduction in cart-abandonment or revenue lift is defined, so we can\u2019t judge ROI or decide when the revamp is successful."
+            },
+            {
+              "title": "Rollback and feature flag strategy",
+              "severity": "high",
+              "description": "No plan for reverting checkout changes if latency, fraud, or conversion issues appear in production."
+            },
+            {
+              "title": "Operational ownership & on-call model",
+              "severity": "high",
+              "description": "It\u2019s unclear which team owns 24/7 support, incident response, and SLA monitoring for the new checkout, OTP, and GDPR processes."
+            },
+            {
+              "title": "Detailed non-functional requirements",
+              "severity": "medium",
+              "description": "Uptime %, error budget, and monitoring/alerting thresholds are not specified beyond latency, leaving gaps in reliability expectations."
+            },
+            {
+              "title": "Accessibility and localization",
+              "severity": "medium",
+              "description": "No statement about WCAG compliance or multi-language support, both critical for global user adoption and legal compliance."
+            },
+            {
+              "title": "Cost and margin impact analysis",
+              "severity": "medium",
+              "description": "Budgetary implications of Stripe Premium fees and SMS OTP traffic are not addressed, risking unplanned OPEX increases."
+            },
+            {
+              "title": "Data source contract for shipping ETA",
+              "severity": "low",
+              "description": "Requirement doesn\u2019t specify where delivery data comes from or accuracy SLA with carriers."
+            }
+          ],
+          "concerns": [
+            "What concrete cart-abandonment and revenue KPIs will define success?",
+            "How will we mitigate or roll back if Stripe or shipping-ETA latency misses targets?",
+            "Who owns production support costs and SLAs for SMS OTP, GDPR deletes, and checkout uptime?"
+          ]
+        },
+        "elapsed_ms": 15281,
+        "error": null
+      }
+    ]
+  },
+  "quality_score_report": {
+    "clarity": 69.2,
+    "completeness": 63.7,
+    "testability": 42.9,
+    "radar": {
+      "clarity": 69.2,
+      "completeness": 63.7,
+      "testability": 42.9,
+      "security": 70.7,
+      "business_value": 64.3,
+      "maintainability": 40.3
+    },
+    "ambiguity": 0.0,
+    "overall_score": 69.0,
+    "quality_score": 69.0,
+    "ambiguity_score": 0.0,
+    "grade": "D",
+    "method": "heuristic",
+    "highlight_gaps": [
+      "Error handling undefined",
+      "Accessibility requirements not stated",
+      "Deployment & rollout plan missing"
+    ],
+    "breakdown": {
+      "completeness": 0.637,
+      "specificity": 1.0,
+      "structure": 0.619,
+      "vocabulary": 0.128,
+      "testability": 0.429
+    },
+    "stats": {
+      "word_count": 52,
+      "sentence_count": 7,
+      "unique_terms": 50,
+      "type_token_ratio": 0.962,
+      "avg_sentence_length": 7.43,
+      "vague_term_count": 0,
+      "vague_density": 0.0,
+      "quantified_target_count": 3,
+      "passive_voice_count": 0
+    },
+    "missing_information": [
+      {
+        "dimension": "error_handling",
+        "title": "Error handling undefined",
+        "severity": "high",
+        "explanation": "No keywords for this dimension were found in the requirement.",
+        "suggested_question": "What should happen on validation failure, timeout, or third-party outage?"
+      },
+      {
+        "dimension": "accessibility",
+        "title": "Accessibility requirements not stated",
+        "severity": "medium",
+        "explanation": "No keywords for this dimension were found in the requirement.",
+        "suggested_question": "What accessibility level (e.g. WCAG 2.1 AA) is required?"
+      },
+      {
+        "dimension": "deployment",
+        "title": "Deployment & rollout plan missing",
+        "severity": "low",
+        "explanation": "No keywords for this dimension were found in the requirement.",
+        "suggested_question": "How will this be rolled out and rolled back if it misbehaves?"
+      }
+    ],
+    "vague_phrases": [],
+    "clarifying_questions": [
+      "What should happen on validation failure, timeout, or third-party outage?",
+      "What accessibility level (e.g. WCAG 2.1 AA) is required?",
+      "How will this be rolled out and rolled back if it misbehaves?"
+    ],
+    "recommendations": [
+      "Requirement text is short \u2014 expand context, constraints, and edge cases."
+    ],
+    "generated_at": "2026-05-22T09:25:50.572446"
+  },
+  "impact_report": null,
+  "jira_backlog": {
+    "project_id": "proj_42e2147b88",
+    "generated_at": "2026-05-22T09:29:30.937764",
+    "method": "heuristic",
+    "epic": {
+      "id": "epic_64ac3202",
+      "title": "Checkout Revamp",
+      "description": "Increase conversion and trust by showing upfront delivery dates, offering premium payment processing, and simplifying B2B access while guaranteeing enterprise-grade performance and privacy compliance.",
+      "key_results": [
+        "Ship 5 user stories with acceptance criteria green",
+        "Pass 20 test cases at \u226595% green rate"
+      ],
+      "labels": [],
+      "jira_key": null
+    },
+    "stories": [
+      {
+        "id": "story_32676d15",
+        "title": "Show delivery date estimate before payment within 200 ms (P95)",
+        "persona": "Customer",
+        "goal": "know the expected delivery date before committing to payment",
+        "benefit": "gain confidence and reduce cart abandonment",
+        "acceptance_criteria": [
+          "Given a customer has items in the cart, when they reach the shipping step of checkout, then the system displays an accurate delivery date estimate before the payment section appears.",
+          "The system shall return the delivery-date estimate in \u2264200 ms for at least 95% of requests measured over any 1-hour window.",
+          "If inventory or carrier data is unavailable, the system shall display \u201cEstimate unavailable\u2014check again later\u201d without blocking checkout.",
+          "Delivery estimates shall update automatically when the customer changes shipping address or speed."
+        ],
+        "task_ids": [],
+        "jira_key": null
+      },
+      {
+        "id": "story_60bf1274",
+        "title": "Process payments via Stripe Premium without storing raw card data",
+        "persona": "Customer",
+        "goal": "pay for an order securely and reliably",
+        "benefit": "complete purchase with confidence that card data is protected",
+        "acceptance_criteria": [
+          "The system shall tokenize card details directly with Stripe Premium using client-side elements, ensuring no raw card data touches the platform\u2019s servers.",
+          "Given a valid payment token, when the customer confirms payment, then the system records a successful transaction and progresses the order status to 'Paid'.",
+          "Given a declined or failed tokenization/payment, when the customer attempts payment, then the system surfaces Stripe\u2019s error message and allows retry.",
+          "PCI-DSS scans confirm zero raw PAN or CVV data stored in application logs, databases, or memory snapshots."
+        ],
+        "task_ids": [],
+        "jira_key": null
+      },
+      {
+        "id": "story_e238a8da",
+        "title": "Enable SMS-based OTP login for B2B portal",
+        "persona": "B2B User",
+        "goal": "log in quickly without remembering a password",
+        "benefit": "gain secure access to the portal with minimal friction",
+        "acceptance_criteria": [
+          "Given a registered phone number, when a B2B user requests login, then the system sends a one-time password via the SMS Gateway.",
+          "Given the user enters the correct OTP within 5 minutes, then the system grants an authenticated session.",
+          "If an incorrect OTP is entered three times, the system shall lock the login attempt for 10 minutes and display an error.",
+          "OTP codes shall be single-use and automatically expire after the 5-minute window."
+        ],
+        "task_ids": [],
+        "jira_key": null
+      },
+      {
+        "id": "story_c51fd353",
+        "title": "Support 10 k concurrent sessions with p99 response time <500 ms",
+        "persona": "Site Reliability Engineer",
+        "goal": "assure the platform scales under peak traffic",
+        "benefit": "maintain fast, reliable service during high demand",
+        "acceptance_criteria": [
+          "Load tests simulating 10,000 concurrent authenticated sessions shall complete with overall p99 response time <500 ms for all endpoints, including checkout and OTP flows.",
+          "No error rate above 0.1% shall be observed during the load test window.",
+          "Auto-scaling events shall not cause response times to exceed the 500 ms p99 threshold."
+        ],
+        "task_ids": [],
+        "jira_key": null
+      },
+      {
+        "id": "story_a8828307",
+        "title": "Fulfill GDPR data-erasure requests within 30 days",
+        "persona": "Data Protection Officer",
+        "goal": "ensure personal data is deleted promptly upon request",
+        "benefit": "maintain regulatory compliance and user trust",
+        "acceptance_criteria": [
+          "Given a verified erasure request, when the request is submitted, then the system schedules deletion of all personal data tied to the user within 30 days.",
+          "Upon completion of deletion, the system shall send an audit log entry and a confirmation notification to the requestor.",
+          "Any attempt to access deleted user data after completion shall return 'User Not Found'.",
+          "Automated nightly jobs shall report any pending deletions older than 25 days for manual review."
+        ],
+        "task_ids": [],
+        "jira_key": null
+      }
+    ],
+    "tasks": [],
+    "subtasks": [],
+    "summary": "Backlog ready: 1 epic \u00b7 5 stories \u00b7 0 tasks \u00b7 0 subtasks."
+  },
+  "requirement_estimate": {
+    "story_points": 13,
+    "complexity": "very_high",
+    "estimated_hours": 71.5,
+    "confidence": 0.8,
+    "drivers": [
+      "Multi-factor / OTP flow",
+      "Authentication",
+      "Payments",
+      "External integration",
+      "Scalability",
+      "Compliance",
+      "Notifications"
+    ],
+    "rationale": "Base 4 sp from requirement length \u00b7 +13 sp from drivers: Multi-factor / OTP flow, Authentication, Payments, External integration, Scalability \u00b7 Snapped to Fibonacci \u2192 13 sp (very_high).",
+    "method": "heuristic",
+    "total_story_points": 13,
+    "developers": 4,
+    "estimated_weeks": 0.5,
+    "estimated_cost_usd": 1755.0,
+    "cost_currency": "USD",
+    "generated_at": "2026-05-22T09:29:02.650711"
+  },
+  "requirement_risk": {
+    "risk_level": "critical",
+    "score": 88,
+    "alerts": [
+      {
+        "message": "External dependency",
+        "severity": "high"
+      },
+      {
+        "message": "Security review needed",
+        "severity": "high"
+      },
+      {
+        "message": "Compliance risk",
+        "severity": "medium"
+      },
+      {
+        "message": "Legal / audit review needed",
+        "severity": "medium"
+      },
+      {
+        "message": "Auth regression test suite required",
+        "severity": "medium"
+      },
+      {
+        "message": "Payment / financial flow risk",
+        "severity": "high"
+      },
+      {
+        "message": "Authentication / security-sensitive change",
+        "severity": "medium"
+      },
+      {
+        "message": "Compliance-sensitive data handling (GDPR / HIPAA / PCI / PII)",
+        "severity": "medium"
+      }
+    ],
+    "reasons": [
+      "Authentication / security-sensitive change",
+      "Compliance-sensitive data handling (GDPR / HIPAA / PCI / PII)",
+      "External API dependency",
+      "Payment / billing flow",
+      "Performance / scalability sensitive",
+      "Concurrency / race-condition risk"
+    ],
+    "mitigations": [
+      "Threat-model the flow + add a security-review gate before merge",
+      "Loop in legal / DPO; document data flow and retention policy",
+      "Circuit-break the integration + add retry/timeout policy",
+      "Mandate financial-reconciliation tests + dry-run on staging",
+      "Add load + soak tests; capture p99 baseline before merge",
+      "Specify idempotency contract + add a chaos test for races"
+    ],
+    "categories": [
+      "security",
+      "compliance",
+      "external_integration",
+      "payments",
+      "performance",
+      "concurrency"
+    ],
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "architecture_diagram": {
+    "title": "Architecture",
+    "layers": [
+      {
+        "name": "Frontend",
+        "items": [
+          "Login",
+          "Dashboard"
+        ]
+      },
+      {
+        "name": "API Gateway",
+        "items": [
+          "API Gateway"
+        ]
+      },
+      {
+        "name": "Backend",
+        "items": [
+          "Auth Service",
+          "User Service"
+        ]
+      },
+      {
+        "name": "Database",
+        "items": [
+          "Users",
+          "Sessions"
+        ]
+      }
+    ],
+    "tree_text": "Frontend\n\u251c\u2500 Login\n\u251c\u2500 Dashboard\n\nAPI Gateway\n\u251c\u2500 API Gateway\n\nBackend\n\u251c\u2500 Auth Service\n\u251c\u2500 User Service\n\nDatabase\n\u251c\u2500 Users\n\u251c\u2500 Sessions",
+    "mermaid": "flowchart TD\n  classDef ui fill:#ede9fe,stroke:#6d28d9,color:#3b0764;\n  classDef svc fill:#dbeafe,stroke:#1d4ed8,color:#0c2657;\n  classDef db fill:#dcfce7,stroke:#15803d,color:#14532d;\n  User([\"User\"]):::ui\n  Login[\"Login\"]:::ui\n  Dashboard[\"Dashboard\"]:::ui\n  AuthSvc[\"Auth Service\"]:::svc\n  UserSvc[\"User Service\"]:::svc\n  Users[(\"Users\")]:::db\n  Sessions[(\"Sessions\")]:::db\n  User --> Login\n  User --> Dashboard\n  Login --> AuthSvc\n  Dashboard --> UserSvc\n  AuthSvc --> Users\n  AuthSvc --> Sessions\n  UserSvc --> Users",
+    "mermaid_layers": "flowchart TB\n  classDef fe fill:#ede9fe,stroke:#6d28d9,color:#3b0764;\n  classDef be fill:#dbeafe,stroke:#1d4ed8,color:#0c2657;\n  classDef db fill:#dcfce7,stroke:#15803d,color:#14532d;\n  subgraph Frontend[\"Frontend\"]\n    Frontend_Login[\"Login\"]\n    Frontend_Dashboard[\"Dashboard\"]\n  end\n  subgraph APIGateway[\"API Gateway\"]\n    APIGateway_APIGateway[\"API Gateway\"]\n  end\n  subgraph Backend[\"Backend\"]\n    Backend_AuthService[\"Auth Service\"]\n    Backend_UserService[\"User Service\"]\n  end\n  subgraph Database[\"Database\"]\n    Database_Users[\"Users\"]\n    Database_Sessions[\"Sessions\"]\n  end\n  class Frontend_Login fe;\n  class Frontend_Dashboard fe;\n  class APIGateway_APIGateway be;\n  class Backend_AuthService be;\n  class Backend_UserService be;\n  class Database_Users db;\n  class Database_Sessions db;\n  Frontend_Login --> APIGateway_APIGateway\n  APIGateway_APIGateway --> Backend_AuthService\n  Frontend_Login --> APIGateway_AuthService\n  APIGateway_AuthService --> Backend_Users\n  APIGateway_AuthService --> Backend_Sessions",
+    "graph": {
+      "nodes": [
+        {
+          "id": "stack_0",
+          "label": "Frontend",
+          "tier": "frontend",
+          "layer": "Stack",
+          "kind": "stack",
+          "x": 180.0,
+          "y": 72.0
+        },
+        {
+          "id": "stack_1",
+          "label": "API Gateway",
+          "tier": "gateway",
+          "layer": "Stack",
+          "kind": "stack",
+          "x": 180.0,
+          "y": 180.0
+        },
+        {
+          "id": "stack_2",
+          "label": "Auth Service",
+          "tier": "service",
+          "layer": "Stack",
+          "kind": "stack",
+          "x": 180.0,
+          "y": 288.0
+        },
+        {
+          "id": "stack_3",
+          "label": "Database",
+          "tier": "data",
+          "layer": "Stack",
+          "kind": "stack",
+          "x": 180.0,
+          "y": 396.0
+        },
+        {
+          "id": "tier_0",
+          "label": "Frontend",
+          "tier": "frontend",
+          "layer": "Frontend",
+          "kind": "tier",
+          "x": 420.0,
+          "y": 44.0
+        },
+        {
+          "id": "c_0_0",
+          "label": "Login",
+          "tier": "frontend",
+          "layer": "Frontend",
+          "kind": "component",
+          "x": 420.0,
+          "y": 72.0
+        },
+        {
+          "id": "c_0_1",
+          "label": "Dashboard",
+          "tier": "frontend",
+          "layer": "Frontend",
+          "kind": "component",
+          "x": 420.0,
+          "y": 136.0
+        },
+        {
+          "id": "tier_1",
+          "label": "API Gateway",
+          "tier": "gateway",
+          "layer": "API Gateway",
+          "kind": "tier",
+          "x": 420.0,
+          "y": 152.0
+        },
+        {
+          "id": "c_1_0",
+          "label": "API Gateway",
+          "tier": "gateway",
+          "layer": "API Gateway",
+          "kind": "component",
+          "x": 420.0,
+          "y": 180.0
+        },
+        {
+          "id": "tier_2",
+          "label": "Backend",
+          "tier": "service",
+          "layer": "Backend",
+          "kind": "tier",
+          "x": 420.0,
+          "y": 260.0
+        },
+        {
+          "id": "c_2_0",
+          "label": "Auth Service",
+          "tier": "service",
+          "layer": "Backend",
+          "kind": "component",
+          "x": 420.0,
+          "y": 288.0
+        },
+        {
+          "id": "c_2_1",
+          "label": "User Service",
+          "tier": "service",
+          "layer": "Backend",
+          "kind": "component",
+          "x": 420.0,
+          "y": 352.0
+        },
+        {
+          "id": "tier_3",
+          "label": "Database",
+          "tier": "data",
+          "layer": "Database",
+          "kind": "tier",
+          "x": 420.0,
+          "y": 368.0
+        },
+        {
+          "id": "c_3_0",
+          "label": "Users",
+          "tier": "data",
+          "layer": "Database",
+          "kind": "component",
+          "x": 420.0,
+          "y": 396.0
+        },
+        {
+          "id": "c_3_1",
+          "label": "Sessions",
+          "tier": "data",
+          "layer": "Database",
+          "kind": "component",
+          "x": 420.0,
+          "y": 460.0
+        }
+      ],
+      "edges": [
+        {
+          "source": "stack_0",
+          "target": "stack_1",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_1",
+          "target": "stack_2",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_2",
+          "target": "stack_3",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_0",
+          "target": "tier_0",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "tier_0",
+          "target": "c_0_0",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "c_0_0",
+          "target": "c_0_1",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "stack_0",
+          "target": "tier_0",
+          "label": "expands",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_1",
+          "target": "tier_1",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "tier_1",
+          "target": "c_1_0",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "stack_1",
+          "target": "tier_1",
+          "label": "expands",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_2",
+          "target": "tier_2",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "tier_2",
+          "target": "c_2_0",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "c_2_0",
+          "target": "c_2_1",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "stack_2",
+          "target": "tier_2",
+          "label": "expands",
+          "kind": "flow"
+        },
+        {
+          "source": "stack_3",
+          "target": "tier_3",
+          "label": "",
+          "kind": "flow"
+        },
+        {
+          "source": "tier_3",
+          "target": "c_3_0",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "c_3_0",
+          "target": "c_3_1",
+          "label": "",
+          "kind": "internal"
+        },
+        {
+          "source": "stack_3",
+          "target": "tier_3",
+          "label": "expands",
+          "kind": "flow"
+        }
+      ],
+      "stack": [
+        "Frontend",
+        "API Gateway",
+        "Auth Service",
+        "Database"
+      ]
+    },
+    "nodes_count": 15,
+    "edges_count": 30,
+    "description": "4 layers, 7 components, flow + layered Mermaid.",
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:02.650711"
+  },
+  "api_contract_suite": {
+    "title": "Proposed API",
+    "base_path": "/api",
+    "contracts": [
+      {
+        "endpoint": "/auth/login",
+        "method": "POST",
+        "summary": "Authenticate a user",
+        "description": "Auto-generated contract for: Authenticate a user.",
+        "request_fields": [
+          {
+            "name": "email",
+            "type": "string",
+            "required": true,
+            "description": "Account email",
+            "example": "user@example.com"
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true,
+            "description": "Plain-text password (TLS only)",
+            "example": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+          }
+        ],
+        "response_fields": [
+          {
+            "name": "access_token",
+            "type": "string",
+            "required": true,
+            "description": "JWT, 24h validity",
+            "example": "eyJhbGciOi..."
+          },
+          {
+            "name": "refresh_token",
+            "type": "string",
+            "required": true,
+            "description": "Refresh JWT, 30d validity",
+            "example": "eyJhbGciOi..."
+          },
+          {
+            "name": "user_id",
+            "type": "uuid",
+            "required": true,
+            "description": "Helix user id",
+            "example": "usr_a1b2c3"
+          }
+        ],
+        "request_example": {
+          "email": "user@example.com",
+          "password": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+        },
+        "response_example": {
+          "access_token": "eyJhbGciOi...",
+          "refresh_token": "eyJhbGciOi...",
+          "user_id": "usr_a1b2c3"
+        },
+        "status_codes": [
+          {
+            "code": "201",
+            "description": "Created"
+          },
+          {
+            "code": "400",
+            "description": "Validation error"
+          },
+          {
+            "code": "401",
+            "description": "Unauthorized"
+          },
+          {
+            "code": "409",
+            "description": "Conflict"
+          }
+        ],
+        "auth_required": false,
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "endpoint": "/auth/otp/verify",
+        "method": "POST",
+        "summary": "Verify a one-time password",
+        "description": "Auto-generated contract for: Verify a one-time password.",
+        "request_fields": [
+          {
+            "name": "phone",
+            "type": "string",
+            "required": true,
+            "description": "E.164 phone number",
+            "example": "+15551234567"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "required": true,
+            "description": "6-digit OTP",
+            "example": "284931"
+          }
+        ],
+        "response_fields": [
+          {
+            "name": "access_token",
+            "type": "string",
+            "required": true,
+            "description": "Session JWT",
+            "example": "eyJhbGciOi..."
+          },
+          {
+            "name": "user_id",
+            "type": "uuid",
+            "required": true,
+            "description": "Helix user id",
+            "example": "usr_a1b2c3"
+          }
+        ],
+        "request_example": {
+          "phone": "+15551234567",
+          "code": "284931"
+        },
+        "response_example": {
+          "access_token": "eyJhbGciOi...",
+          "user_id": "usr_a1b2c3"
+        },
+        "status_codes": [
+          {
+            "code": "201",
+            "description": "Created"
+          },
+          {
+            "code": "400",
+            "description": "Validation error"
+          },
+          {
+            "code": "401",
+            "description": "Unauthorized"
+          },
+          {
+            "code": "409",
+            "description": "Conflict"
+          }
+        ],
+        "auth_required": true,
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "endpoint": "/payments",
+        "method": "POST",
+        "summary": "Initiate a payment",
+        "description": "Auto-generated contract for: Initiate a payment.",
+        "request_fields": [
+          {
+            "name": "amount",
+            "type": "integer",
+            "required": true,
+            "description": "Amount in minor units (paise / cents)",
+            "example": 499900
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "required": true,
+            "description": "ISO 4217",
+            "example": "INR"
+          },
+          {
+            "name": "customer_id",
+            "type": "string",
+            "required": true,
+            "description": "Helix customer id",
+            "example": "cus_a1b2c3"
+          }
+        ],
+        "response_fields": [
+          {
+            "name": "payment_id",
+            "type": "uuid",
+            "required": true,
+            "description": "Helix payment id",
+            "example": "pay_a1b2c3"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": true,
+            "description": "created | authorized | captured | failed",
+            "example": "created"
+          },
+          {
+            "name": "redirect_url",
+            "type": "string",
+            "required": true,
+            "description": "Hosted checkout URL",
+            "example": "https://pay.helix.dev/p/..."
+          }
+        ],
+        "request_example": {
+          "amount": 499900,
+          "currency": "INR",
+          "customer_id": "cus_a1b2c3"
+        },
+        "response_example": {
+          "payment_id": "pay_a1b2c3",
+          "status": "created",
+          "redirect_url": "https://pay.helix.dev/p/..."
+        },
+        "status_codes": [
+          {
+            "code": "201",
+            "description": "Created"
+          },
+          {
+            "code": "400",
+            "description": "Validation error"
+          },
+          {
+            "code": "401",
+            "description": "Unauthorized"
+          },
+          {
+            "code": "409",
+            "description": "Conflict"
+          }
+        ],
+        "auth_required": true,
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "endpoint": "/notifications/send",
+        "method": "POST",
+        "summary": "Send a notification",
+        "description": "Auto-generated contract for: Send a notification.",
+        "request_fields": [
+          {
+            "name": "title",
+            "type": "string",
+            "required": true,
+            "description": "Short summary",
+            "example": "Sample"
+          },
+          {
+            "name": "metadata",
+            "type": "object",
+            "required": false,
+            "description": "Open-ended metadata",
+            "example": {}
+          }
+        ],
+        "response_fields": [
+          {
+            "name": "id",
+            "type": "uuid",
+            "required": true,
+            "description": "Created entity id",
+            "example": "ite_a1b2c3"
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "required": true,
+            "description": "ISO 8601 timestamp",
+            "example": "2026-05-21T15:32:00Z"
+          }
+        ],
+        "request_example": {
+          "title": "Sample",
+          "metadata": {}
+        },
+        "response_example": {
+          "id": "ite_a1b2c3",
+          "created_at": "2026-05-21T15:32:00Z"
+        },
+        "status_codes": [
+          {
+            "code": "201",
+            "description": "Created"
+          },
+          {
+            "code": "400",
+            "description": "Validation error"
+          },
+          {
+            "code": "401",
+            "description": "Unauthorized"
+          },
+          {
+            "code": "409",
+            "description": "Conflict"
+          }
+        ],
+        "auth_required": true,
+        "tags": [
+          "items"
+        ]
+      }
+    ],
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:02.650711"
+  },
+  "database_schema": null,
+  "generated_test_suite": {
+    "title": "Generated test suite",
+    "summary": "11 tests across 5 categories \u2014 functional=1, negative=2, boundary=1, security=4, regression=3",
+    "groups": [
+      {
+        "category": "functional",
+        "description": "Happy-path and primary user flows.",
+        "tests": [
+          {
+            "id": "gtc_e638f4c7",
+            "title": "Successful login with valid credentials",
+            "category": "functional",
+            "given": "a registered user with valid email and password",
+            "when": "they submit the login form",
+            "then": "they are authenticated and a JWT session is issued",
+            "severity": "high",
+            "tags": [
+              "functional",
+              "login"
+            ],
+            "expected_result": "200/201 OK with success payload"
+          }
+        ]
+      },
+      {
+        "category": "negative",
+        "description": "Wrong inputs, error states, conflicting data.",
+        "tests": [
+          {
+            "id": "gtc_3b9c8a7d",
+            "title": "Wrong credentials / OTP rejected",
+            "category": "negative",
+            "given": "a registered user",
+            "when": "they submit a wrong password or an incorrect OTP",
+            "then": "the API returns 401 and the failure is rate-limit counted",
+            "severity": "high",
+            "tags": [
+              "negative",
+              "login"
+            ],
+            "expected_result": "4xx with structured error"
+          },
+          {
+            "id": "gtc_467f6715",
+            "title": "Login with malformed body",
+            "category": "negative",
+            "given": "any caller",
+            "when": "they POST a malformed payload to the login endpoint",
+            "then": "the API returns 400 with a list of validation errors",
+            "severity": "high",
+            "tags": [
+              "negative",
+              "login"
+            ],
+            "expected_result": "4xx with structured error"
+          }
+        ]
+      },
+      {
+        "category": "boundary",
+        "description": "Limits \u2014 empty, max length, off-by-one, edges.",
+        "tests": [
+          {
+            "id": "gtc_86921493",
+            "title": "Password at minimum length boundary",
+            "category": "boundary",
+            "given": "min length is 12 characters",
+            "when": "the user submits a 12-character password",
+            "then": "the request succeeds; an 11-char password is rejected",
+            "severity": "medium",
+            "tags": [
+              "boundary",
+              "login"
+            ],
+            "expected_result": "Edge inputs handled deterministically"
+          }
+        ]
+      },
+      {
+        "category": "security",
+        "description": "Authn/authz, injection, sensitive data exposure.",
+        "tests": [
+          {
+            "id": "gtc_ada62a81",
+            "title": "SQL injection in login payload",
+            "category": "security",
+            "given": "any string field on the endpoint",
+            "when": "the caller submits a SQLi payload (e.g. \"' OR 1=1 --\")",
+            "then": "the value is stored verbatim or rejected \u2014 never executed",
+            "severity": "critical",
+            "tags": [
+              "security",
+              "login"
+            ],
+            "expected_result": "Attack is blocked or neutralized; no data leak"
+          },
+          {
+            "id": "gtc_da85bd23",
+            "title": "Authentication required to call login",
+            "category": "security",
+            "given": "no Authorization header",
+            "when": "the caller hits the login endpoint",
+            "then": "the API returns 401 and does NOT leak data",
+            "severity": "critical",
+            "tags": [
+              "security",
+              "login"
+            ],
+            "expected_result": "Attack is blocked or neutralized; no data leak"
+          },
+          {
+            "id": "gtc_2712d361",
+            "title": "Rate limiting on login",
+            "category": "security",
+            "given": "the same client",
+            "when": "issues 100 requests in 60 seconds",
+            "then": "the API returns 429 with a Retry-After header",
+            "severity": "critical",
+            "tags": [
+              "security",
+              "login"
+            ],
+            "expected_result": "Attack is blocked or neutralized; no data leak"
+          },
+          {
+            "id": "gtc_c1fe6988",
+            "title": "Brute-force lockout",
+            "category": "security",
+            "given": "the same email",
+            "when": "submits 5 wrong passwords or OTPs in a row",
+            "then": "the account is locked for 15 minutes and a security event is logged",
+            "severity": "critical",
+            "tags": [
+              "security",
+              "login"
+            ],
+            "expected_result": "Attack is blocked or neutralized; no data leak"
+          }
+        ]
+      },
+      {
+        "category": "regression",
+        "description": "Adjacent flows that must keep working.",
+        "tests": [
+          {
+            "id": "gtc_b7075dfd",
+            "title": "Pre-existing flows still work after login change",
+            "category": "regression",
+            "given": "the new login feature has shipped",
+            "when": "the standard smoke suite is run",
+            "then": "all previously-green tests continue to pass",
+            "severity": "medium",
+            "tags": [
+              "regression",
+              "login"
+            ],
+            "expected_result": "Existing behavior unchanged"
+          },
+          {
+            "id": "gtc_b27c840e",
+            "title": "API backwards-compat",
+            "category": "regression",
+            "given": "the login change touches a public endpoint",
+            "when": "an old client (v1 contract) calls it",
+            "then": "the request still succeeds; no breaking field changes",
+            "severity": "medium",
+            "tags": [
+              "regression",
+              "login"
+            ],
+            "expected_result": "Existing behavior unchanged"
+          },
+          {
+            "id": "gtc_65f340d4",
+            "title": "Existing sessions remain valid",
+            "category": "regression",
+            "given": "users currently logged in",
+            "when": "the login change is deployed mid-day",
+            "then": "sessions stay valid and no forced logout occurs",
+            "severity": "medium",
+            "tags": [
+              "regression",
+              "login"
+            ],
+            "expected_result": "Existing behavior unchanged"
+          }
+        ]
+      }
+    ],
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "defect_prediction": {
+    "high_risk_modules": [
+      "Payments",
+      "Authentication"
+    ],
+    "modules": [
+      {
+        "name": "Payments",
+        "risk_score": 85,
+        "risk_level": "critical",
+        "drivers": [
+          "Payment defects are 'all bug, no rollback' \u2014 every miss is a money or PCI event.",
+          "Latency-sensitive",
+          "Compliance scope"
+        ],
+        "notes": "Base 72 + 13 from global drivers."
+      },
+      {
+        "name": "Authentication",
+        "risk_score": 83,
+        "risk_level": "critical",
+        "drivers": [
+          "Auth flows are the historical #1 source of customer-facing defects.",
+          "Latency-sensitive",
+          "Compliance scope"
+        ],
+        "notes": "Base 70 + 13 from global drivers."
+      },
+      {
+        "name": "Notification / Messaging",
+        "risk_score": 58,
+        "risk_level": "medium",
+        "drivers": [
+          "External SMS/SMTP providers fail in flaky ways and are rarely re-tested in CI.",
+          "Latency-sensitive",
+          "Compliance scope"
+        ],
+        "notes": "Base 45 + 13 from global drivers."
+      },
+      {
+        "name": "Frontend State",
+        "risk_score": 53,
+        "risk_level": "medium",
+        "drivers": [
+          "Local-state vs server-state mismatches are subtle and hard to reproduce.",
+          "Latency-sensitive",
+          "Compliance scope"
+        ],
+        "notes": "Base 40 + 13 from global drivers."
+      }
+    ],
+    "overall_risk": 70,
+    "summary": "2 high-risk modules detected (overall avg 70/100).",
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "delivery_readiness": {
+    "readiness": 64,
+    "status": "preparing",
+    "blocking_items": [
+      "No rollback / kill-switch strategy"
+    ],
+    "recommendations": [
+      "Tasks broken down",
+      "Observability defined",
+      "Impact analysis run",
+      "Ambiguities resolved",
+      "Quality score \u2265 70"
+    ],
+    "signals": [
+      {
+        "label": "User stories defined",
+        "weight": 8,
+        "achieved": true,
+        "description": "Stories with personas/goals are present."
+      },
+      {
+        "label": "Acceptance criteria",
+        "weight": 10,
+        "achieved": true,
+        "description": "At least one story has acceptance criteria \u2014 a release gate."
+      },
+      {
+        "label": "Tasks broken down",
+        "weight": 6,
+        "achieved": false,
+        "description": "Engineering tasks exist for the stories."
+      },
+      {
+        "label": "Test cases authored",
+        "weight": 10,
+        "achieved": true,
+        "description": "Functional/integration test cases exist."
+      },
+      {
+        "label": "Performance criteria",
+        "weight": 10,
+        "achieved": true,
+        "description": "Latency/throughput targets or perf tests are specified."
+      },
+      {
+        "label": "Rollback / kill-switch strategy",
+        "weight": 10,
+        "achieved": false,
+        "description": "Feature flag or rollback path called out \u2014 required for safe release."
+      },
+      {
+        "label": "Observability defined",
+        "weight": 7,
+        "achieved": false,
+        "description": "Metrics, logs, alerts, or dashboards mentioned."
+      },
+      {
+        "label": "Security considerations",
+        "weight": 8,
+        "achieved": true,
+        "description": "Security/compliance is in scope or covered by tests."
+      },
+      {
+        "label": "Architecture brief",
+        "weight": 6,
+        "achieved": true,
+        "description": "Components & dependencies have been mapped."
+      },
+      {
+        "label": "Risk register",
+        "weight": 6,
+        "achieved": true,
+        "description": "Risks have been enumerated."
+      },
+      {
+        "label": "Impact analysis run",
+        "weight": 5,
+        "achieved": false,
+        "description": "Blast-radius analysis has been generated."
+      },
+      {
+        "label": "Multi-agent review",
+        "weight": 5,
+        "achieved": true,
+        "description": "Cross-discipline review board has approved."
+      },
+      {
+        "label": "Ambiguities resolved",
+        "weight": 6,
+        "achieved": false,
+        "description": "Open ambiguities: 10."
+      },
+      {
+        "label": "Quality score \u2265 70",
+        "weight": 6,
+        "achieved": false,
+        "description": "Requirement quality score meets the release bar."
+      },
+      {
+        "label": "Backlog generated",
+        "weight": 4,
+        "achieved": true,
+        "description": "A Jira-style backlog exists."
+      },
+      {
+        "label": "Sprint plan ready",
+        "weight": 4,
+        "achieved": true,
+        "description": "Sprint capacity & sequencing have been planned."
+      }
+    ],
+    "summary": "Readiness 64/100 \u2014 1 blocker, 5 recommendations.",
+    "method": "heuristic",
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "delivery_readiness_center": {
+    "checklist": [
+      {
+        "key": "requirements",
+        "label": "Requirements",
+        "complete": true,
+        "detail": "7 clauses"
+      },
+      {
+        "key": "stories",
+        "label": "Stories",
+        "complete": true,
+        "detail": "5 stories"
+      },
+      {
+        "key": "tasks",
+        "label": "Tasks",
+        "complete": false,
+        "detail": "Pending"
+      },
+      {
+        "key": "tests",
+        "label": "Test Cases",
+        "complete": true,
+        "detail": "20 cases"
+      },
+      {
+        "key": "risks",
+        "label": "Risks Reviewed",
+        "complete": true,
+        "detail": "Register + prediction"
+      },
+      {
+        "key": "architecture",
+        "label": "Architecture Generated",
+        "complete": true,
+        "detail": "Diagram ready"
+      }
+    ],
+    "readiness": 94,
+    "status_label": "PROJECT READY",
+    "headline": "All six SDLC gates passed \u2014 requirements traced through tests, risks reviewed, architecture generated.",
+    "blocking_items": [
+      "Tasks \u2014 not complete",
+      "No rollback / kill-switch strategy"
+    ],
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "meeting_extraction": null,
+  "traceability_matrix": {
+    "rows": [
+      {
+        "requirement_id": "clause_4ced7788",
+        "requirement_label": "REQ-001",
+        "requirement_text": "Checkout Revamp Initiative.",
+        "story_ids": [
+          "story_32676d15",
+          "story_60bf1274"
+        ],
+        "story_labels": [
+          "US-001",
+          "US-002"
+        ],
+        "story_titles": [
+          "Show delivery date estimate before payment within 200 ms (P95)",
+          "Process payments via Stripe Premium without storing raw card data"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_6486c7b1",
+          "test_f92f455d",
+          "test_6793e767",
+          "test_4b71fe51",
+          "test_20e7810f",
+          "test_58b31c10",
+          "test_8679cbf5",
+          "test_befaa9ee"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004",
+          "TC-005",
+          "TC-006",
+          "TC-007",
+          "TC-008"
+        ],
+        "test_titles": [
+          "Customer sees delivery estimate within 200 ms at shipping step",
+          "Inventory or carrier data unavailable shows fallback message",
+          "Rapid address change updates estimate and meets P95 latency",
+          "Unauthorized user cannot query delivery estimates for another cart",
+          "Successful Stripe token payment marks order as Paid",
+          "Declined payment surfaces Stripe error and allows retry",
+          "Double-click payment button charges only once",
+          "No raw PAN or CVV stored or logged"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-001\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 US-002\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u251c\u2500\u2500 TC-004\n \u251c\u2500\u2500 TC-005\n \u251c\u2500\u2500 TC-006\n \u251c\u2500\u2500 TC-007\n \u2514\u2500\u2500 TC-008",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_7158719b",
+        "requirement_label": "REQ-002",
+        "requirement_text": "Customers abandon cart when shipping estimates are unclear.",
+        "story_ids": [
+          "story_32676d15"
+        ],
+        "story_labels": [
+          "US-001"
+        ],
+        "story_titles": [
+          "Show delivery date estimate before payment within 200 ms (P95)"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_6486c7b1",
+          "test_f92f455d",
+          "test_6793e767",
+          "test_4b71fe51"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004"
+        ],
+        "test_titles": [
+          "Customer sees delivery estimate within 200 ms at shipping step",
+          "Inventory or carrier data unavailable shows fallback message",
+          "Rapid address change updates estimate and meets P95 latency",
+          "Unauthorized user cannot query delivery estimates for another cart"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-002\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_b9a63716",
+        "requirement_label": "REQ-003",
+        "requirement_text": "We must show delivery dates before payment within 200ms P95.",
+        "story_ids": [
+          "story_32676d15"
+        ],
+        "story_labels": [
+          "US-001"
+        ],
+        "story_titles": [
+          "Show delivery date estimate before payment within 200 ms (P95)"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_6486c7b1",
+          "test_f92f455d",
+          "test_6793e767",
+          "test_4b71fe51"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004"
+        ],
+        "test_titles": [
+          "Customer sees delivery estimate within 200 ms at shipping step",
+          "Inventory or carrier data unavailable shows fallback message",
+          "Rapid address change updates estimate and meets P95 latency",
+          "Unauthorized user cannot query delivery estimates for another cart"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-003\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_081084a5",
+        "requirement_label": "REQ-004",
+        "requirement_text": "Security: PCI scope must not store raw card data.",
+        "story_ids": [
+          "story_60bf1274"
+        ],
+        "story_labels": [
+          "US-001"
+        ],
+        "story_titles": [
+          "Process payments via Stripe Premium without storing raw card data"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_20e7810f",
+          "test_58b31c10",
+          "test_8679cbf5",
+          "test_befaa9ee"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004"
+        ],
+        "test_titles": [
+          "Successful Stripe token payment marks order as Paid",
+          "Declined payment surfaces Stripe error and allows retry",
+          "Double-click payment button charges only once",
+          "No raw PAN or CVV stored or logged"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-004\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_b04994a3",
+        "requirement_label": "REQ-005",
+        "requirement_text": "OTP login via SMS for B2B portal.",
+        "story_ids": [
+          "story_e238a8da"
+        ],
+        "story_labels": [
+          "US-001"
+        ],
+        "story_titles": [
+          "Enable SMS-based OTP login for B2B portal"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_055c1561",
+          "test_0edb7072",
+          "test_9832cfa7",
+          "test_b6475b42"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004"
+        ],
+        "test_titles": [
+          "Correct OTP within 5 minutes grants session",
+          "Three wrong OTP attempts lock login for 10 minutes",
+          "OTP expires exactly at 5-minute boundary and is single-use",
+          "Rate-limit prevents OTP brute-force across numbers"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-005\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_d88d4f1a",
+        "requirement_label": "REQ-006",
+        "requirement_text": "Integrate Stripe Premium tier.",
+        "story_ids": [
+          "story_60bf1274"
+        ],
+        "story_labels": [
+          "US-001"
+        ],
+        "story_titles": [
+          "Process payments via Stripe Premium without storing raw card data"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_20e7810f",
+          "test_58b31c10",
+          "test_8679cbf5",
+          "test_befaa9ee"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004"
+        ],
+        "test_titles": [
+          "Successful Stripe token payment marks order as Paid",
+          "Declined payment surfaces Stripe error and allows retry",
+          "Double-click payment button charges only once",
+          "No raw PAN or CVV stored or logged"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-006\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004",
+        "coverage": 50
+      },
+      {
+        "requirement_id": "clause_5c5afbda",
+        "requirement_label": "REQ-007",
+        "requirement_text": "Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days.",
+        "story_ids": [
+          "story_c51fd353",
+          "story_a8828307"
+        ],
+        "story_labels": [
+          "US-001",
+          "US-002"
+        ],
+        "story_titles": [
+          "Support 10 k concurrent sessions with p99 response time <500 ms",
+          "Fulfill GDPR data-erasure requests within 30 days"
+        ],
+        "task_ids": [],
+        "task_labels": [],
+        "task_titles": [],
+        "test_ids": [
+          "test_91f6d6e7",
+          "test_070942d2",
+          "test_aa6c1963",
+          "test_39664734",
+          "test_ed4b7fb4",
+          "test_690bc458",
+          "test_8ade7e5c",
+          "test_1d0db110"
+        ],
+        "test_labels": [
+          "TC-001",
+          "TC-002",
+          "TC-003",
+          "TC-004",
+          "TC-005",
+          "TC-006",
+          "TC-007",
+          "TC-008"
+        ],
+        "test_titles": [
+          "10 k concurrent sessions meet p99 <500 ms and error rate <0.1%",
+          "Auto-scaling delay causing p99 breach fails test",
+          "10,001 concurrent sessions still maintain SLA margin",
+          "DoS spike of unauthenticated traffic does not degrade authenticated p99",
+          "Verified erasure request schedules and completes within 30 days",
+          "Unverified erasure request is rejected",
+          "Pending deletions older than 25 days trigger nightly alert",
+          "Unauthorized user cannot erase another user\u2019s data"
+        ],
+        "component_names": [],
+        "tree_text": "REQ-007\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 US-002\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u251c\u2500\u2500 TC-004\n \u251c\u2500\u2500 TC-005\n \u251c\u2500\u2500 TC-006\n \u251c\u2500\u2500 TC-007\n \u2514\u2500\u2500 TC-008",
+        "coverage": 50
+      }
+    ],
+    "coverage": {
+      "requirements_with_stories": 7,
+      "requirements_with_tasks": 0,
+      "requirements_with_tests": 7,
+      "requirements_with_components": 0,
+      "total_requirements": 7
+    },
+    "tree_text": "REQ-001\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 US-002\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u251c\u2500\u2500 TC-004\n \u251c\u2500\u2500 TC-005\n \u251c\u2500\u2500 TC-006\n \u251c\u2500\u2500 TC-007\n \u2514\u2500\u2500 TC-008\n\nREQ-002\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004\n\nREQ-003\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004\n\nREQ-004\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004\n\nREQ-005\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004\n\nREQ-006\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u2514\u2500\u2500 TC-004\n\nREQ-007\n \u251c\u2500\u2500 US-001\n \u251c\u2500\u2500 US-002\n \u251c\u2500\u2500 TC-001\n \u251c\u2500\u2500 TC-002\n \u251c\u2500\u2500 TC-003\n \u251c\u2500\u2500 TC-004\n \u251c\u2500\u2500 TC-005\n \u251c\u2500\u2500 TC-006\n \u251c\u2500\u2500 TC-007\n \u2514\u2500\u2500 TC-008",
+    "graph": {
+      "nodes": [
+        {
+          "id": "req:clause_4ced7788",
+          "label": "REQ-001",
+          "title": "Checkout Revamp Initiative.",
+          "kind": "requirement",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 56.0
+        },
+        {
+          "id": "us:clause_4ced7788:0",
+          "label": "US-001",
+          "title": "Show delivery date estimate before payment within 200 ms (P95)",
+          "kind": "story",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 56.0
+        },
+        {
+          "id": "us:clause_4ced7788:1",
+          "label": "US-002",
+          "title": "Process payments via Stripe Premium without storing raw card data",
+          "kind": "story",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 128.0
+        },
+        {
+          "id": "tc:clause_4ced7788:0",
+          "label": "TC-001",
+          "title": "Customer sees delivery estimate within 200 ms at shipping step",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 200.0
+        },
+        {
+          "id": "tc:clause_4ced7788:1",
+          "label": "TC-002",
+          "title": "Inventory or carrier data unavailable shows fallback message",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 272.0
+        },
+        {
+          "id": "tc:clause_4ced7788:2",
+          "label": "TC-003",
+          "title": "Rapid address change updates estimate and meets P95 latency",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 344.0
+        },
+        {
+          "id": "tc:clause_4ced7788:3",
+          "label": "TC-004",
+          "title": "Unauthorized user cannot query delivery estimates for another cart",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 416.0
+        },
+        {
+          "id": "tc:clause_4ced7788:4",
+          "label": "TC-005",
+          "title": "Successful Stripe token payment marks order as Paid",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 488.0
+        },
+        {
+          "id": "tc:clause_4ced7788:5",
+          "label": "TC-006",
+          "title": "Declined payment surfaces Stripe error and allows retry",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 560.0
+        },
+        {
+          "id": "tc:clause_4ced7788:6",
+          "label": "TC-007",
+          "title": "Double-click payment button charges only once",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 632.0
+        },
+        {
+          "id": "tc:clause_4ced7788:7",
+          "label": "TC-008",
+          "title": "No raw PAN or CVV stored or logged",
+          "kind": "test",
+          "row_index": 0,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 704.0
+        },
+        {
+          "id": "req:clause_7158719b",
+          "label": "REQ-002",
+          "title": "Customers abandon cart when shipping estimates are unclear.",
+          "kind": "requirement",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 812.0
+        },
+        {
+          "id": "us:clause_7158719b:0",
+          "label": "US-001",
+          "title": "Show delivery date estimate before payment within 200 ms (P95)",
+          "kind": "story",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 812.0
+        },
+        {
+          "id": "tc:clause_7158719b:0",
+          "label": "TC-001",
+          "title": "Customer sees delivery estimate within 200 ms at shipping step",
+          "kind": "test",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 884.0
+        },
+        {
+          "id": "tc:clause_7158719b:1",
+          "label": "TC-002",
+          "title": "Inventory or carrier data unavailable shows fallback message",
+          "kind": "test",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 956.0
+        },
+        {
+          "id": "tc:clause_7158719b:2",
+          "label": "TC-003",
+          "title": "Rapid address change updates estimate and meets P95 latency",
+          "kind": "test",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1028.0
+        },
+        {
+          "id": "tc:clause_7158719b:3",
+          "label": "TC-004",
+          "title": "Unauthorized user cannot query delivery estimates for another cart",
+          "kind": "test",
+          "row_index": 1,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1100.0
+        },
+        {
+          "id": "req:clause_b9a63716",
+          "label": "REQ-003",
+          "title": "We must show delivery dates before payment within 200ms P95.",
+          "kind": "requirement",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 1208.0
+        },
+        {
+          "id": "us:clause_b9a63716:0",
+          "label": "US-001",
+          "title": "Show delivery date estimate before payment within 200 ms (P95)",
+          "kind": "story",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 1208.0
+        },
+        {
+          "id": "tc:clause_b9a63716:0",
+          "label": "TC-001",
+          "title": "Customer sees delivery estimate within 200 ms at shipping step",
+          "kind": "test",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1280.0
+        },
+        {
+          "id": "tc:clause_b9a63716:1",
+          "label": "TC-002",
+          "title": "Inventory or carrier data unavailable shows fallback message",
+          "kind": "test",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1352.0
+        },
+        {
+          "id": "tc:clause_b9a63716:2",
+          "label": "TC-003",
+          "title": "Rapid address change updates estimate and meets P95 latency",
+          "kind": "test",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1424.0
+        },
+        {
+          "id": "tc:clause_b9a63716:3",
+          "label": "TC-004",
+          "title": "Unauthorized user cannot query delivery estimates for another cart",
+          "kind": "test",
+          "row_index": 2,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1496.0
+        },
+        {
+          "id": "req:clause_081084a5",
+          "label": "REQ-004",
+          "title": "Security: PCI scope must not store raw card data.",
+          "kind": "requirement",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 1604.0
+        },
+        {
+          "id": "us:clause_081084a5:0",
+          "label": "US-001",
+          "title": "Process payments via Stripe Premium without storing raw card data",
+          "kind": "story",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 1604.0
+        },
+        {
+          "id": "tc:clause_081084a5:0",
+          "label": "TC-001",
+          "title": "Successful Stripe token payment marks order as Paid",
+          "kind": "test",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1676.0
+        },
+        {
+          "id": "tc:clause_081084a5:1",
+          "label": "TC-002",
+          "title": "Declined payment surfaces Stripe error and allows retry",
+          "kind": "test",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1748.0
+        },
+        {
+          "id": "tc:clause_081084a5:2",
+          "label": "TC-003",
+          "title": "Double-click payment button charges only once",
+          "kind": "test",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1820.0
+        },
+        {
+          "id": "tc:clause_081084a5:3",
+          "label": "TC-004",
+          "title": "No raw PAN or CVV stored or logged",
+          "kind": "test",
+          "row_index": 3,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 1892.0
+        },
+        {
+          "id": "req:clause_b04994a3",
+          "label": "REQ-005",
+          "title": "OTP login via SMS for B2B portal.",
+          "kind": "requirement",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 2000.0
+        },
+        {
+          "id": "us:clause_b04994a3:0",
+          "label": "US-001",
+          "title": "Enable SMS-based OTP login for B2B portal",
+          "kind": "story",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 2000.0
+        },
+        {
+          "id": "tc:clause_b04994a3:0",
+          "label": "TC-001",
+          "title": "Correct OTP within 5 minutes grants session",
+          "kind": "test",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2072.0
+        },
+        {
+          "id": "tc:clause_b04994a3:1",
+          "label": "TC-002",
+          "title": "Three wrong OTP attempts lock login for 10 minutes",
+          "kind": "test",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2144.0
+        },
+        {
+          "id": "tc:clause_b04994a3:2",
+          "label": "TC-003",
+          "title": "OTP expires exactly at 5-minute boundary and is single-use",
+          "kind": "test",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2216.0
+        },
+        {
+          "id": "tc:clause_b04994a3:3",
+          "label": "TC-004",
+          "title": "Rate-limit prevents OTP brute-force across numbers",
+          "kind": "test",
+          "row_index": 4,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2288.0
+        },
+        {
+          "id": "req:clause_d88d4f1a",
+          "label": "REQ-006",
+          "title": "Integrate Stripe Premium tier.",
+          "kind": "requirement",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 2396.0
+        },
+        {
+          "id": "us:clause_d88d4f1a:0",
+          "label": "US-001",
+          "title": "Process payments via Stripe Premium without storing raw card data",
+          "kind": "story",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 2396.0
+        },
+        {
+          "id": "tc:clause_d88d4f1a:0",
+          "label": "TC-001",
+          "title": "Successful Stripe token payment marks order as Paid",
+          "kind": "test",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2468.0
+        },
+        {
+          "id": "tc:clause_d88d4f1a:1",
+          "label": "TC-002",
+          "title": "Declined payment surfaces Stripe error and allows retry",
+          "kind": "test",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2540.0
+        },
+        {
+          "id": "tc:clause_d88d4f1a:2",
+          "label": "TC-003",
+          "title": "Double-click payment button charges only once",
+          "kind": "test",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2612.0
+        },
+        {
+          "id": "tc:clause_d88d4f1a:3",
+          "label": "TC-004",
+          "title": "No raw PAN or CVV stored or logged",
+          "kind": "test",
+          "row_index": 5,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2684.0
+        },
+        {
+          "id": "req:clause_5c5afbda",
+          "label": "REQ-007",
+          "title": "Support 10k concurrent sessions, p99 < 500ms, GDPR deletion within 30 days.",
+          "kind": "requirement",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 48.0,
+          "y": 2792.0
+        },
+        {
+          "id": "us:clause_5c5afbda:0",
+          "label": "US-001",
+          "title": "Support 10 k concurrent sessions with p99 response time <500 ms",
+          "kind": "story",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 2792.0
+        },
+        {
+          "id": "us:clause_5c5afbda:1",
+          "label": "US-002",
+          "title": "Fulfill GDPR data-erasure requests within 30 days",
+          "kind": "story",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 268.0,
+          "y": 2864.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:0",
+          "label": "TC-001",
+          "title": "10 k concurrent sessions meet p99 <500 ms and error rate <0.1%",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 2936.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:1",
+          "label": "TC-002",
+          "title": "Auto-scaling delay causing p99 breach fails test",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3008.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:2",
+          "label": "TC-003",
+          "title": "10,001 concurrent sessions still maintain SLA margin",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3080.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:3",
+          "label": "TC-004",
+          "title": "DoS spike of unauthenticated traffic does not degrade authenticated p99",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3152.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:4",
+          "label": "TC-005",
+          "title": "Verified erasure request schedules and completes within 30 days",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3224.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:5",
+          "label": "TC-006",
+          "title": "Unverified erasure request is rejected",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3296.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:6",
+          "label": "TC-007",
+          "title": "Pending deletions older than 25 days trigger nightly alert",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3368.0
+        },
+        {
+          "id": "tc:clause_5c5afbda:7",
+          "label": "TC-008",
+          "title": "Unauthorized user cannot erase another user\u2019s data",
+          "kind": "test",
+          "row_index": 6,
+          "coverage": 50,
+          "x": 708.0,
+          "y": 3440.0
+        }
+      ],
+      "edges": [
+        {
+          "source": "req:clause_4ced7788",
+          "target": "us:clause_4ced7788:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_4ced7788",
+          "target": "us:clause_4ced7788:1",
+          "primary": false
+        },
+        {
+          "source": "req:clause_7158719b",
+          "target": "us:clause_7158719b:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_b9a63716",
+          "target": "us:clause_b9a63716:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_081084a5",
+          "target": "us:clause_081084a5:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_b04994a3",
+          "target": "us:clause_b04994a3:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_d88d4f1a",
+          "target": "us:clause_d88d4f1a:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_5c5afbda",
+          "target": "us:clause_5c5afbda:0",
+          "primary": false
+        },
+        {
+          "source": "req:clause_5c5afbda",
+          "target": "us:clause_5c5afbda:1",
+          "primary": false
+        }
+      ],
+      "lanes": [
+        "Requirement",
+        "User Story",
+        "Task",
+        "Test Case"
+      ],
+      "width": 920.0,
+      "height": 3592.0
+    },
+    "summary": "7 requirements traced \u2014 100% have at least one test, 0 link to a known component.",
+    "generated_at": "2026-05-22T09:29:30.937764"
+  },
+  "risk_center": null,
+  "prd_document": null,
+  "digital_twin": null,
+  "pm_forecast": null,
+  "metrics": null,
+  "chat_history": [],
+  "last_pipeline_timings_ms": null
+}

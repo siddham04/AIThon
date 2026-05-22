@@ -1,47 +1,68 @@
-"""Pipeline orchestration.
+"""Multi-Agent SDLC Pipeline — orchestration.
 
-Runs agents in dependency order:
-  Analyzer & Ambiguity (parallel)  →  Decomposer  →  Tests + Estimator + Risk (parallel)
+Five specialized agents — each a focused LLM pass, not one monolithic call:
 
-Streams progress events the UI can render as a live timeline.
+    Requirement
+        ↓
+    Requirement Analyst Agent     → Features · Actors · Business rules
+        ↓
+    Product Manager Agent         → Epic · Stories · Acceptance criteria
+        ↓
+    Architect Agent               → APIs · DB entities · Components
+        ↓
+    QA Agent                      → Test cases · Edge · Negative scenarios
+        ↓
+    Scrum Master Agent            → Sprint tasks · Priorities · Dependencies
+
+Streams progress events for the Control Tower UI.
+Developer Copilot (chat) is available separately via /chat.
 """
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from typing import AsyncIterator, Dict
 
-from ..models import (
-    AnalyzeProgress,
-    Project,
-    ProductivityMetrics,
-)
-from .ambiguity import AmbiguityAgent
-from .analyzer import AnalyzerAgent
-from .decomposer import DecomposerAgent
-from .estimator import EstimatorAgent
-from .risk import RiskAgent
+from ..models import AnalyzeProgress, Project, ProductivityMetrics
+from .product_manager import ProductManagerAgent
+from .requirement_analyst import RequirementAnalystAgent
+from .scrum_master import ScrumMasterAgent
+from .solution_architect import SolutionArchitectAgent
 from .test_architect import TestArchitectAgent
 
 logger = logging.getLogger("helix.orchestrator")
 
-
-# Tunable assumption: average cost of an engineer-minute (USD).
 ENGINEER_MIN_COST_USD = 1.25
+
+# Stable stage ids for the Control Tower frontend.
+CONTROL_TOWER_STAGES: tuple[str, ...] = (
+    "Requirement Analyst",
+    "Product Manager",
+    "Architect",
+    "QA Agent",
+    "Scrum Master",
+)
+
+# What each agent produces (shown in UI tooltips).
+PIPELINE_AGENT_OUTPUTS: dict[str, str] = {
+    "Requirement Analyst": "Features · Actors · Business rules",
+    "Product Manager": "Epic · Stories · Acceptance criteria",
+    "Architect": "APIs · DB entities · Components",
+    "QA Agent": "Test cases · Edge cases · Negative scenarios",
+    "Scrum Master": "Sprint tasks · Priorities · Dependencies",
+}
+
+# First activity line shown in the Screen 3 live workflow UI.
+PIPELINE_ACTIVITY: dict[str, str] = {
+    "Requirement Analyst": "Thinking...",
+    "Product Manager": "Generating stories...",
+    "Architect": "Designing APIs...",
+    "QA Agent": "Generating test cases...",
+    "Scrum Master": "Analyzing dependencies...",
+}
 
 
 def _estimate_metrics(project: Project) -> ProductivityMetrics:
-    """Heuristic productivity savings calc.
-
-    Manual baseline: rough industry rules of thumb for grooming a brief.
-      - 12 min per source clause to read & discuss
-      - 18 min per user story to write & refine
-      - 12 min per task to draft
-      - 10 min per test case
-      - 8 min per ambiguity surfaced in review
-      - 10 min per risk discovered later
-    """
     manual = (
         12 * len(project.source_clauses)
         + 18 * len(project.stories)
@@ -50,7 +71,6 @@ def _estimate_metrics(project: Project) -> ProductivityMetrics:
         + 8 * len(project.ambiguities)
         + 10 * len(project.risks)
     )
-    # Helix wallclock ~ 1 min ingestion + ~30s per agent stage on average.
     helix = 4
     saved = max(manual - helix, 0)
     artifacts = (
@@ -102,19 +122,15 @@ def _estimate_metrics(project: Project) -> ProductivityMetrics:
 
 
 async def run_pipeline(project: Project) -> AsyncIterator[Dict]:
-    """Yield progress events as JSON-friendly dicts; mutates `project` in place."""
+    """Yield pipeline progress events; mutates `project` in place."""
 
-    analyzer = AnalyzerAgent()
-    ambiguity = AmbiguityAgent()
-    decomposer = DecomposerAgent()
-    tests = TestArchitectAgent()
-    estimator = EstimatorAgent()
-    risk = RiskAgent()
-
-    # --- Phase 1: analyze + ambiguity in parallel ---
-    yield AnalyzeProgress(stage="Ingesting input", status="done").model_dump()
-    yield AnalyzeProgress(stage=analyzer.stage, status="running").model_dump()
-    yield AnalyzeProgress(stage=ambiguity.stage, status="running").model_dump()
+    agents = (
+        RequirementAnalystAgent(),
+        ProductManagerAgent(),
+        SolutionArchitectAgent(),
+        TestArchitectAgent(),
+        ScrumMasterAgent(),
+    )
 
     pipeline_timings_ms: Dict[str, int] = {}
 
@@ -135,31 +151,17 @@ async def run_pipeline(project: Project) -> AsyncIterator[Dict]:
                 stage=label, status="error", detail=str(exc), elapsed_ms=elapsed_ms
             )
 
-    p1 = await asyncio.gather(
-        collect(analyzer, analyzer.stage),
-        collect(ambiguity, ambiguity.stage),
-    )
-    for p in p1:
-        yield p.model_dump()
+    yield AnalyzeProgress(stage="Ingesting input", status="done").model_dump()
 
-    # --- Phase 2: decomposer (needs summary) ---
-    yield AnalyzeProgress(stage=decomposer.stage, status="running").model_dump()
-    p2 = await collect(decomposer, decomposer.stage)
-    yield p2.model_dump()
+    for agent in agents:
+        label = agent.stage
+        yield AnalyzeProgress(
+            stage=label,
+            status="running",
+            detail=PIPELINE_ACTIVITY.get(label, "Thinking..."),
+        ).model_dump()
+        yield (await collect(agent, label)).model_dump()
 
-    # --- Phase 3: tests + estimator + risk in parallel ---
-    yield AnalyzeProgress(stage=tests.stage, status="running").model_dump()
-    yield AnalyzeProgress(stage=estimator.stage, status="running").model_dump()
-    yield AnalyzeProgress(stage=risk.stage, status="running").model_dump()
-    p3 = await asyncio.gather(
-        collect(tests, tests.stage),
-        collect(estimator, estimator.stage),
-        collect(risk, risk.stage),
-    )
-    for p in p3:
-        yield p.model_dump()
-
-    # --- Phase 4: metrics ---
     project.last_pipeline_timings_ms = dict(pipeline_timings_ms)
     project.metrics = _estimate_metrics(project)
     yield AnalyzeProgress(stage="Computing impact metrics", status="done").model_dump()

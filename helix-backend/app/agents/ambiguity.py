@@ -57,7 +57,7 @@ SCHEMA = """{
 
 class AmbiguityAgent(Agent):
     name = "ambiguity"
-    stage = "Detecting ambiguity"
+    stage = "Risk & Ambiguity · Ambiguity"
 
     async def run(self, project: Project) -> Dict[str, Any]:
         clauses_txt = render_clauses(project.source_clauses)

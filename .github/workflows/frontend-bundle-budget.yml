@@ -1,0 +1,35 @@
+name: Frontend bundle budget
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  bundle-budget:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helix-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: helix-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_HELIX_DEMO_FAST: 'true'
+
+      - name: Check bundle size budget
+        run: node scripts/check-bundle-budget.mjs
+        env:
+          HELIX_BUNDLE_BUDGET_KB: '2800'

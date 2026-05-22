@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import re
 from dataclasses import dataclass
 from typing import Literal
@@ -10,6 +11,9 @@ import httpx
 from bs4 import BeautifulSoup
 
 from ..config import get_settings
+from .url_safety import validate_public_http_url
+
+logger = logging.getLogger("helix.ingestion")
 
 
 @dataclass
@@ -47,17 +51,18 @@ def extract_text_from_docx(data: bytes) -> str:
 
 
 async def extract_text_from_url(url: str, timeout: float = 30.0) -> str:
+    safe_url = validate_public_http_url(url)
     headers = {
         "User-Agent": "Mozilla/5.0 (compatible; HelixIngest/1.0; +https://example.invalid)"
     }
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
-        resp = await client.get(url, headers=headers)
+        resp = await client.get(safe_url, headers=headers)
         resp.raise_for_status()
         ctype = (resp.headers.get("content-type") or "").lower()
         raw = resp.content
-    if "pdf" in ctype or url.lower().endswith(".pdf"):
+    if "pdf" in ctype or safe_url.lower().endswith(".pdf"):
         return extract_text_from_pdf_pymupdf(raw)
-    if "word" in ctype or url.lower().endswith(".docx"):
+    if "word" in ctype or safe_url.lower().endswith(".docx"):
         return extract_text_from_docx(raw)
     html = raw.decode("utf-8", errors="ignore")
     soup = BeautifulSoup(html, "lxml")
@@ -116,8 +121,9 @@ async def store_chunks_mongo(
         from motor.motor_asyncio import AsyncIOMotorClient
     except Exception:
         return 0
-    client = AsyncIOMotorClient(url)
+    client = None
     try:
+        client = AsyncIOMotorClient(url, serverSelectionTimeoutMS=2000)
         db = client.get_default_database()
         col = db["ingestion_chunks"]
         await col.delete_many({"project_id": project_id})
@@ -132,8 +138,15 @@ async def store_chunks_mongo(
         if docs:
             await col.insert_many(docs)
         return len(docs)
+    except Exception as exc:
+        logger.warning("Mongo chunk store skipped for %s: %s", project_id, exc)
+        return 0
     finally:
-        client.close()
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                pass
 
 
 async def extract_clean_chunk_and_store(

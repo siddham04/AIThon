@@ -10,12 +10,12 @@ from sqlalchemy.orm import Session
 from ...config import get_settings
 from ...database import get_db
 from ...services.export_filter import slice_for_export
+from ...services.github_service import export_project_to_github_issues
 from ...services.jira_service import export_project_to_jira
-from ...services.project_bridge import pydantic_from_db_row
 from ...sqla_models import User
 from ..deps import get_current_user
 from ..exporters import export_csv, export_jira_csv, export_markdown
-from ..route_helpers import get_owned_project_row
+from ..route_helpers import get_owned_project_row, load_project_graph
 
 logger = logging.getLogger("helix.export")
 
@@ -33,9 +33,7 @@ async def export_jira(
     user: User = Depends(get_current_user),
 ) -> dict:
     row = get_owned_project_row(db, user, project_id)
-    project = pydantic_from_db_row(row)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No project payload")
+    project = load_project_graph(db, row)
     project = slice_for_export(project, approved_only=approved_only)
     settings = get_settings()
     # Prefer JIRA REST when JIRA_TOKEN + base URL + project are set
@@ -93,9 +91,7 @@ async def export_github(
             "GITHUB_TOKEN and GITHUB_REPO (owner/name) must be set for GitHub export.",
         )
     row = get_owned_project_row(db, user, project_id)
-    project = pydantic_from_db_row(row)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No project payload")
+    project = load_project_graph(db, row)
     project = slice_for_export(project, approved_only=approved_only)
     result = await export_project_to_github_issues(project)
     return {
@@ -117,9 +113,7 @@ def export_project_csv(
     user: User = Depends(get_current_user),
 ) -> Response:
     row = get_owned_project_row(db, user, project_id)
-    project = pydantic_from_db_row(row)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No project payload")
+    project = load_project_graph(db, row)
     project = slice_for_export(project, approved_only=approved_only)
     csv_body = export_csv(project)
     return Response(
@@ -140,15 +134,16 @@ def export_project_markdown(
     user: User = Depends(get_current_user),
 ) -> Response:
     row = get_owned_project_row(db, user, project_id)
-    project = pydantic_from_db_row(row)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No project payload")
+    project = load_project_graph(db, row)
     project = slice_for_export(project, approved_only=approved_only)
     settings = get_settings()
     model_label = (settings.helix_export_model_label or "").strip() or (
         settings.azure_openai_deployment or "Helix"
     )
-    user_label = (user.email or "").strip() or f"user-{user.id}"
+    if settings.helix_production:
+        user_label = f"user-{user.id}"
+    else:
+        user_label = (user.email or "").strip() or f"user-{user.id}"
     body = export_markdown(project, audit=(user_label, model_label))
     return Response(
         content=body,
@@ -168,9 +163,7 @@ def export_project_json(
     user: User = Depends(get_current_user),
 ) -> Response:
     row = get_owned_project_row(db, user, project_id)
-    project = pydantic_from_db_row(row)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No project payload")
+    project = load_project_graph(db, row)
     project = slice_for_export(project, approved_only=approved_only)
     payload = project.model_dump(mode="json")
     return Response(

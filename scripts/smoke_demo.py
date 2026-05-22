@@ -59,7 +59,7 @@ def main() -> int:
 
     code, raw = req(
         "POST",
-        "/api/projects/ingest-text",
+        "/api/ingest/text",
         data={"name": "Smoke Demo", "text": SAMPLE.strip()},
     )
     if code != 200:

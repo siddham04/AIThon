@@ -1,0 +1,102 @@
+import { api } from '../api/client'
+
+const CRITICAL_SLICES = [
+  { key: 'artifacts', url: (id) => `/artifacts/${id}`, fallback: null },
+  { key: 'readiness', url: (id) => `/readiness-center/${id}`, fallback: null },
+]
+
+const DEFERRED_SLICES = [
+  { key: 'tests', url: (id) => `/testcases/${id}`, fallback: [] },
+  { key: 'quality', url: (id) => `/quality/${id}`, fallback: null },
+  { key: 'reviewBoard', url: (id) => `/review-board/${id}`, fallback: null },
+  { key: 'effort', url: (id) => `/studio/effort/${id}`, fallback: null },
+  { key: 'risk', url: (id) => `/studio/risk/${id}`, fallback: null },
+  { key: 'sprintPlan', url: (id) => `/sprint-plan/${id}/auto`, fallback: null },
+  { key: 'prd', url: (id) => `/delivery/prd/${id}?use_ai=false`, fallback: null },
+]
+
+const EMPTY_RESULT = {
+  project: null,
+  artifacts: null,
+  tests: [],
+  readiness: null,
+  quality: null,
+  reviewBoard: null,
+  effort: null,
+  risk: null,
+  sprintPlan: null,
+  prd: null,
+  approved: false,
+  failed: 1,
+}
+
+function applySliceResults(partial, slices, settled) {
+  let failed = partial.failed || 0
+  for (let i = 0; i < slices.length; i++) {
+    const s = slices[i]
+    if (settled[i].status === 'fulfilled') {
+      partial[s.key] = settled[i].value.data
+    } else {
+      partial[s.key] = s.fallback
+      failed += 1
+    }
+  }
+  partial.failed = failed
+  const storyList = partial.artifacts?.stories || []
+  partial.approved =
+    storyList.length > 0 && storyList.every((st) => st.approved_for_export)
+  return partial
+}
+
+async function fetchSlices(projectId, slices) {
+  return Promise.allSettled(
+    slices.map((s) =>
+      api
+        .get(s.url(projectId))
+        .then((r) => ({ key: s.key, data: r.data }))
+        .catch(() => ({ key: s.key, data: s.fallback })),
+    ),
+  )
+}
+
+/** Progressive load — project → critical slices → deferred slices (parallel within each tier). */
+export async function loadWorkspaceData(projectId, { onPartial } = {}) {
+  let project
+  try {
+    const { data } = await api.get(`/projects/${projectId}`)
+    project = data
+  } catch {
+    return { ...EMPTY_RESULT }
+  }
+
+  const partial = {
+    project,
+    artifacts: null,
+    tests: [],
+    readiness: null,
+    quality: null,
+    reviewBoard: null,
+    effort: null,
+    risk: null,
+    sprintPlan: null,
+    prd: null,
+    approved: false,
+    failed: 0,
+    loadingSlices: true,
+    loadingDeferred: false,
+  }
+  onPartial?.({ ...partial })
+
+  const criticalSettled = await fetchSlices(projectId, CRITICAL_SLICES)
+  applySliceResults(partial, CRITICAL_SLICES, criticalSettled)
+  partial.loadingSlices = false
+  partial.loadingDeferred = true
+  onPartial?.({ ...partial })
+
+  const deferredSettled = await fetchSlices(projectId, DEFERRED_SLICES)
+  applySliceResults(partial, DEFERRED_SLICES, deferredSettled)
+  partial.loadingDeferred = false
+
+  onPartial?.(partial)
+  return partial
+}

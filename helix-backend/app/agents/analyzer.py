@@ -36,7 +36,7 @@ SCHEMA = """{
 
 class AnalyzerAgent(Agent):
     name = "analyzer"
-    stage = "Analyzing intent"
+    stage = "Business Analyst"
 
     async def run(self, project: Project) -> Dict[str, Any]:
         clauses = render_clauses(project.source_clauses)

@@ -86,7 +86,7 @@ async def ai_artifact_json(
     if not ai.enabled:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Anthropic API is not configured (set ANTHROPIC_API_KEY).",
+            "Azure OpenAI is not configured (set AZURE_OAI_ENDPOINT and AZURE_OAI_KEY in .env).",
         )
     try:
         return await ai.generate_artifacts(_requirements_blob(project))
@@ -114,7 +114,7 @@ async def ai_artifact_stream(
     if not ai.enabled:
 
         async def err() -> AsyncIterator[str]:
-            yield f"event: error\ndata: {json.dumps({'error': 'Anthropic API not configured'})}\n\n"
+            yield f"event: error\ndata: {json.dumps({'error': 'Azure OpenAI not configured'})}\n\n"
 
         return StreamingResponse(
             err(),

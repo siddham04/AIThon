@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearAuthStorage, readAuthToken } from '../lib/authTokenStorage'
 
 const baseURL =
   import.meta.env.VITE_API_BASE?.replace(/\/$/, '') ||
@@ -10,7 +11,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('helix_token')
+  const token = readAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -22,8 +23,7 @@ api.interceptors.response.use(
   (err) => {
     const status = err.response?.status
     if (status === 401) {
-      localStorage.removeItem('helix_token')
-      localStorage.removeItem('helix_user')
+      clearAuthStorage()
       if (!window.location.pathname.startsWith('/login')) {
         window.location.assign('/login')
       }

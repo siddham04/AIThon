@@ -1,196 +1,149 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
-import { api } from '../../api/client'
-import {
-  readPinnedProjectIds,
-  sortProjectsWithPins,
-  togglePinnedProjectId,
-} from '../../lib/pinnedProjects'
-import { useAuthStore, useProjectStore } from '../../store/useStore'
-import { useDarkMode } from '../../hooks/useDarkMode'
-import { SkeletonPulse } from '../ui/Skeleton'
-
-const linkCls = ({ isActive }) =>
-  `nav-item ${isActive ? 'active' : ''}`.trim()
+import { motion, useReducedMotion } from 'framer-motion'
+import { useAuthStore } from '../../store/useStore'
+import { PRIMARY_NAV, navPath } from '../../lib/productFlow'
+import { PRODUCT_AI_AGENTS } from '../../lib/sdlcAgents'
 
 export default function Sidebar({ projectId }) {
-  const [collapsed, setCollapsed] = useState(false)
-  const asideRef = useRef(null)
-  const nav = useNavigate()
+  const [collapsed, setCollapsed] = useState(true)
+  const navigate = useNavigate()
   const logout = useAuthStore((s) => s.logout)
   const user = useAuthStore((s) => s.user)
-  const { projects, setProjects, loading, setLoading } = useProjectStore()
-  const { dark, toggle } = useDarkMode()
-  const [pinnedIds, setPinnedIds] = useState(readPinnedProjectIds)
-
-  const orderedProjects = useMemo(
-    () => sortProjectsWithPins(projects, pinnedIds),
-    [projects, pinnedIds],
-  )
-
-  useGSAP(
-    () => {
-      const el = asideRef.current
-      if (!el) return
-      gsap.to(el, {
-        width: collapsed ? 72 : 260,
-        duration: 0.45,
-        ease: 'power2.out',
-      })
-      const labels = el.querySelectorAll('.nav-label')
-      gsap.to(labels, {
-        opacity: collapsed ? 0 : 1,
-        x: collapsed ? -6 : 0,
-        maxWidth: collapsed ? 0 : 200,
-        duration: 0.22,
-        stagger: collapsed ? 0.02 : 0.04,
-        ease: 'power2.out',
-        pointerEvents: collapsed ? 'none' : 'auto',
-      })
-    },
-    { dependencies: [collapsed] },
-  )
-
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    api
-      .get('/projects')
-      .then(({ data }) => {
-        if (!cancelled) setProjects(data)
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([])
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [setProjects, setLoading])
+  const reduceMotion = useReducedMotion()
 
   return (
-    <aside ref={asideRef} className="sidebar">
+    <aside
+      className={`sidebar sidebar--minimal${collapsed ? ' sidebar--collapsed' : ' sidebar--expanded'}`}
+    >
       <div className="sidebar-top">
-        <Link to="/new" className="brand">
+        <Link to="/judge-demo" className="brand" title="Helix — Start Judge Demo">
           {!collapsed && <span>Helix</span>}
           {collapsed && <span className="brand-mini">H</span>}
         </Link>
         <button
           type="button"
-          className="icon-btn"
+          className="icon-btn sidebar-toggle"
           title={collapsed ? 'Expand' : 'Collapse'}
           onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
         >
           {collapsed ? '»' : '«'}
         </button>
       </div>
 
-      <nav className="sidebar-nav">
-        <NavLink to="/new" className={linkCls} title="New project">
-          <span className="nav-ico">＋</span>
-          <span className="nav-label">New project</span>
-        </NavLink>
-        {projectId && (
-          <>
-            <NavLink end to={`/project/${projectId}`} className={linkCls} title="Workspace">
-              <span className="nav-ico">▣</span>
-              <span className="nav-label">Workspace</span>
-            </NavLink>
+      {!collapsed && (
+        <p className="sidebar-principle muted small">Judge Demo first · then package</p>
+      )}
+
+      <nav className="sidebar-nav sidebar-nav--native" aria-label="Product navigation">
+        {PRIMARY_NAV.map((item, index) => {
+          const disabled = item.requiresProject && !projectId
+          const to = navPath(projectId, item.segment, item.global)
+          const judgeClass = item.judge ? ' nav-item--judge' : ''
+          const copilotClass = item.highlight ? ' nav-item--copilot' : ''
+
+          if (disabled) {
+            return (
+              <span
+                key={item.segment}
+                className={`nav-item nav-item--native nav-item--disabled${judgeClass}`}
+                title={`${item.label} — launch a project first`}
+              >
+                <span className="nav-ico">{item.icon}</span>
+                <span className="nav-label-wrap">
+                  <span className="nav-label">{item.label}</span>
+                  {!collapsed && <span className="nav-tagline">{item.tagline}</span>}
+                </span>
+              </span>
+            )
+          }
+
+          const navTitle =
+            item.judge && collapsed
+              ? 'Judge Demo — 5-min autonomous SDLC (recommended for judges)'
+              : `${item.label} — ${item.tagline}`
+
+          return (
             <NavLink
-              to={`/project/${projectId}/preview`}
-              className={linkCls}
-              title="Stakeholder preview (read-only)"
+              key={item.segment}
+              to={to}
+              end={item.segment === '/mission-control' && !projectId}
+              className={({ isActive }) =>
+                `nav-item nav-item--native${judgeClass}${copilotClass}${isActive ? ' active' : ''}`.trim()
+              }
+              title={navTitle}
             >
-              <span className="nav-ico">◇</span>
-              <span className="nav-label">Handoff</span>
+              {({ isActive }) => (
+                <motion.span
+                  className="nav-item-inner"
+                  initial={false}
+                  animate={reduceMotion ? {} : isActive ? { scale: 1.02 } : { scale: 1 }}
+                  whileHover={reduceMotion ? {} : { scale: 1.03 }}
+                  whileTap={reduceMotion ? {} : { scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <span className={`nav-ico${item.judge ? ' nav-ico--judge' : ''}`}>{item.icon}</span>
+                  {collapsed && item.judge && (
+                    <span className="nav-collapsed-badge" aria-hidden>
+                      Demo
+                    </span>
+                  )}
+                  <span className="nav-label-wrap">
+                    <span className="nav-label-row">
+                      {!collapsed && (
+                        <span className="nav-step muted" aria-hidden>
+                          {index + 1}
+                        </span>
+                      )}
+                      <span className="nav-label">{item.label}</span>
+                    </span>
+                    {!collapsed && item.tagline && (
+                      <span className="nav-tagline">{item.tagline}</span>
+                    )}
+                  </span>
+                  {isActive && !reduceMotion && (
+                    <motion.span
+                      className="nav-active-glow"
+                      layoutId="nav-glow"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                </motion.span>
+              )}
             </NavLink>
-            <NavLink
-              to={`/project/${projectId}/analytics`}
-              className={linkCls}
-              title="Analytics"
-            >
-              <span className="nav-ico">📊</span>
-              <span className="nav-label">Analytics</span>
-            </NavLink>
-          </>
-        )}
+          )
+        })}
       </nav>
 
-      <div className="sidebar-section">
-        {!collapsed && <p className="sidebar-heading">Projects</p>}
-        {loading ? (
-          <div className="sk-stack">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <SkeletonPulse key={i} className="sk-row" />
+      {!collapsed && (
+        <div className="sidebar-agents" aria-label="AI agents">
+          <p className="sidebar-agents-title muted small">AI team</p>
+          <ul className="sidebar-agents-list">
+            {PRODUCT_AI_AGENTS.map((a) => (
+              <li key={a.id} title={a.label}>
+                <span className="sidebar-agent-glyph" aria-hidden>
+                  {a.glyph}
+                </span>
+                <span className="sidebar-agent-name">{a.short || a.label}</span>
+              </li>
             ))}
-          </div>
-        ) : (
-          <ul className="project-list">
-            {orderedProjects.map((p) => {
-              const pinned = pinnedIds.includes(p.id)
-              return (
-                <li key={p.id} className="project-list-item">
-                  <Link
-                    to={`/project/${p.id}`}
-                    className={p.id === projectId ? 'project-link active' : 'project-link'}
-                    title={p.name}
-                  >
-                    {!collapsed ? (
-                      <>
-                        {pinned ? <span className="project-pin-mark">★ </span> : null}
-                        {p.name}
-                      </>
-                    ) : (
-                      p.name.slice(0, 2)
-                    )}
-                  </Link>
-                  {!collapsed && (
-                    <button
-                      type="button"
-                      className={`project-pin-btn ${pinned ? 'is-pinned' : ''}`}
-                      title={pinned ? 'Unpin project' : 'Pin to top'}
-                      aria-pressed={pinned}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        togglePinnedProjectId(p.id)
-                        setPinnedIds(readPinnedProjectIds())
-                      }}
-                    >
-                      {pinned ? '★' : '☆'}
-                    </button>
-                  )}
-                </li>
-              )
-            })}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="sidebar-footer">
-        <button
-          type="button"
-          className="btn ghost small"
-          onClick={toggle}
-          title={dark ? 'Switch to light theme' : 'Switch to dark theme'}
-          aria-pressed={dark}
-        >
-          {dark ? 'Light mode' : 'Dark mode'}
-        </button>
+      <div className="sidebar-footer sidebar-footer--minimal">
         <div className="user-line">
-          {!collapsed && <span className="muted small">{user?.email}</span>}
+          {!collapsed && <span className="muted small sidebar-email">{user?.email}</span>}
           <button
             type="button"
             className="btn ghost small"
             onClick={() => {
               logout()
-              nav('/login')
+              navigate('/login')
             }}
           >
-            Log out
+            {collapsed ? '↪' : 'Log out'}
           </button>
         </div>
       </div>

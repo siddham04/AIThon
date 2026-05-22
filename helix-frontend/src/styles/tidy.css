@@ -1,0 +1,20 @@
+/* Layout polish — spacing, auth, dialogs (layered on hackathon-fx) */
+
+.app-outlet-wrap {
+  min-height: 100%;
+}
+
+.lp-auth-card,
+.mc-landing,
+.p5-page {
+  position: relative;
+  z-index: 1;
+}
+
+.command-palette {
+  border-radius: 14px;
+}
+
+.toast-undo-wrap {
+  border-radius: 12px;
+}

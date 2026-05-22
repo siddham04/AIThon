@@ -1,7 +1,23 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const demoEmail = process.env.E2E_LOGIN_EMAIL || "demo@demo.com";
 const demoPassword = process.env.E2E_LOGIN_PASSWORD || "demo123";
+
+const PRODUCT_ROUTES = [
+  "/mission-control",
+  "/ai-workspace",
+  "/delivery-command",
+  "/copilot",
+  "/settings",
+];
+
+async function loginToMissionControl(page: Page) {
+  await page.goto("/login");
+  await page.getByLabel(/email or username/i).fill(demoEmail);
+  await page.getByLabel(/^password$/i).fill(demoPassword);
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page).toHaveURL(/mission-control/, { timeout: 30_000 });
+}
 
 test.describe("smoke", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,21 +30,44 @@ test.describe("smoke", () => {
     });
   });
 
-  test("login → sample project → dashboard shows summary or readiness", async ({ page }) => {
-    await page.goto("/login");
+  test("login → mission control → launch controls visible", async ({ page }) => {
+    await loginToMissionControl(page);
 
-    await page.getByLabel("Email", { exact: true }).fill(demoEmail);
-    await page.getByLabel("Password", { exact: true }).fill(demoPassword);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page.getByRole("heading", { name: /mission control/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /launch ai team/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /load demo prd/i })).toBeEnabled();
+  });
 
-    await expect(page).toHaveURL(/\/new$/);
+  test("product routes load after login", async ({ page }) => {
+    await loginToMissionControl(page);
 
-    await page.getByRole("button", { name: "Load sample requirement" }).click();
-    await page.getByRole("button", { name: "Ingest" }).click();
+    for (const path of PRODUCT_ROUTES) {
+      await page.goto(path);
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page.locator("body")).toBeVisible();
+    }
+  });
 
-    await page.waitForURL(/\/project\/[^/]+$/, { timeout: 180_000 });
+  test("legacy redirects (new, delivery-package, workspace)", async ({ page }) => {
+    await loginToMissionControl(page);
 
-    const summaryOrReadiness = page.locator(".summary-card, section.readiness-panel");
-    await expect(summaryOrReadiness.first()).toBeVisible({ timeout: 60_000 });
+    await page.goto("/new");
+    await expect(page).toHaveURL(/mission-control/, { timeout: 15_000 });
+
+    await page.goto("/delivery-package");
+    await expect(page).toHaveURL(/ai-workspace/, { timeout: 15_000 });
+
+    await page.goto("/workspace");
+    await expect(page).toHaveURL(/copilot/, { timeout: 15_000 });
+  });
+
+  test("judge demo route loads", async ({ page }) => {
+    await loginToMissionControl(page);
+
+    await page.goto("/judge-demo");
+    await expect(page).toHaveURL(/judge-demo/, { timeout: 15_000 });
+    await expect(
+      page.getByRole("button", { name: /start autonomous sdlc demo/i }),
+    ).toBeVisible();
   });
 });

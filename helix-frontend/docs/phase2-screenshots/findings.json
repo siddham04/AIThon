@@ -1,0 +1,156 @@
+[
+  {
+    "page": "Mission Control",
+    "viewport": "mobile",
+    "category": "alignment",
+    "severity": "medium",
+    "detail": "Elements past viewport edge: INPUT. right=495; BUTTON.mc-stack-chip is-active right=465; BUTTON.mc-stack-chip right=445; BUTTON.mc-stack-chip right=446; BUTTON.mc-stack-chip right=447"
+  },
+  {
+    "page": "Mission Control",
+    "viewport": "mobile",
+    "category": "padding",
+    "severity": "medium",
+    "detail": "main padding-left only 0px on narrow viewport"
+  },
+  {
+    "page": "Mission Control",
+    "viewport": "mobile",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Workspace",
+    "viewport": "mobile",
+    "category": "padding",
+    "severity": "medium",
+    "detail": "main padding-left only 0px on narrow viewport"
+  },
+  {
+    "page": "Workspace",
+    "viewport": "mobile",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Delivery Package",
+    "viewport": "mobile",
+    "category": "padding",
+    "severity": "medium",
+    "detail": "main padding-left only 0px on narrow viewport"
+  },
+  {
+    "page": "Delivery Package",
+    "viewport": "mobile",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Delivery Package",
+    "viewport": "mobile",
+    "category": "layout",
+    "severity": "low",
+    "detail": "No section elements detected on Delivery Package"
+  },
+  {
+    "page": "Judge Demo",
+    "viewport": "mobile",
+    "category": "padding",
+    "severity": "medium",
+    "detail": "main padding-left only 0px on narrow viewport"
+  },
+  {
+    "page": "Judge Demo",
+    "viewport": "mobile",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Settings",
+    "viewport": "mobile",
+    "category": "padding",
+    "severity": "medium",
+    "detail": "main padding-left only 0px on narrow viewport"
+  },
+  {
+    "page": "Settings",
+    "viewport": "mobile",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Mission Control",
+    "viewport": "tablet",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Workspace",
+    "viewport": "tablet",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Delivery Package",
+    "viewport": "tablet",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Judge Demo",
+    "viewport": "tablet",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Settings",
+    "viewport": "tablet",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Mission Control",
+    "viewport": "desktop",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Workspace",
+    "viewport": "desktop",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Delivery Package",
+    "viewport": "desktop",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Judge Demo",
+    "viewport": "desktop",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  },
+  {
+    "page": "Settings",
+    "viewport": "desktop",
+    "category": "theme",
+    "severity": "low",
+    "detail": "Unexpected light body background: rgb(5, 5, 8)"
+  }
+]

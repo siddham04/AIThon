@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..models import Project, Severity
-from ..services.project_bridge import pydantic_from_db_row
+from ..services.project_bridge import ensure_engineering_tasks, pydantic_from_db_row, save_project_to_db
 from ..sqla_models import ProjectRecord, User
 
 
@@ -15,10 +15,18 @@ def get_owned_project_row(db: Session, user: User, project_id: str) -> ProjectRe
     return row
 
 
-def load_project_graph(db: Session, row: ProjectRecord) -> Project:
+def load_project_graph(
+    db: Session,
+    row: ProjectRecord,
+    *,
+    repair_tasks: bool = True,
+) -> Project:
     p = pydantic_from_db_row(row)
     if p is None:
         return Project(id=row.id, name=row.name, raw_input="", source_clauses=[])
+    if repair_tasks and ensure_engineering_tasks(p):
+        save_project_to_db(db, row, p)
+        db.commit()
     return p
 
 

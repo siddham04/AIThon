@@ -1,0 +1,348 @@
+/* Helix 5-page product shell */
+
+.p5-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 3rem;
+}
+
+.p5-hero {
+  margin-bottom: 1.5rem;
+}
+
+.p5-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.35rem;
+}
+
+.p5-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.p5-panel {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.p5-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.p5-stat {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.p5-stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 0.25rem;
+}
+
+.p5-stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.p5-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.p5-section-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.p5-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.p5-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.p5-list li {
+  margin-bottom: 0.35rem;
+}
+
+.p5-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.p5-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.p5-chip {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.p5-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.p5-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.p5-timeline-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.p5-timeline-item:last-child {
+  border-bottom: none;
+}
+
+.p5-graph-wrap {
+  height: 320px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+html.dark .p5-stat {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+/* Human-in-the-loop approval checklist */
+.hx-approval {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.08), rgba(99, 102, 241, 0.06));
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.hx-approval-kicker {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.hx-approval-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.hx-approval-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.hx-approval-row.is-done .hx-approval-mark {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.hx-approval-row.is-pending .hx-approval-mark {
+  color: var(--text-muted);
+}
+
+.hx-approval-label {
+  font-weight: 600;
+}
+
+.hx-approval-detail {
+  margin-left: auto;
+}
+
+.hx-approval-foot {
+  margin: 0.85rem 0 0;
+}
+
+.hx-approval-cta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.hx-approve-export-btn {
+  font-size: 1.05rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+}
+
+.hx-approval--compact {
+  padding: 0.85rem 1rem;
+}
+
+.hx-approval--compact .hx-approval-list {
+  gap: 0.3rem;
+}
+
+.p5-empty-run {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.p5-empty-run h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.p5-copilot-wrap {
+  height: calc(100vh - 2rem);
+  min-height: 520px;
+  margin: -0.5rem -0.25rem 0;
+}
+
+.p5-copilot-wrap .ws-shell {
+  height: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.ws-agent-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin: 0.75rem 0 1rem;
+}
+
+.ws-agent-chip {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--text-muted);
+}
+
+/* P2 — traceability animation, Jira preview/push */
+.trace-flow-anim {
+  margin-bottom: 1.25rem;
+}
+.trace-flow-lanes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
+.trace-flow-lane-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.trace-flow-lane {
+  min-width: 88px;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  text-align: center;
+  transition: box-shadow 0.3s;
+}
+.trace-flow-lane.is-active {
+  background: rgba(99, 102, 241, 0.08);
+}
+.trace-flow-lane-label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.trace-flow-lane-count {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.trace-flow-arrow {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.jira-csv-preview {
+  margin-bottom: 1.25rem;
+}
+.jira-csv-preview-scroll {
+  overflow-x: auto;
+  max-height: 280px;
+}
+.jira-csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.jira-csv-table th,
+.jira-csv-table td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.jira-csv-table th {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.jira-push-panel {
+  margin-bottom: 1.25rem;
+}
+.jira-push-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.jira-push-result {
+  margin-top: 0.75rem;
+  max-height: 160px;
+  overflow: auto;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.mc-voice-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}

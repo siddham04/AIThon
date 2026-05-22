@@ -1,7 +1,11 @@
-"""Test Architect Agent — generates Given/When/Then test cases.
+"""QA Agent — comprehensive test planning.
 
-Goes beyond happy paths: explicitly enumerates edge cases (boundary,
-auth, concurrency, failure modes) per story.
+Fourth agent in the Multi-Agent SDLC Pipeline. Generates:
+
+    - Test cases (Given/When/Then)
+    - Edge cases
+    - Negative scenarios
+    - Security / performance / accessibility where applicable
 """
 from __future__ import annotations
 
@@ -12,19 +16,20 @@ from ai.prompts.testcase_prompt import TESTCASE_SYSTEM, testcase_user_message
 from ..models import Project, TestCase, TestType
 from ..services.ai_service import get_ai_service
 from .base import Agent
+from .clause_utils import filter_clause_ids, resolve_story_id
 
 
-SYSTEM = """You are a Senior QA Architect designing a test plan.
+SYSTEM = """You are a Senior QA Architect — the QA Agent in a multi-agent SDLC pipeline.
 
-For each user story, produce a comprehensive set of test cases covering:
-  - Happy path
-  - Boundary / edge cases
-  - Negative / error cases
-  - At least one of: security, performance, or accessibility (when applicable)
+For each user story produce test cases in three buckets:
+  1. Functional (happy path)
+  2. Edge cases (boundaries, concurrency, timeouts)
+  3. Negative scenarios (invalid input, auth failures, outages)
 
-Format each test in Given / When / Then. Include a short list of
-edge_cases (failure modes worth probing). Cite the story id and source
-clause ids.
+Also include security, performance, or accessibility tests when the story
+implies them. Format each test as Given / When / Then. Set `type` to
+unit|integration|e2e|performance|security|accessibility. List specific
+edge_cases on each test. Cite story_id and source_clause_ids verbatim.
 """.strip()
 
 
@@ -46,7 +51,7 @@ SCHEMA = """{
 
 class TestArchitectAgent(Agent):
     name = "tests"
-    stage = "Designing test cases"
+    stage = "QA Agent"
 
     async def run(self, project: Project) -> Dict[str, Any]:
         if not project.stories:
@@ -79,23 +84,31 @@ class TestArchitectAgent(Agent):
                 max_completion_tokens=5000,
             )
 
-        story_ids = {s.id for s in project.stories}
         cases: List[TestCase] = []
         for t in data.get("tests") or []:
             try:
-                sid = t.get("story_id")
-                if sid not in story_ids:
-                    sid = None
+                title = t.get("title", "Untitled test")
+                sid = resolve_story_id(
+                    project,
+                    t.get("story_id"),
+                    agent="test_architect",
+                    title=str(title),
+                )
                 cases.append(
                     TestCase(
-                        title=t.get("title", "Untitled test"),
+                        title=title,
                         type=TestType(t.get("type", "unit")),
                         given=t.get("given", ""),
                         when=t.get("when", ""),
                         then=t.get("then", ""),
                         edge_cases=list(t.get("edge_cases") or []),
                         story_id=sid,
-                        source_clause_ids=list(t.get("source_clause_ids") or []),
+                        source_clause_ids=filter_clause_ids(
+                            project,
+                            t.get("source_clause_ids"),
+                            agent="test_architect",
+                            context=str(title)[:40],
+                        ),
                     )
                 )
             except Exception:

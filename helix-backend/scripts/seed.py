@@ -19,8 +19,9 @@ if str(ROOT) not in sys.path:
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 log = logging.getLogger("helix.seed")
 
+# Canonical hackathon backup — bookmark /project/proj_demo_seed01/ai-workspace
 SEED_PROJECT_ID = "proj_demo_seed01"
-SEED_PROJECT_NAME = "Demo — Checkout & inventory (pre-seeded)"
+SEED_PROJECT_NAME = "Showcase — Checkout & OTP (pre-baked)"
 
 
 def _wait_for_db(engine, attempts: int = 45, delay_sec: float = 1.0) -> None:
@@ -86,6 +87,18 @@ def _build_demo_project():
         ],
         source_clause_ids=[c1.id],
     )
+    story2 = UserStory(
+        id="story_demo_002",
+        title="Show delivery date before payment",
+        persona="Shopper",
+        goal="See accurate delivery estimate",
+        benefit="Reduce cart abandonment",
+        acceptance_criteria=[
+            "Given cart with address, when viewing checkout, then delivery date displays",
+            "Estimate renders within 200ms P95",
+        ],
+        source_clause_ids=[c3.id],
+    )
 
     t1 = Task(
         id="task_demo_001",
@@ -112,6 +125,19 @@ def _build_demo_project():
         confidence=0.75,
         skills=["PostgreSQL", "transactions"],
         source_clause_ids=[c2.id],
+    )
+    t3 = Task(
+        id="task_demo_003",
+        title="Delivery estimate API",
+        description="Compute shipping ETA from warehouse + carrier rules.",
+        type=TaskType.FEATURE,
+        priority=Severity.HIGH,
+        story_id=story2.id,
+        estimate_hours=5.0,
+        estimate_points=5,
+        confidence=0.8,
+        skills=["FastAPI", "caching"],
+        source_clause_ids=[c3.id],
     )
 
     tc = TestCase(
@@ -165,19 +191,18 @@ def _build_demo_project():
         raw_input=raw,
         source_clauses=[c1, c2, c3],
         summary=summary,
-        stories=[story],
-        tasks=[t1, t2],
+        stories=[story, story2],
+        tasks=[t1, t2, t3],
         test_cases=[tc],
         ambiguities=[amb],
         risks=[risk],
         metrics=metrics,
         last_pipeline_timings_ms={
-            "Analyzing intent": 820,
-            "Detecting ambiguity": 910,
-            "Drafting stories & tasks": 1200,
-            "Designing test cases": 1500,
-            "Estimating effort": 640,
-            "Surfacing risks": 700,
+            "Requirement Analyst": 540,
+            "Product Manager": 1200,
+            "Architect": 980,
+            "QA Agent": 1500,
+            "Scrum Master": 1100,
         },
     )
 
@@ -220,6 +245,15 @@ def main() -> None:
             return
 
         proj = _build_demo_project()
+        try:
+            from app.services.prd_generator import generate_prd_for_project
+
+            proj.prd_document = asyncio.run(
+                generate_prd_for_project(proj, use_ai=False)
+            )
+        except Exception as e:
+            log.warning("PRD pre-bake skipped: %s", e)
+
         row = ProjectRecord(
             id=proj.id,
             name=proj.name,

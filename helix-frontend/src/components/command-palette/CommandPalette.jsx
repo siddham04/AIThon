@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { PRODUCT_PAGES, navPath } from '../../lib/productFlow'
 
 function isTypingTarget(el) {
   const tag = el?.tagName
@@ -15,81 +16,27 @@ export default function CommandPalette() {
 
   const commands = useMemo(() => {
     const all = [
-      {
-        id: 'new',
-        title: 'New project',
-        subtitle: 'Ingest requirements',
-        keywords: 'create ingest prd',
-        run: () => nav('/new'),
-      },
+      ...PRODUCT_PAGES.map((mode) => ({
+        id: mode.id,
+        title: mode.label,
+        subtitle: mode.tagline,
+        keywords: `${mode.short} helix`,
+        run: () => nav(navPath(id, mode.segment, mode.global)),
+        disabled: mode.requiresProject && !id,
+      })),
       ...(id
         ? [
             {
-              id: 'workspace',
-              title: 'Open workspace',
-              subtitle: 'Current project dashboard',
-              keywords: 'board kanban home',
-              run: () => nav(`/project/${id}`),
-            },
-            {
-              id: 'handoff',
-              title: 'Stakeholder handoff',
-              subtitle: 'Read-only preview for execs',
-              keywords: 'preview share stakeholder',
-              run: () => nav(`/project/${id}/preview`),
-            },
-            {
-              id: 'analytics',
-              title: 'Analytics',
-              subtitle: 'Charts & telemetry',
-              keywords: 'metrics graph',
-              run: () => nav(`/project/${id}/analytics`),
-            },
-            {
-              id: 'gen-art',
-              title: 'Generate artifacts',
-              subtitle: 'Stories, tasks, summary from requirements',
-              keywords: 'ai pipeline build',
-              run: () => window.dispatchEvent(new CustomEvent('helix:generate-artifacts')),
-            },
-            {
-              id: 'gen-tests',
-              title: 'Generate tests',
-              subtitle: 'Gherkin-style cases',
-              keywords: 'qa testcase',
-              run: () => window.dispatchEvent(new CustomEvent('helix:generate-tests')),
-            },
-            {
-              id: 'amb',
-              title: 'Analyze ambiguity',
-              subtitle: 'Scan requirement wording',
-              keywords: 'risk vague unclear',
-              run: () => window.dispatchEvent(new CustomEvent('helix:analyze-ambiguity')),
-            },
-            {
-              id: 'req',
-              title: 'Focus requirement editor',
-              subtitle: 'Scroll to working requirement',
-              keywords: 'prd text document',
-              run: () => window.dispatchEvent(new CustomEvent('helix:focus-requirement')),
-            },
-            {
-              id: 'export',
-              title: 'Scroll to export',
-              subtitle: 'JIRA, GitHub, CSV…',
-              keywords: 'download handoff',
-              run: () => window.dispatchEvent(new CustomEvent('helix:open-export')),
-            },
-            {
-              id: 'chat',
-              title: 'Focus copilot',
-              subtitle: 'Same as ⌘/Ctrl+K',
-              keywords: 'ai ask chat',
-              run: () => window.dispatchEvent(new CustomEvent('helix:open-chat')),
+              id: 'launch',
+              title: 'Launch AI team',
+              subtitle: 'AI runs SDLC — you approve before export',
+              keywords: 'agents pipeline sdlc mission',
+              run: () => nav(`/project/${id}/mission-control`),
             },
           ]
         : []),
-    ]
+    ].filter((c) => !c.disabled)
+
     const needle = q.trim().toLowerCase()
     if (!needle) return all
     return all.filter((c) => {
@@ -126,9 +73,7 @@ export default function CommandPalette() {
       }
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setIdx((i) =>
-          commands.length ? Math.min(commands.length - 1, i + 1) : 0,
-        )
+        setIdx((i) => (commands.length ? Math.min(commands.length - 1, i + 1) : 0))
         return
       }
       if (e.key === 'ArrowUp') {
@@ -151,15 +96,15 @@ export default function CommandPalette() {
   return (
     <dialog open className="modal command-palette-backdrop" onClick={close}>
       <div
-        className="command-palette"
+        className="command-palette glass-panel"
         role="listbox"
-        aria-label="Command palette"
+        aria-label="Team commands"
         onClick={(e) => e.stopPropagation()}
       >
         <input
           className="command-palette-input"
           autoFocus
-          placeholder="Jump to… (project commands)"
+          placeholder="Go to a team surface…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           aria-autocomplete="list"

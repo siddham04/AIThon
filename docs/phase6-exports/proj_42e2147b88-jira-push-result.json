@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "reason": "missing_config",
+  "detail": "Set JIRA_BASE_URL, JIRA_TOKEN, JIRA_PROJECT_KEY (and JIRA_EMAIL for Cloud)."
+}

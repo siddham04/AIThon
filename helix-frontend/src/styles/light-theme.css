@@ -1,0 +1,128 @@
+/* Helix light theme — bright sky/indigo palette (no flat grey UI) */
+
+html.light-forced {
+  color-scheme: light;
+
+  --bg: #e8f4ff;
+  --bg-elevated: #ffffff;
+  --surface: #dbeafe;
+  --surface-2: #bfdbfe;
+  --text: #0c4a6e;
+  --text-muted: #0369a1;
+  --muted: #0284c7;
+  --border: rgba(37, 99, 235, 0.22);
+  --accent: #0284c7;
+  --accent-2: #4f46e5;
+  --glass-blur: 14px;
+  --glass-border: rgba(59, 130, 246, 0.28);
+  --glow-cyan: rgba(14, 165, 233, 0.4);
+  --glow-violet: rgba(99, 102, 241, 0.32);
+  --glow-blue: rgba(59, 130, 246, 0.25);
+}
+
+html.light-forced:root,
+html.light-forced {
+  --lp-bg: #e8f4ff;
+  --lp-bg-alt: #f0f9ff;
+  --lp-text: #0c4a6e;
+  --lp-muted: #0369a1;
+}
+
+html.light-forced body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html.light-forced .app-shell {
+  background:
+    radial-gradient(ellipse 85% 55% at 8% -8%, rgba(99, 102, 241, 0.2), transparent 52%),
+    radial-gradient(ellipse 70% 45% at 92% 5%, rgba(14, 165, 233, 0.22), transparent 48%),
+    radial-gradient(ellipse 55% 35% at 50% 105%, rgba(56, 189, 248, 0.18), transparent 42%),
+    linear-gradient(165deg, #e8f4ff 0%, #f0f9ff 45%, #e0f2fe 100%);
+}
+
+html.light-forced .workspace-ambient {
+  opacity: 0.22;
+}
+
+html.light-forced .sidebar {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 4px 0 28px rgba(14, 165, 233, 0.1);
+}
+
+html.light-forced .brand {
+  background: linear-gradient(120deg, #0284c7, #4f46e5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+html.light-forced .nav-item {
+  color: #0369a1;
+}
+
+html.light-forced .nav-item:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #0c4a6e;
+}
+
+html.light-forced .nav-item.active {
+  background: linear-gradient(120deg, rgba(14, 165, 233, 0.2), rgba(99, 102, 241, 0.15));
+  color: #0c4a6e;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.12);
+}
+
+html.light-forced .sidebar-heading {
+  color: #0284c7;
+}
+
+html.light-forced .panel,
+html.light-forced .glass-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--glass-border);
+  box-shadow:
+    0 4px 24px rgba(59, 130, 246, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+html.light-forced .panel--motion:hover {
+  border-color: rgba(14, 165, 233, 0.45);
+  box-shadow: 0 12px 36px rgba(59, 130, 246, 0.15);
+}
+
+html.light-forced .btn {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: #ffffff;
+  color: #0c4a6e;
+}
+
+html.light-forced .btn.ghost {
+  background: rgba(255, 255, 255, 0.6);
+  color: #0369a1;
+}
+
+html.light-forced .btn-primary {
+  background: linear-gradient(120deg, #0ea5e9, #6366f1);
+  box-shadow: 0 8px 28px var(--glow-cyan), 0 4px 14px var(--glow-violet);
+  color: #fff;
+}
+
+html.light-forced input,
+html.light-forced textarea,
+html.light-forced select {
+  background: #ffffff;
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #0c4a6e;
+}
+
+html.light-forced .command-palette {
+  background: #ffffff;
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 24px 56px rgba(59, 130, 246, 0.2);
+}

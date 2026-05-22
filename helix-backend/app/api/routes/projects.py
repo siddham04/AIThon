@@ -9,7 +9,7 @@ from ...models import Project
 from ...schemas.project import ProjectCreate, ProjectResponse
 from ...services.project_bridge import ensure_project_row, new_project_id
 from ...services.rag_service import embed_requirements, search
-from ...services.sensitive_scan import scan_sensitive_hints
+from ...services.sensitive_scan import enforce_no_secrets_in_prompt, scan_sensitive_hints
 from ...services.store import get_store
 from ...sqla_models import ProjectRecord, User
 from ..deps import get_current_user
@@ -43,6 +43,8 @@ async def create_project(
 ) -> ProjectResponse:
     pid = new_project_id()
     raw = (payload.raw_text or "").strip()
+    if raw:
+        enforce_no_secrets_in_prompt(raw)
     proj = Project(id=pid, name=payload.name, raw_input=raw, source_clauses=[])
     if raw:
         from ...services.ingestion import split_into_clauses

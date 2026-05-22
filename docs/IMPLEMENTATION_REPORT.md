@@ -30,7 +30,7 @@ Helix addresses each of these explicitly (see Section 4).
 - **Structured outputs:** User stories, tasks, acceptance criteria, requirement summary, risks, productivity metrics (incl. citation rate and timings).
 - **Test generation:** Test architect agent producing Given/When/Then style cases linked to stories and clauses.
 - **Ambiguity:** LLM-based ambiguity agent plus optional NLP heuristics (e.g. passive voice, vague tokens).
-- **Dashboard:** Full workspace: Kanban, summary, readiness, tests, ambiguity, export hub, analytics, stakeholder preview, command palette, keyboard shortcuts.
+- **Dashboard:** Full workspace: Kanban, summary, readiness, tests, ambiguity, export hub, **Recharts + Chart.js** SDLC analytics strip (Kanban counts, artifact mix, quality/burndown from `GET /api/insights`), dedicated **Insights** page (heatmaps, Sankey, anomalies), stakeholder preview, command palette, keyboard shortcuts.
 - **Bonus Copilot:** Natural-language chat over project context (`/api/chat`, streaming where configured).
 - **Bonus estimation:** Per-task hours/points/confidence and rollups via effort service and metrics.
 - **Bonus export:** CSV, Markdown, Jira-oriented and GitHub export paths; human **approved_for_export** gate.

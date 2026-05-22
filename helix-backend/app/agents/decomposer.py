@@ -53,7 +53,7 @@ SCHEMA = """{
 
 class DecomposerAgent(Agent):
     name = "decomposer"
-    stage = "Drafting stories & tasks"
+    stage = "Task Planner"
 
     async def run(self, project: Project) -> Dict[str, Any]:
         summary_block = ""

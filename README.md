@@ -78,16 +78,26 @@ Most "requirement summarizers" stop at bullet points. Helix is a true
 
 ### Tech stack
 
-**Frontend:** React 19 · TypeScript · Vite 8 · Web Speech
+**Frontend:** React 19 · TypeScript · Vite 8 · Web Speech · **Recharts** and **Chart.js**
+(`react-chartjs-2`) on the dashboard for SDLC KPIs (Kanban distribution, artifact mix,
+insights-backed quality and burndown).
 
 **Backend:** Python 3.11 · FastAPI · Pydantic v2 · OpenAI SDK (Azure
-client) · pypdf · python-docx.
+client) · pypdf · python-docx · **spaCy** / sentence-transformers / FAISS (ingest & RAG paths).
 
-**AI (actual code paths):** **Azure OpenAI** (deployment default **o3**, JSON mode) powers
-`Analyzer`, `Decomposer`, and `Risk`, and serves as the **fallback** for agents that prefer
-**Anthropic Claude** when `ANTHROPIC_API_KEY` is set (`Ambiguity`, `TestArchitect`, `Estimator`,
-and chat). If neither provider is configured, **demo mode** uses deterministic mock output
-so the pipeline and UI stay fully usable offline.
+**AI (actual code paths):** **Azure OpenAI** — set `AZURE_OPENAI_*` or hackathon-style
+`AZURE_OAI_ENDPOINT` / `AZURE_OAI_KEY` / `PLANNING_MODEL` (see `helix-backend/.env.example`).
+The deployment default is **o3** with JSON mode for `Analyzer`, `Decomposer`, and `Risk`, and
+as **fallback** for agents that prefer **Anthropic Claude** when `ANTHROPIC_API_KEY` is set
+(`Ambiguity`, `TestArchitect`, `Estimator`, and chat). If neither provider is configured,
+**demo mode** uses deterministic mock output so the pipeline and UI stay fully usable offline.
+
+**ML / analytics (non-LLM):** **scikit-learn** (`IsolationForest` task anomalies, TF-IDF +
+cosine duplicate-story detection) via `GET /api/insights/{project_id}` (`ml_insights.py`),
+surfaced in the workspace dashboard and the full **Insights** page. Embeddings for RAG use
+**sentence-transformers** (PyTorch). A standalone **TensorFlow** graph is not required for
+the delivered demo path — judges can point to sklearn + Azure OpenAI as the primary “AI/ML”
+stack in code.
 
 Optional: set `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL` for Claude; keep Azure variables for
 JSON-stage quality. `GET /api/health` reports `azure_openai_configured` and `anthropic_configured`.
@@ -108,13 +118,21 @@ This bootstraps a virtualenv, installs deps, copies `.env.example` →
 
 Edit `helix-backend\.env` with at least one provider:
 
-**Azure OpenAI** (JSON stages + fallback):
+**Azure OpenAI** (JSON stages + fallback). You can use either naming style:
 
 ```
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com
 AZURE_OPENAI_API_KEY=<your-key>
 AZURE_OPENAI_DEPLOYMENT=o3
 AZURE_OPENAI_API_VERSION=2024-12-01-preview
+```
+
+Or the hackathon-style aliases (supported by the same backend):
+
+```
+AZURE_OAI_ENDPOINT=https://<your-resource>.openai.azure.com
+AZURE_OAI_KEY=<your-key>
+PLANNING_MODEL=o3
 ```
 
 **Anthropic** (optional; ambiguity / tests / estimator prefer Claude when set):

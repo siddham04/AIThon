@@ -1,0 +1,139 @@
+{
+  "started_at": "2026-05-22T09:25:48.206210+00:00",
+  "finished_at": "2026-05-22T09:29:31.137790+00:00",
+  "project_id": "proj_42e2147b88",
+  "use_ai": false,
+  "sse_steps_seen": {
+    "boot": {
+      "status": "running",
+      "percent": 2,
+      "headline": "Boot \u00b7 loading agents"
+    },
+    "ingest": {
+      "status": "done",
+      "percent": 9,
+      "headline": "7 clauses extracted"
+    },
+    "quality": {
+      "status": "done",
+      "percent": 18,
+      "headline": "Overall 69/100  \u00b7  Grade D  \u00b7  3 gaps flagged"
+    },
+    "review": {
+      "status": "done",
+      "percent": 27,
+      "headline": "Confidence 49/100  \u00b7  Grade D"
+    },
+    "ambiguity": {
+      "status": "done",
+      "percent": 36,
+      "headline": "10 ambiguities  \u00b7  6 risks"
+    },
+    "stories": {
+      "status": "done",
+      "percent": 45,
+      "headline": "5 stories  \u00b7  0 tasks"
+    },
+    "architecture": {
+      "status": "done",
+      "percent": 55,
+      "headline": "4 layers  \u00b7  15 nodes  \u00b7  Mermaid ready"
+    },
+    "effort_sprint": {
+      "status": "done",
+      "percent": 64,
+      "headline": "13 pts \u00b7 Sprint 1 \u00b7 very_high"
+    },
+    "apis": {
+      "status": "done",
+      "percent": 73,
+      "headline": "4 API contracts"
+    },
+    "tests": {
+      "status": "done",
+      "percent": 82,
+      "headline": "11 tests across 5 categories  \u00b7  20 BDD cases"
+    },
+    "jira": {
+      "status": "done",
+      "percent": 91,
+      "headline": "Epic + 5 stories  \u00b7  0 tasks  \u00b7  0 subtasks"
+    },
+    "readiness": {
+      "status": "done",
+      "percent": 100,
+      "headline": "PROJECT READY \u2014 94% delivery readiness"
+    },
+    "complete": {
+      "status": "done",
+      "percent": 100,
+      "headline": "Demo complete"
+    }
+  },
+  "step_results": [
+    {
+      "id": "launch",
+      "label": "Launch AI Team \u2014 pipeline complete",
+      "status": "pass",
+      "detail": "All 12 steps finished in 220405ms (use_ai=False)"
+    },
+    {
+      "id": "upload",
+      "label": "Upload requirement",
+      "status": "pass",
+      "detail": "ingest project_id=proj_42e2147b88"
+    },
+    {
+      "id": "artifacts",
+      "label": "Generate artifacts (quality / review)",
+      "status": "pass",
+      "detail": "quality={'status': 'done', 'percent': 18, 'headline': 'Overall 69/100  \u00b7  Grade D  \u00b7  3 gaps flagged'} review={'status': 'done', 'percent': 27, 'headline': 'Confidence 49/100  \u00b7  Grade D'}"
+    },
+    {
+      "id": "stories",
+      "label": "Generate user stories",
+      "status": "pass",
+      "detail": "stories=5 tasks=0"
+    },
+    {
+      "id": "architecture",
+      "label": "Generate architecture",
+      "status": "pass",
+      "detail": "diagram HTTP 200 mermaid=True"
+    },
+    {
+      "id": "sprint",
+      "label": "Generate sprint plan",
+      "status": "pass",
+      "detail": "sprint-plan HTTP 200"
+    },
+    {
+      "id": "tests",
+      "label": "Generate tests",
+      "status": "pass",
+      "detail": "testcases HTTP 200 count=20"
+    },
+    {
+      "id": "risks",
+      "label": "Generate risks",
+      "status": "pass",
+      "detail": "studio/risk=200 risk-center=200"
+    },
+    {
+      "id": "package",
+      "label": "Generate delivery package",
+      "status": "pass",
+      "detail": "readiness=94 prd=False backlog=False"
+    },
+    {
+      "id": "export",
+      "label": "Export results (Jira / ADO CSV)",
+      "status": "pass",
+      "detail": "jira-csv=200 (4264 bytes) ado=200"
+    }
+  ],
+  "dead_ends": [],
+  "ui_notes": [
+    "Delivery Package may show empty PRD section: /api/delivery/prd/proj_42e2147b88 -> HTTP 404"
+  ]
+}
