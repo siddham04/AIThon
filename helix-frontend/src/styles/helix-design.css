@@ -602,10 +602,6 @@ select:focus {
   margin: -0.5rem 0 0.75rem;
 }
 
-.jd-pipeline-step .jd-pipeline-label {
-  flex: 1;
-}
-
 .sidebar--minimal .nav-active-glow {
   position: absolute;
   inset: 0;
