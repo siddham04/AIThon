@@ -3,7 +3,7 @@
  * Linear · Cursor · OpenAI · Vercel · Perplexity
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&display=swap');
+/* Inter — loaded from index.html (CSP-safe; avoid @import here) */
 
 /* —— Tokens (dark-first) —— */
 html.dark,

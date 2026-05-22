@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { useLocation } from 'react-router-dom'
 import { isWorkspaceAmbientEnabled } from '../../lib/helixVisualSettings'
 
 /**
@@ -8,7 +9,8 @@ import { isWorkspaceAmbientEnabled } from '../../lib/helixVisualSettings'
 const WorkspaceAmbientCanvas = lazy(() => import('./WorkspaceAmbientCanvas'))
 
 export default function WorkspaceAmbient() {
-  if (!isWorkspaceAmbientEnabled()) return null
+  const { pathname } = useLocation()
+  if (!isWorkspaceAmbientEnabled(pathname)) return null
 
   return (
     <div className="workspace-ambient" aria-hidden>

@@ -22,7 +22,9 @@ export function isHeroParticlesEnabled() {
   return true
 }
 
-export function isWorkspaceAmbientEnabled() {
+/** Heavy WebGL background — off on judge-demo to avoid context loss during SSE demo. */
+export function isWorkspaceAmbientEnabled(pathname = '') {
+  if (pathname.includes('/judge-demo')) return false
   if (envOff('VITE_HELIX_WORKSPACE_AMBIENT')) return false
   if (import.meta.env.VITE_HELIX_WORKSPACE_AMBIENT === 'true') return true
   if (import.meta.env.VITE_HELIX_WORKSPACE_AMBIENT === '1') return true

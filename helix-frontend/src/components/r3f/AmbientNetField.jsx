@@ -29,6 +29,7 @@ export default function AmbientNetField({
   spread = 14,
 }) {
   const group = useRef()
+  const elapsed = useRef(0)
   const { pointsGeo, linesGeo } = useMemo(() => {
     const rand = mulberry32(seed)
     const positions = new Float32Array(count * 3)
@@ -67,11 +68,13 @@ export default function AmbientNetField({
     return { pointsGeo: pg, linesGeo: lg }
   }, [count, maxDist, maxLineFloats, seed, spread])
 
-  useFrame((state) => {
+  useFrame((_, delta) => {
     const g = group.current
     if (!g) return
-    g.rotation.y = state.clock.elapsedTime * rotationY
-    g.rotation.x = Math.sin(state.clock.elapsedTime * wobbleFreq) * wobbleAmp
+    elapsed.current += delta
+    const t = elapsed.current
+    g.rotation.y = t * rotationY
+    g.rotation.x = Math.sin(t * wobbleFreq) * wobbleAmp
   })
 
   const pSize = pointSize ?? (dark ? 0.09 : 0.085)

@@ -28,6 +28,7 @@ function createNodes(points, count = 18) {
 
 export default function HeroHelix({ dark = false }) {
   const group = useRef()
+  const elapsed = useRef(0)
   const helixA = useMemo(() => createHelixPoints(5, 240, 1.35, 4.8, 0), [])
   const helixB = useMemo(() => createHelixPoints(5, 240, 1.35, 4.8, Math.PI), [])
   const nodes = useMemo(() => createNodes(helixA, 26), [helixA])
@@ -40,13 +41,14 @@ export default function HeroHelix({ dark = false }) {
     return geo
   }, [nodes])
 
-  useFrame((state) => {
-    const elapsed = state.clock.elapsedTime
+  useFrame((_, delta) => {
     const g = group.current
     if (!g) return
-    g.rotation.y = elapsed * 0.16
-    g.rotation.x = Math.sin(elapsed * 0.28) * 0.08
-    g.rotation.z = Math.sin(elapsed * 0.14) * 0.06
+    elapsed.current += delta
+    const t = elapsed.current
+    g.rotation.y = t * 0.16
+    g.rotation.x = Math.sin(t * 0.28) * 0.08
+    g.rotation.z = Math.sin(t * 0.14) * 0.06
   })
 
   const lineColor = dark ? '#7dd3fc' : '#0ea5e9'

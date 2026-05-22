@@ -11,7 +11,17 @@ export default function WorkspaceAmbientCanvas() {
       key={dark ? 'd' : 'l'}
       camera={{ position: [0, 0, 9.5], fov: 50 }}
       dpr={[1, 1.35]}
-      gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
+      gl={{
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power',
+        failIfMajorPerformanceCaveat: false,
+      }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault()
+        })
+      }}
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
       <Suspense fallback={null}>
