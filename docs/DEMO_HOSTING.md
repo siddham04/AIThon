@@ -61,6 +61,8 @@ If the form **requires** a URL before you have deployed, deploy first, or tempor
 
 Use this if you want a **`*.vercel.app`** URL for the UI while the API stays on Render.
 
+**Your Vercel URL does not change when you redeploy** — use the same Vercel project, set env (or rely on repo defaults), and **Redeploy** so `/api` on that hostname works. See **`docs/VERCEL.md`** → *Keep your existing link*.
+
 1. Complete **Option A** so you have `https://<service>.onrender.com` (API + optional same-origin UI).
 2. Import the **same** GitHub repo into [Vercel](https://vercel.com/) and follow **`docs/VERCEL.md`**.
 3. On Vercel, set **`HELIX_BACKEND_ORIGIN`** = `https://<service>.onrender.com` (no `/api` suffix) and **redeploy**. Leave **`VITE_API_BASE` unset** so the UI uses same-origin `/api` (proxied by `middleware.js`).

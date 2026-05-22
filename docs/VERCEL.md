@@ -4,6 +4,20 @@ Vercel hosts the **React (Vite) static build**. The **FastAPI API** still runs o
 
 ---
 
+## Keep your existing `*.vercel.app` link (no new URL)
+
+**You never need a new Vercel project or domain.** Redeploying updates the app behind the **same** production URL (e.g. `https://ai-thon.vercel.app`).
+
+| Goal | What to do |
+|------|------------|
+| Fix guest/login on **your current link** | Use the **same** Vercel project → **Deployments** → ⋮ on latest → **Redeploy** (or push to `main` if Git-connected). |
+| UI + API under **one** hostname | Leave **`VITE_API_BASE` unset** (default). The app calls `https://<your-app>.vercel.app/api/...`; `middleware.js` proxies to Render. |
+| Judges see one demo URL | Submit your **existing** `https://<project>.vercel.app` after Render is live and you redeployed. |
+
+**Do not** create a second Vercel import unless you want a second URL. Change env vars on the **existing** project, then **Redeploy**.
+
+---
+
 ## Quick fix — “Could not start a guest session”
 
 1. **Deploy the API** (one-time): [Render](https://render.com) → New → Blueprint → connect this repo → use root `render.yaml` → wait until `https://<name>.onrender.com/api/health` returns JSON.
@@ -13,7 +27,7 @@ Vercel hosts the **React (Vite) static build**. The **FastAPI API** still runs o
 3. **Redeploy** the Vercel project (required after env changes or pulling this default).
 4. Test: open `https://<your-app>.vercel.app/api/health` — you should see JSON, not the React HTML page.
 
-The build script auto-sets **`VITE_API_BASE`** from `HELIX_BACKEND_ORIGIN` so guest/login call Render directly (CORS is preconfigured in `render.yaml` for `*.vercel.app`).
+Guest/login use **same-origin** `/api` on your Vercel URL (proxied to Render). Only set **`VITE_API_BASE`** if you intentionally want the browser to call Render directly (Path B).
 
 **Sign in without guest:** `demo@demo.com` / `demo123` (created on API startup).
 
