@@ -7,9 +7,10 @@ Vercel hosts the **React (Vite) static build**. The **FastAPI API** still runs o
 ## Quick fix — “Could not start a guest session”
 
 1. **Deploy the API** (one-time): [Render](https://render.com) → New → Blueprint → connect this repo → use root `render.yaml` → wait until `https://<name>.onrender.com/api/health` returns JSON.
-2. **Vercel → Settings → Environment Variables** (Production + Preview):
+2. **Vercel → Settings → Environment Variables** (Production + Preview) — only if your Render URL is **not** `https://helix-demo.onrender.com`:
    - **`HELIX_BACKEND_ORIGIN`** = `https://<name>.onrender.com` (no `/api`, no trailing slash)
-3. **Redeploy** the Vercel project (required after env changes).
+   - The repo’s `vercel.json` already defaults to `https://helix-demo.onrender.com` (Blueprint service name `helix-demo`).
+3. **Redeploy** the Vercel project (required after env changes or pulling this default).
 4. Test: open `https://<your-app>.vercel.app/api/health` — you should see JSON, not the React HTML page.
 
 The build script auto-sets **`VITE_API_BASE`** from `HELIX_BACKEND_ORIGIN` so guest/login call Render directly (CORS is preconfigured in `render.yaml` for `*.vercel.app`).

@@ -4,5 +4,8 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "outputDirectory": "dist",
+  "env": {
+    "HELIX_BACKEND_ORIGIN": "https://helix-demo.onrender.com"
+  },
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }

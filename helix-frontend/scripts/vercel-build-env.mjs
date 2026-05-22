@@ -4,8 +4,9 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import { resolveBackendOrigin } from '../vercel-default-backend.mjs'
 
-const origin = (process.env.HELIX_BACKEND_ORIGIN || '').trim().replace(/\/$/, '')
+const origin = resolveBackendOrigin()
 const explicit = (process.env.VITE_API_BASE || '').trim().replace(/\/$/, '')
 
 let viteApiBase = explicit

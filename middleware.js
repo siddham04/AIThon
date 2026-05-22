@@ -15,17 +15,12 @@ export const config = {
   matcher: '/api/:path*',
 }
 
+// Default origin: helix-frontend/vercel-default-backend.mjs (keep URL in sync)
+const DEFAULT_BACKEND_ORIGIN = 'https://helix-demo.onrender.com'
+
 export default async function middleware(request) {
-  const backendOrig = (process.env.HELIX_BACKEND_ORIGIN || '').trim()
-  if (!backendOrig) {
-    return Response.json(
-      {
-        detail:
-          'HELIX_BACKEND_ORIGIN is not set on Vercel. Add it under Project Settings → Environment Variables (e.g. https://your-app.onrender.com), then redeploy. See docs/VERCEL.md.',
-      },
-      { status: 503 },
-    )
-  }
+  const backendOrig =
+    (process.env.HELIX_BACKEND_ORIGIN || '').trim() || DEFAULT_BACKEND_ORIGIN
 
   const u = new URL(request.url)
   const dest = `${backendOrig.replace(/\/$/, '')}${u.pathname}${u.search}`
