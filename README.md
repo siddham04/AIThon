@@ -172,6 +172,8 @@ Opens at **`http://localhost:5173`**. Vite proxies **`/api`** to the API (`helix
 
 **Public demo URL (hackathon submission):** deploy the single-container image — step-by-step [`docs/DEMO_HOSTING.md`](docs/DEMO_HOSTING.md) (Render Blueprint + `render.yaml`). **Optional UI on Vercel:** [`docs/VERCEL.md`](docs/VERCEL.md) — set **`HELIX_BACKEND_ORIGIN`** on Vercel to your Render URL so `/api` (register/login) proxies correctly.
 
+**Fix your existing Vercel link (no new URL):** [`docs/DEPLOY_SAME_LINK.md`](docs/DEPLOY_SAME_LINK.md)
+
 **Prebuilt PDFs for the portal:** [`docs/pdf/Helix-Implementation-Report.pdf`](docs/pdf/Helix-Implementation-Report.pdf) (implementation report; identical copy [`Helix-Implementation-Report-PORTAL.pdf`](docs/pdf/Helix-Implementation-Report-PORTAL.pdf) for re-upload). [`docs/pdf/Helix-Executive-Summary.pdf`](docs/pdf/Helix-Executive-Summary.pdf) (optional custom attachment). Regenerate: `python scripts/build_submission_pdfs.py` (after `pip install -r scripts/requirements-docs-pdf.txt`).
 
 **Submission ZIP under 50 MB:** [`docs/SUBMISSION_ZIP.md`](docs/SUBMISSION_ZIP.md) and `scripts/make_submission_zip.ps1` (excludes `node_modules`, virtualenvs, `.git`, `dist`).

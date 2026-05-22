@@ -5,7 +5,8 @@
   "installCommand": "npm ci",
   "outputDirectory": "dist",
   "env": {
-    "HELIX_BACKEND_ORIGIN": "https://helix-demo.onrender.com"
+    "HELIX_BACKEND_ORIGIN": "https://helix-demo.onrender.com",
+    "VITE_HELIX_DEMO_FAST": "true"
   },
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }

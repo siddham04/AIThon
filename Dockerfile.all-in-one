@@ -38,6 +38,8 @@ ENV PYTHONPATH=/app
 ENV HELIX_SERVE_SPA=1
 ENV HELIX_STATIC_DIR=/app/static
 ENV HELIX_DEBUG=0
+ENV HELIX_DEMO_FAST=1
+ENV HELIX_HACKATHON_AUTH=1
 # SQLite in container (ephemeral on free hosts unless you attach a disk).
 ENV DATABASE_URL=sqlite:////app/data/helix.db
 

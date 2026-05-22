@@ -26,6 +26,7 @@ import Tilt from '../components/fx/Tilt'
 import MagneticButton from '../components/fx/MagneticButton'
 import { HERO_TITLE, POSITIONING_LINE, APPROVE_EXPORT_CTA } from '../lib/productMessaging'
 import { formatGuestSessionError } from '../lib/formatApiError'
+import { checkApiHealth } from '../lib/apiHealth'
 
 const HeroParticles = lazy(() => import('../components/landing/HeroParticles'))
 
@@ -214,6 +215,16 @@ export default function Landing() {
   )
 
   async function ensureSession() {
+    const health = await checkApiHealth(api)
+    if (!health.ok) {
+      return {
+        ok: false,
+        message:
+          health.message +
+          ' (Free Render may sleep — wait 60s and try again, or open /api/health.)',
+      }
+    }
+
     let guestEx = null
     try {
       const { data } = await api.post('/auth/guest')

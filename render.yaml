@@ -16,6 +16,14 @@ services:
       # Allow a separate Vercel-hosted UI to call this API (see docs/VERCEL.md).
       - key: HELIX_CORS_ORIGIN_REGEX
         value: "https://.*\\.vercel\\.app"
+      - key: HELIX_DEMO_FAST
+        value: "true"
+      - key: HELIX_HACKATHON_AUTH
+        value: "true"
+      - key: HELIX_DEMO_EMAIL
+        value: "demo@demo.com"
+      - key: HELIX_DEMO_PASSWORD
+        value: "demo123"
       # Optional — add in dashboard if you want live LLM (not required for mock/demo path):
       # - key: ANTHROPIC_API_KEY
       #   sync: false

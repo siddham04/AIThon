@@ -22,6 +22,7 @@ import {
   ensureDemoProject,
 } from '../lib/winningDemoFlow'
 import { readAuthToken } from '../lib/authTokenStorage'
+import { checkApiHealth } from '../lib/apiHealth'
 
 const PIPELINE_STEPS = AUTONOMOUS_PIPELINE.filter((s) => s.id !== 'export')
 
@@ -188,6 +189,12 @@ export default function WinningDemoScreen() {
 
   const startDemo = useCallback(async () => {
     if (running) return
+
+    const health = await checkApiHealth(api)
+    if (!health.ok) {
+      toast.error(health.message)
+      return
+    }
 
     setRunning(true)
     setDemoDone(false)
