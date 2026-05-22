@@ -25,6 +25,7 @@ import Counter from '../components/fx/Counter'
 import Tilt from '../components/fx/Tilt'
 import MagneticButton from '../components/fx/MagneticButton'
 import { HERO_TITLE, POSITIONING_LINE, APPROVE_EXPORT_CTA } from '../lib/productMessaging'
+import { formatGuestSessionError } from '../lib/formatApiError'
 
 const HeroParticles = lazy(() => import('../components/landing/HeroParticles'))
 
@@ -213,21 +214,23 @@ export default function Landing() {
   )
 
   async function ensureSession() {
+    let guestEx = null
     try {
       const { data } = await api.post('/auth/guest')
       setAuth({ email: 'Guest', guest: true }, data.access_token)
-      return true
-    } catch {
-      try {
-        const { data } = await api.post('/auth/login', {
-          email: 'demo@demo.com',
-          password: 'demo123',
-        })
-        setAuth({ email: 'demo@demo.com' }, data.access_token)
-        return true
-      } catch {
-        return false
-      }
+      return { ok: true }
+    } catch (ex) {
+      guestEx = ex
+    }
+    try {
+      const { data } = await api.post('/auth/login', {
+        email: 'demo@demo.com',
+        password: 'demo123',
+      })
+      setAuth({ email: 'demo@demo.com' }, data.access_token)
+      return { ok: true }
+    } catch (loginEx) {
+      return { ok: false, message: formatGuestSessionError(guestEx, loginEx) }
     }
   }
 
@@ -235,8 +238,9 @@ export default function Landing() {
     if (guestLoading) return
     setGuestLoading(true)
     try {
-      if (!(await ensureSession())) {
-        toast.error('Could not start a guest session — check the API is running.')
+      const session = await ensureSession()
+      if (!session.ok) {
+        toast.error(session.message)
         return
       }
       toast.success('Welcome — workspace is ready.')
@@ -250,8 +254,9 @@ export default function Landing() {
     if (guestLoading) return
     setGuestLoading(true)
     try {
-      if (!(await ensureSession())) {
-        toast.error('Could not start a guest session — check the API is running.')
+      const session = await ensureSession()
+      if (!session.ok) {
+        toast.error(session.message)
         return
       }
       sessionStorage.setItem(HELIX_AUTO_DEMO_KEY, '1')

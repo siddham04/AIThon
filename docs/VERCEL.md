@@ -4,6 +4,20 @@ Vercel hosts the **React (Vite) static build**. The **FastAPI API** still runs o
 
 ---
 
+## Quick fix — “Could not start a guest session”
+
+1. **Deploy the API** (one-time): [Render](https://render.com) → New → Blueprint → connect this repo → use root `render.yaml` → wait until `https://<name>.onrender.com/api/health` returns JSON.
+2. **Vercel → Settings → Environment Variables** (Production + Preview):
+   - **`HELIX_BACKEND_ORIGIN`** = `https://<name>.onrender.com` (no `/api`, no trailing slash)
+3. **Redeploy** the Vercel project (required after env changes).
+4. Test: open `https://<your-app>.vercel.app/api/health` — you should see JSON, not the React HTML page.
+
+The build script auto-sets **`VITE_API_BASE`** from `HELIX_BACKEND_ORIGIN` so guest/login call Render directly (CORS is preconfigured in `render.yaml` for `*.vercel.app`).
+
+**Sign in without guest:** `demo@demo.com` / `demo123` (created on API startup).
+
+---
+
 ## Why register / login “does not work” on Vercel
 
 The browser loads the UI from `https://<your-app>.vercel.app`. By default the app calls **same-origin** `https://<your-app>.vercel.app/api/...` (see `helix-frontend/src/api/client.js` when `VITE_API_BASE` is unset).

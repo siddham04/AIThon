@@ -8,7 +8,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "node scripts/vercel-build-env.mjs && vite build",
     "build:budget": "npm run build && node scripts/check-bundle-budget.mjs",
     "dev": "vite",
     "dev:force": "vite --force",

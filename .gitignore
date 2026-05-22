@@ -9,6 +9,8 @@ venv/
 env/
 ENV/
 .env
+.env.production.local
+helix-frontend/.env.production.local
 .pytest_cache/
 
 # Node
