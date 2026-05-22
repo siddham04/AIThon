@@ -596,18 +596,7 @@ select:focus {
   font-weight: 700;
 }
 
-.jd-pipeline-agent {
-  display: block;
-  font-size: 0.65rem;
-  opacity: 0.65;
-  grid-column: 2;
-  margin-top: -0.2rem;
-}
-
-.jd-pipeline-principle {
-  margin: 0 0 0.75rem;
-  text-align: center;
-}
+/* judge-demo pipeline — see winning-demo.css */
 
 .mc-config-hint {
   margin: -0.5rem 0 0.75rem;
