@@ -1,3 +1,7 @@
+/** Public Render Blueprint deploy link — surfaced inside error toasts. */
+export const RENDER_BLUEPRINT_URL =
+  'https://render.com/deploy?repo=https://github.com/siddham04/AIThon'
+
 /** Shared auth / API error text for login, register, and guest flows. */
 export function formatApiError(ex) {
   const ct =
@@ -7,7 +11,7 @@ export function formatApiError(ex) {
   const status = ex.response?.status
 
   if (String(ct).includes('text/html')) {
-    return 'The API URL returned a web page instead of JSON. Deploy the FastAPI backend (e.g. Render) and set HELIX_BACKEND_ORIGIN on Vercel, then redeploy — see docs/VERCEL.md.'
+    return `The API URL returned a web page instead of JSON. Deploy the FastAPI backend on Render (${RENDER_BLUEPRINT_URL}) and set HELIX_BACKEND_ORIGIN on Vercel, then redeploy — see docs/VERCEL.md.`
   }
 
   const d = ex.response?.data?.detail
@@ -25,14 +29,17 @@ export function formatApiError(ex) {
   }
   if (d && typeof d === 'object') return JSON.stringify(d)
 
+  if (status === 404) {
+    return `API backend is not deployed yet (404). Click "Deploy on Render" → ${RENDER_BLUEPRINT_URL} — first build takes ~15 min. The backend URL is helix-demo.onrender.com.`
+  }
   if (status === 502) {
     return 'API proxy could not reach the backend — check HELIX_BACKEND_ORIGIN points to a live Render URL.'
   }
   if (status === 503) {
-    return 'API not configured on Vercel — set HELIX_BACKEND_ORIGIN to your Render service URL and redeploy.'
+    return `API not deployed. Deploy the backend on Render: ${RENDER_BLUEPRINT_URL} then redeploy Vercel.`
   }
   if (ex.message === 'Network Error' || ex.code === 'ERR_NETWORK') {
-    return 'Cannot reach the API. Deploy helix-backend (Render render.yaml) and set HELIX_BACKEND_ORIGIN on Vercel.'
+    return `Cannot reach the API. Deploy the backend on Render (one click): ${RENDER_BLUEPRINT_URL}`
   }
   return ex.message || 'Request failed'
 }

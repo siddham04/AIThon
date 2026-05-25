@@ -25,7 +25,7 @@ import Counter from '../components/fx/Counter'
 import Tilt from '../components/fx/Tilt'
 import MagneticButton from '../components/fx/MagneticButton'
 import { HERO_TITLE, POSITIONING_LINE, APPROVE_EXPORT_CTA } from '../lib/productMessaging'
-import { formatGuestSessionError } from '../lib/formatApiError'
+import { formatGuestSessionError, RENDER_BLUEPRINT_URL } from '../lib/formatApiError'
 import { checkApiHealth } from '../lib/apiHealth'
 
 const HeroParticles = lazy(() => import('../components/landing/HeroParticles'))
@@ -245,13 +245,40 @@ export default function Landing() {
     }
   }
 
+  function reportSessionError(message) {
+    const needsDeploy =
+      /Render|Cannot reach|HELIX_BACKEND_ORIGIN|404|502|503/i.test(message)
+    if (!needsDeploy) {
+      toast.error(message)
+      return
+    }
+    toast.error(
+      (t) => (
+        <span>
+          {message.split(RENDER_BLUEPRINT_URL)[0]}
+          <a
+            href={RENDER_BLUEPRINT_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-primary small"
+            style={{ marginLeft: 8 }}
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Deploy on Render
+          </a>
+        </span>
+      ),
+      { duration: 12000 },
+    )
+  }
+
   async function handleGuest() {
     if (guestLoading) return
     setGuestLoading(true)
     try {
       const session = await ensureSession()
       if (!session.ok) {
-        toast.error(session.message)
+        reportSessionError(session.message)
         return
       }
       toast.success('Welcome — workspace is ready.')
@@ -267,7 +294,7 @@ export default function Landing() {
     try {
       const session = await ensureSession()
       if (!session.ok) {
-        toast.error(session.message)
+        reportSessionError(session.message)
         return
       }
       sessionStorage.setItem(HELIX_AUTO_DEMO_KEY, '1')
