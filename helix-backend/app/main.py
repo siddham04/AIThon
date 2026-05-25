@@ -51,6 +51,7 @@ from .bootstrap import (
 from .config import get_settings
 from .database import init_db
 from .middleware.rate_limit import RateLimitMiddleware
+from .middleware.request_log import RequestLogMiddleware
 from .middleware.security_headers import SecurityHeadersMiddleware
 
 
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(RequestLogMiddleware)
 
     gate = [Depends(helix_auth_gate)]
 

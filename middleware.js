@@ -5,32 +5,48 @@
  *   HELIX_BACKEND_ORIGIN = https://your-service.onrender.com
  *   (no trailing slash; no /api suffix)
  *
- * Leave VITE_API_BASE unset so the SPA uses /api on this deployment (see helix-frontend/src/api/client.js).
+ * Leave VITE_API_BASE unset to use this proxy. Set VITE_API_BASE to call the API
+ * directly from the browser (recommended for long SSE streams — see docs/VERCEL.md).
  *
- * Limits: long-lived WebSocket/SSE through this proxy may be unreliable; for full pipeline demos
- * prefer Render all-in-one (DEMO_HOSTING.md) or set VITE_API_BASE to the API origin for wss://.
+ * Edge runtime caveats:
+ *   - Streaming bodies are forwarded (Response is returned without buffering).
+ *   - Hop-by-hop headers (host, connection, content-length, transfer-encoding) are stripped.
+ *   - Cold starts on free Render may take 30–60s; client should retry with timeout.
  */
+
+// Default origin: helix-frontend/vercel-default-backend.mjs (keep URL in sync)
+const DEFAULT_BACKEND_ORIGIN = 'https://helix-demo.onrender.com'
+
+const HOP_BY_HOP = new Set([
+  'host',
+  'connection',
+  'content-length',
+  'transfer-encoding',
+  'keep-alive',
+  'upgrade',
+  'proxy-connection',
+  'te',
+  'trailer',
+])
 
 export const config = {
   matcher: '/api/:path*',
 }
 
-// Default origin: helix-frontend/vercel-default-backend.mjs (keep URL in sync)
-const DEFAULT_BACKEND_ORIGIN = 'https://helix-demo.onrender.com'
-
 export default async function middleware(request) {
   const backendOrig =
-    (process.env.HELIX_BACKEND_ORIGIN || '').trim() || DEFAULT_BACKEND_ORIGIN
+    (process.env.HELIX_BACKEND_ORIGIN || '').trim().replace(/\/$/, '') ||
+    DEFAULT_BACKEND_ORIGIN
 
   const u = new URL(request.url)
-  const dest = `${backendOrig.replace(/\/$/, '')}${u.pathname}${u.search}`
+  const dest = `${backendOrig}${u.pathname}${u.search}`
 
   const headers = new Headers()
   for (const [k, v] of request.headers.entries()) {
-    const lk = k.toLowerCase()
-    if (lk === 'host' || lk === 'connection' || lk === 'content-length') continue
-    headers.set(k, v)
+    if (!HOP_BY_HOP.has(k.toLowerCase())) headers.set(k, v)
   }
+  headers.set('x-forwarded-host', u.host)
+  headers.set('x-forwarded-proto', 'https')
 
   const init = {
     method: request.method,
@@ -39,12 +55,28 @@ export default async function middleware(request) {
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     init.body = request.body
+    // Edge runtime requires duplex: 'half' when forwarding a streaming body.
+    init.duplex = 'half'
   }
 
   try {
-    return await fetch(dest, init)
+    const upstream = await fetch(dest, init)
+    // Pass the body through unbuffered so SSE/long-poll responses stream.
+    return new Response(upstream.body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers: upstream.headers,
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    return Response.json({ detail: `API proxy error: ${msg}` }, { status: 502 })
+    return Response.json(
+      {
+        detail:
+          `API proxy error: ${msg}. ` +
+          'Backend may be cold-starting (free Render takes 30–60s) or HELIX_BACKEND_ORIGIN is wrong.',
+        backend: backendOrig,
+      },
+      { status: 502 },
+    )
   }
 }

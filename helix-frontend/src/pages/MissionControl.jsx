@@ -227,8 +227,9 @@ export default function MissionControl() {
       const fd = new FormData()
       fd.append('file', file)
       if (name.trim()) fd.append('name', name.trim())
+      // Let axios derive the multipart boundary; don't force Content-Type or boundary will be missing.
       const { data } = await api.post('/ingest/file', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },
       })
       const pid = data.project_id
       const { data: proj } = await api.get(`/projects/${pid}`)

@@ -225,7 +225,7 @@ export default function Landing() {
       }
     }
 
-    let guestEx = null
+    let guestEx
     try {
       const { data } = await api.post('/auth/guest')
       setAuth({ email: 'Guest', guest: true }, data.access_token)
