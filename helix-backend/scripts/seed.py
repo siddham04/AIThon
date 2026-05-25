@@ -266,7 +266,10 @@ def main() -> None:
         db.commit()
 
         asyncio.run(get_store().create(proj))
-        embed_requirements(proj.id, [c.text for c in proj.source_clauses])
+        try:
+            embed_requirements(proj.id, [c.text for c in proj.source_clauses])
+        except Exception as e:  # noqa: BLE001 — never fail seed on embeddings
+            log.warning("embed_requirements skipped: %s", e)
         log.info("Seeded project %s (%s)", proj.id, proj.name)
     finally:
         db.close()

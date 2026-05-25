@@ -26,5 +26,8 @@ services:
         value: "demo@demo.com"
       - key: HELIX_DEMO_PASSWORD
         value: "demo123"
+      # Skip sentence-transformers / PyTorch load — saves ~400 MB RAM on Free tier.
+      - key: HELIX_DISABLE_EMBEDDINGS
+        value: "1"
 
 databases: []

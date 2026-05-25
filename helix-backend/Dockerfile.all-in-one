@@ -31,5 +31,12 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
 ENV PYTHONPATH=/app
+# Render Free tier has 512 MB RAM. Skip sentence-transformers/PyTorch model
+# load by default — RAG search returns empty, hackathon demo path is unaffected.
+ENV HELIX_DISABLE_EMBEDDINGS=1
+ENV HELIX_DEMO_FAST=1
+ENV HELIX_HACKATHON_AUTH=1
+ENV DATABASE_URL=sqlite:////app/data/helix.db
+RUN mkdir -p /app/data
 EXPOSE 8000
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

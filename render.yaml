@@ -25,6 +25,9 @@ services:
         value: "demo@demo.com"
       - key: HELIX_DEMO_PASSWORD
         value: "demo123"
+      # Skip sentence-transformers / PyTorch load — saves ~400 MB RAM on Free tier.
+      - key: HELIX_DISABLE_EMBEDDINGS
+        value: "1"
       # Optional — add in dashboard if you want live LLM (not required for mock/demo path):
       # - key: ANTHROPIC_API_KEY
       #   sync: false

@@ -1,7 +1,14 @@
-"""Sentence embeddings + per-project FAISS retrieval."""
+"""Sentence embeddings + per-project FAISS retrieval.
+
+Memory: loading `all-MiniLM-L6-v2` pulls PyTorch and uses ~300-400 MB RAM.
+Set `HELIX_DISABLE_EMBEDDINGS=1` on memory-constrained hosts (e.g. Render Free)
+to skip the model entirely — RAG search will return empty lists and the rest
+of the pipeline continues to work via heuristic agents.
+"""
 from __future__ import annotations
 
 import logging
+import os
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -12,8 +19,19 @@ _Model = None
 _Indexes: Dict[str, Tuple["faiss.IndexFlatIP", np.ndarray, List[str]]] = {}
 
 
+def _embeddings_disabled() -> bool:
+    return os.environ.get("HELIX_DISABLE_EMBEDDINGS", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 def _get_model():
     global _Model
+    if _embeddings_disabled():
+        return None
     if _Model is None:
         try:
             from sentence_transformers import SentenceTransformer
@@ -26,6 +44,8 @@ def _get_model():
 
 
 def _get_faiss():
+    if _embeddings_disabled():
+        return None
     try:
         import faiss
 
