@@ -1,4 +1,5 @@
 # Render Blueprint — one Web service (SPA + API), SQLite by default.
+# Needs ~1GB+ RAM to build (sentence-transformers + npm). Use render-api.yaml + Vercel if Free tier OOMs.
 # Apply: https://dashboard.render.com/ → New → Blueprint → connect this repo.
 # After deploy, copy the service URL (https://<name>.onrender.com) into your hackathon "Demo Link".
 

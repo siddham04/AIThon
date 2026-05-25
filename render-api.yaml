@@ -1,0 +1,30 @@
+# Render Blueprint — API only (use with Vercel for the UI).
+# Dashboard: New → Blueprint → this repo → select render-api.yaml
+# Or on an existing Web Service set:
+#   Root Directory = helix-backend
+#   Dockerfile Path = Dockerfile
+
+services:
+  - type: web
+    name: helix-api
+    runtime: docker
+    plan: free
+    region: oregon
+    rootDir: helix-backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: HELIX_CORS_ORIGIN_REGEX
+        value: "https://.*\\.vercel\\.app"
+      - key: HELIX_DEMO_FAST
+        value: "true"
+      - key: HELIX_HACKATHON_AUTH
+        value: "true"
+      - key: HELIX_DEMO_EMAIL
+        value: "demo@demo.com"
+      - key: HELIX_DEMO_PASSWORD
+        value: "demo123"
+
+databases: []

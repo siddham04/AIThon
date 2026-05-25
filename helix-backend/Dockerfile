@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1
+# API-only image for Render (Root Directory = helix-backend, Dockerfile Path = Dockerfile).
+# Pair with Vercel for the React UI — see docs/RENDER_SPLIT_DEPLOY.md
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
