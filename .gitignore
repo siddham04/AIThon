@@ -41,3 +41,7 @@ blob-report/
 helix-backend/helix_smoke.db
 helix-backend/helix_test.db
 helix-backend/.helix-data/
+
+# Temp files (commit messages drafted via heredoc workaround on Windows, etc.)
+*.tmp
+.commit-msg.tmp
