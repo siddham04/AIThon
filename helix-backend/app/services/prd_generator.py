@@ -111,14 +111,50 @@ def _heuristic_prd(text: str, *, title: str = "") -> ProductRequirementsDocument
         )
 
     one_liner = sentences[0] if sentences else ""
-    summary = (
-        f"{(title or 'This requirement')} captures {len(in_scope)} in-scope item"
-        f"{'' if len(in_scope) == 1 else 's'}, "
-        f"{len(out_of_scope)} explicit out-of-scope item"
-        f"{'' if len(out_of_scope) == 1 else 's'}, and "
-        f"{len(risks)} risk"
-        f"{'' if len(risks) == 1 else 's'} flagged from the source text."
-    )
+    # If the heuristic extractor found nothing concrete (small / prose
+    # PRDs like a case study), the old summary read like a failure
+    # report — "X captures 0 in-scope items, 0 out-of-scope items, and
+    # 0 risks". On stage that looks broken even when the rest of the
+    # pipeline is fine. Use a graceful fallback that describes what we
+    # *did* extract.
+    parts: List[str] = []
+    if in_scope:
+        parts.append(
+            f"{len(in_scope)} in-scope item{'' if len(in_scope) == 1 else 's'}"
+        )
+    if out_of_scope:
+        parts.append(
+            f"{len(out_of_scope)} explicit out-of-scope item"
+            f"{'' if len(out_of_scope) == 1 else 's'}"
+        )
+    if risks:
+        parts.append(
+            f"{len(risks)} risk callout{'' if len(risks) == 1 else 's'}"
+        )
+
+    subject = title or "This requirement"
+    if parts:
+        summary = f"{subject} captures " + ", ".join(parts[:-1])
+        if len(parts) > 1:
+            summary += f", and {parts[-1]}"
+        else:
+            summary += parts[0] if not summary.endswith(parts[0]) else ""
+        summary += " from the source text."
+    else:
+        # Honest no-data wording — invites the user to enrich the PRD
+        # rather than implying the analyzer broke.
+        sample = ""
+        if sentences:
+            sample_text = sentences[0]
+            if len(sample_text) > 140:
+                sample_text = sample_text[:137].rstrip() + "…"
+            sample = f' Source one-liner: "{sample_text}".'
+        summary = (
+            f"{subject} was ingested as free-form prose; no explicit "
+            f"in-scope / out-of-scope / risk callouts were detected."
+            f"{sample} Add bullet-style requirements or an Acceptance "
+            f"Criteria section to unlock the full executive summary."
+        )
 
     return ProductRequirementsDocument(
         title=title or (one_liner[:60] + ("…" if len(one_liner) > 60 else "")),
