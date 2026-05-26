@@ -34,9 +34,16 @@ playwright-report/
 test-results/
 blob-report/
 
-# Local databases — never commit dev/test SQLite files
+# Local databases — never commit dev/test SQLite files.
+# The -shm and -wal sidecar files are created by SQLite's WAL mode
+# (PRAGMA journal_mode=WAL in app/database.py) and must never be
+# committed — they're per-process and corrupt the DB if pushed.
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 *.sqlite3
 helix-backend/helix_smoke.db
 helix-backend/helix_test.db

@@ -80,7 +80,16 @@ class AIService:
 
     def __init__(self) -> None:
         s = get_settings()
-        self._enabled = s.is_configured
+        # Honor the global HELIX_USE_AI kill-switch. When the user (or
+        # the pytest conftest) sets HELIX_USE_AI=false we must NOT
+        # construct a live Azure client even if keys are present —
+        # otherwise agents that call get_ai_service() directly (e.g.
+        # test_architect, ambiguity) bypass the use_ai=False parameter
+        # threaded through run_demo and hit the live LLM, which makes
+        # the golden contract test wall-clock for 30+ minutes and
+        # return AC1/AC2/AC3 clause IDs that don't exist in
+        # source_clauses (zero citation coverage, test fails).
+        self._enabled = s.is_configured and getattr(s, "helix_use_ai", True)
         self._deployment = (s.azure_openai_deployment or "o3").strip() or "o3"
         self._client: Optional[AsyncAzureOpenAI] = None
         if self._enabled:

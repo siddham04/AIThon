@@ -90,6 +90,21 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("HELIX_DEBUG", "helix_debug"),
     )
+    # Global AI kill-switch. When False, AIService.enabled returns False
+    # regardless of whether Azure keys are configured — every agent that
+    # checks ai.enabled drops to the deterministic mock / heuristic
+    # fallback. This is what the golden + adversarial pytest contracts
+    # set (via tests/conftest.py) so the suite NEVER touches the live
+    # LLM even when the developer has Azure keys in their .env.
+    helix_use_ai: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("HELIX_USE_AI"),
+        description=(
+            "Set to false to force the deterministic mock + heuristic "
+            "fallback chain even when Azure OpenAI keys are configured. "
+            "Used by the test suite and by Render Free deploys."
+        ),
+    )
     helix_allow_insecure_jwt: bool = Field(
         default=False,
         validation_alias=AliasChoices("HELIX_ALLOW_INSECURE_JWT"),
@@ -264,6 +279,10 @@ class Settings(BaseSettings):
 
     @property
     def is_configured(self) -> bool:
+        # NOTE: this stays a pure "do we have credentials?" check so
+        # diagnostic UIs and health endpoints can still say
+        # "Azure is configured but disabled". The runtime kill-switch
+        # lives in AIService.enabled (which also consults helix_use_ai).
         endpoint = self.azure_openai_endpoint.strip()
         key = self.azure_openai_api_key.strip()
         if not endpoint or not key:

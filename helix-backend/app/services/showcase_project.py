@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import logging
 from datetime import datetime
+from typing import Any, Coroutine, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -31,6 +33,31 @@ from ..services.store import get_store
 from ..sqla_models import ProjectRecord, User
 
 logger = logging.getLogger("helix.showcase")
+
+_T = TypeVar("_T")
+
+
+def _run_coro_blocking(coro: Coroutine[Any, Any, _T]) -> _T:
+    """Run an async coroutine to completion from a sync caller.
+
+    ``ensure_showcase_project`` is invoked from ``ensure_showcase_on_startup``
+    which is called from the FastAPI ``lifespan`` async context. Plain
+    ``asyncio.run(...)`` raises ``RuntimeError: asyncio.run() cannot be
+    called from a running event loop`` in that situation, which is exactly
+    what the user hit on backend boot (showcase PRD never gets pre-baked,
+    /api/review-board returns 404, etc.).
+
+    This helper detects whether we're already inside a running loop. If
+    so it runs the coroutine in a dedicated worker thread that owns its
+    own loop — blocking the caller cleanly without deadlocking the parent
+    event loop. If not, plain ``asyncio.run`` is used.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        return ex.submit(asyncio.run, coro).result()
 
 
 def showcase_project_id() -> str:
@@ -209,7 +236,9 @@ def ensure_showcase_project(db: Session) -> str | None:
     try:
         from .prd_generator import generate_prd_for_project
 
-        proj.prd_document = asyncio.run(
+        # ``_run_coro_blocking`` is safe from both the FastAPI lifespan
+        # (already inside an event loop) and scripts/seed.py (no loop).
+        proj.prd_document = _run_coro_blocking(
             generate_prd_for_project(proj, use_ai=False)
         )
     except Exception:
@@ -222,7 +251,7 @@ def ensure_showcase_project(db: Session) -> str | None:
     db.commit()
 
     try:
-        asyncio.run(get_store().create(proj))
+        _run_coro_blocking(get_store().create(proj))
         embed_requirements(proj.id, [c.text for c in proj.source_clauses])
     except Exception:
         logger.exception("Showcase store/RAG bootstrap failed")
