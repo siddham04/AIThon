@@ -20,5 +20,10 @@ import './styles/product-five.css'
 import './styles/workspace.css'
 import './styles/winning-demo.css'
 import App from './App.jsx'
+import AppErrorBoundary from './components/errors/AppErrorBoundary.jsx'
 
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(
+  <AppErrorBoundary>
+    <App />
+  </AppErrorBoundary>,
+)

@@ -64,6 +64,41 @@ Login if needed: `demo@demo.com` / `demo123` (or **Try as Guest** on landing).
 
 **If SSE stalls:** open backup bookmark above (pre-baked `proj_demo_seed01`).
 
+### ⚠ Stage discipline — what the script does NOT promise
+
+The UI does **not** ship these surfaces today. Do **not** mention or
+gesture at them on stage:
+
+- **No drag-and-drop Kanban board** for stories — they render as a
+  vertical list with acceptance criteria + clause IDs. The narrative
+  beat is "every card cites its clauses", not "drag a card".
+- **No clickable trace graph** — the trace lanes are an animated
+  count strip with real values from `/api/traceability/{id}/graph`.
+  Say *"3 clauses, 2 stories, 4 tasks, 2 tests, 9 trace links"*; do
+  **not** say *"click any node"*.
+- **No per-story approve checkbox** — `Approve & Export` is one
+  button that bulk-approves every story. That's the demo beat; do
+  **not** hunt for a per-row toggle.
+- **No five-metric Project Health dashboard** — readiness % is the
+  one number we show, and `delivery_readiness_center` is the API.
+  If a judge asks "show me project health", **scroll to the
+  readiness ring** in the Delivery Package, not a separate dashboard.
+- **`Push to Jira REST`** — only click this if `JIRA_BASE_URL` /
+  `JIRA_TOKEN` / `JIRA_PROJECT_KEY` are configured on the API host.
+  Without env, the button returns a friendly *"Dry run — configure
+  JIRA_* env"* toast (fixed in commit ⛓ this session); previously it
+  showed a red error toast on stage. **Default rehearsal:** do the
+  CSV download path; only click the REST button if you've pre-verified
+  the env.
+
+These are the 5 most likely "judge raises an eyebrow" moments. The
+codebase has the **API** for command-center, traceability graph, and
+per-story approval — only the dedicated UI is deferred. If a judge
+asks any of these, the honest answer is *"API is live, UI surface
+ships in the next sprint; here's the endpoint"* — open
+`/api/command-center/{id}` or `/api/traceability/{id}/graph` in a
+browser tab.
+
 ---
 
 ## Ports & paths

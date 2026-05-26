@@ -85,9 +85,29 @@ export default function Login() {
     }
   }
 
-  function onUseDemoCreds() {
+  async function onUseDemoCreds() {
     setEmail('demo@demo.com')
     setPassword('demo123')
+    // Auto-submit so the judge clicks once, not twice. Mirrors the
+    // hardcoded creds onGuest() falls back to.
+    if (loading) return
+    setErr('')
+    setLoading(true)
+    try {
+      const { data } = await api.post('/auth/login', {
+        email: 'demo@demo.com',
+        password: 'demo123',
+      })
+      setAuth({ email: 'demo@demo.com' }, data.access_token)
+      toast.success('Signed in as the demo account.')
+      nav(from, { replace: true })
+    } catch (ex) {
+      const msg = formatLoginError(ex)
+      setErr(msg)
+      toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

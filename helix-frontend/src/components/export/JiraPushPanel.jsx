@@ -14,8 +14,11 @@ export default function JiraPushPanel({ projectId, disabled }) {
       setLastResult(data)
       if (data?.ok || data?.created_count > 0) {
         toast.success(data?.message || 'Jira push completed')
-      } else if (data?.dry_run) {
-        toast.success('Dry run — configure JIRA_* env for live push')
+      } else if (data?.dry_run || data?.reason === 'missing_config' || data?.reason === 'missing_email') {
+        // Backend returns ok:false reason:missing_config when JIRA_* env is
+        // unset — that's a normal dry-run path for the hackathon demo, not
+        // an error. Show a friendly success toast and the preview payload.
+        toast.success('Dry run — configure JIRA_* env on the API host for a live push')
       } else {
         toast.error(data?.message || data?.detail || 'Jira push returned no issues')
       }

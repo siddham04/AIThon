@@ -242,6 +242,8 @@ Opens at **`http://localhost:5173`**. Vite proxies **`/api`** to the API (`helix
 
 **Public demo URL (hackathon submission):** the manual 15-minute quickstart is **[`docs/DEPLOY_RENDER_VERCEL.md`](docs/DEPLOY_RENDER_VERCEL.md)** — one Render Blueprint + one Vercel import, with copy-paste env vars and post-deploy smoke checks. Deeper dives: [`docs/DEMO_HOSTING.md`](docs/DEMO_HOSTING.md) *(option overview)* and [`docs/VERCEL.md`](docs/VERCEL.md) *(edge-proxy paths)*.
 
+**Stage-ready audit (9-phase deep dive):** **[`docs/AUDIT_REPORT.md`](docs/AUDIT_REPORT.md)** — three readonly subagents reviewed the actual code; 45 findings triaged into "fix now / fix docs / defer". **28/28 backend tests green** (golden + 10 input scenarios + 8 adversarial payloads + concurrency), lint clean, build ships. Honest weaknesses kept open and tagged. Includes judge scorecard, production-readiness score (62/100), winning-probability estimate, top-10 post-hackathon backlog, and a verbatim 5-minute stage script.
+
 **Fix your existing Vercel link (no new URL):** [`docs/DEPLOY_SAME_LINK.md`](docs/DEPLOY_SAME_LINK.md)
 
 **Prebuilt PDFs for the portal:** [`docs/pdf/Helix-Implementation-Report.pdf`](docs/pdf/Helix-Implementation-Report.pdf) (implementation report; identical copy [`Helix-Implementation-Report-PORTAL.pdf`](docs/pdf/Helix-Implementation-Report-PORTAL.pdf) for re-upload). [`docs/pdf/Helix-Executive-Summary.pdf`](docs/pdf/Helix-Executive-Summary.pdf) (optional custom attachment). Regenerate: `python scripts/build_submission_pdfs.py` (after `pip install -r scripts/requirements-docs-pdf.txt`).

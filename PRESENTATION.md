@@ -226,34 +226,38 @@ timeline visible — Frame 2 in [`docs/SCREENSHOT_TOUR.md`](docs/SCREENSHOT_TOUR
 
 ---
 
-### Slide 5 — Results: Stories & Tasks (the Kanban + Trace beat)
+### Slide 5 — Results: Stories & Tasks (the provenance beat)
 
-**Title:** Every artifact cites the clause it came from. Click and prove it.
+**Title:** Every artifact cites the clause it came from — and a CI test enforces it.
 
 **One screen, every artifact** — auto-opens on the SSE `complete`
-event. Drive the cursor in this order:
+event. Drive the cursor in this order (this matches what the UI
+actually renders — see [`docs/SCREENSHOT_TOUR.md`](docs/SCREENSHOT_TOUR.md)
+frames 4 and 6):
 
-1. **Approval checklist banner** — "Stories ✓ · Tasks ✓ · Test cases ✓"
-2. **Kanban view** — stories by status, drag-and-drop. *"This is what
-   a sprint board looks like after Helix — every card already has its
-   acceptance criteria and source clauses."*
-3. **Traceability chain card** — **3 clauses → 2 stories → 4 tasks →
-   2 tests · 9 trace links**. *Click any node.*
-4. **Trace tab** — pick one task → see the source clause highlighted
-   in the original brief. *"This is the difference between a chat
-   answer and a system-of-record answer."*
-5. **Tests panel** — Given/When/Then BDD cards. *"QA inherits these
-   on day 1, not week 3."*
-6. **Risks + Ambiguities** — *"Notice the ambiguity Helix caught:
-   peak-vs-sustained load. That's exactly the thing that derails
-   sprint 2."*
+1. **Delivery Readiness checklist** — *"Stories ✓ · Tasks ✓ · Tests ✓
+   · Ambiguities surfaced ✓"* — the green check banner at the top of
+   the Delivery Package (`AiWorkspace`).
+2. **Stories panel** — bulleted user stories, each with acceptance
+   criteria and **the source clause IDs they cite** stamped on the
+   card. *"Notice the clause IDs on every story — that's the
+   traceability contract."*
+3. **Traceability lanes** — the animated chip strip showing
+   **3 clauses → 2 stories → 4 tasks → 2 tests · 9 trace links**.
+   *"These are real counts from this run, not a screenshot."*
+4. **Tests panel** — Given/When/Then BDD cards, each tied to its
+   `story_id`. *"QA inherits these on day 1, not week 3."*
+5. **Risks + Ambiguities** — *"Notice the ambiguity Helix caught:
+   'refunds should happen fast' with no SLA — that's exactly the
+   wording that derails sprint 2."*
 
-> **The slide one-line:** *Provenance isn't a feature — it's a Pydantic
-> field validated by a CI test on every PR
-> (`tests/test_golden_pipeline.py::test_every_artifact_cites_a_clause`).*
+> **The slide one-line:** *Provenance isn't marketing copy — it's a
+> Pydantic field validated by a CI test on every PR
+> (`tests/test_golden_pipeline.py::test_every_artifact_cites_a_clause`).
+> 8/8 invariants green at this commit.*
 
-*(Insert screenshot: Delivery Package collage — Kanban + Trace
-chain + Tests panel. Frames 4 + 6 in [`docs/SCREENSHOT_TOUR.md`](docs/SCREENSHOT_TOUR.md).)*
+*(Insert screenshot: Delivery Package — checklist + Stories panel + Trace
+lanes + Tests panel. Frames 4 + 6 in [`docs/SCREENSHOT_TOUR.md`](docs/SCREENSHOT_TOUR.md).)*
 
 ---
 
@@ -263,18 +267,23 @@ chain + Tests panel. Frames 4 + 6 in [`docs/SCREENSHOT_TOUR.md`](docs/SCREENSHOT
 
 **The governance beat (30 seconds, owns the credibility moment):**
 
-1. Toggle one story to **"Approved for export"** (the `approved_for_export`
-   field — opt-out governance, not opt-in).
-2. Click **Export → Jira CSV** with **"Only approved items"** ticked.
-3. Open the CSV → only approved rows present, with **Epic → Story →
+1. Click **Approve & Export** — one button bulk-approves every story
+   in the package (the `approved_for_export` Pydantic field) and opens
+   the Export Hub. *"This is the human governance gate. Until I click
+   this, nothing leaves Helix."*
+2. **Jira CSV preview** — table appears in-page, **Epic → Story →
    Task → Sub-task hierarchy + Parent links** ready to drop into Jira.
-4. Or click **"Push to Jira REST"** for a live API push (drops back to
-   dry-run if `JIRA_*` env not set).
+3. **Download Jira CSV** — file saved locally. *"Same one-click for
+   Azure DevOps CSV, GitHub Issues JSON, and the Markdown brief."*
+4. *(Only if `JIRA_*` env is configured on the API host)* click
+   **Push to Jira REST** for a live REST push. Without env, the panel
+   stays a friendly dry-run preview (no red error toast).
 
 > **Say:** *"This is the part most demos skip. Approval is a Pydantic
-> field on every story and task; the export filter is **one line**.
-> Same path for Azure DevOps CSV, GitHub Issues JSON, Markdown brief,
-> and live Jira REST push."*
+> field on every story and task; the export filter is **one line**
+> (`helix-backend/app/services/export_filter.py`). Same path for Azure
+> DevOps CSV, GitHub Issues JSON, Markdown brief, and live Jira REST
+> push."*
 
 **The impact numbers (defensibly sourced):**
 

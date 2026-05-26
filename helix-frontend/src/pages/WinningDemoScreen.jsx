@@ -378,12 +378,18 @@ export default function WinningDemoScreen() {
             >
               <p className="jd-finale-eyebrow">End state</p>
               <h2>Delivery Readiness</h2>
-              <div className="jd-finale-ring">
-                <ReadinessScoreRing
-                  score={readinessScore ?? 0}
-                  statusLabel="PROJECT READY"
-                />
-              </div>
+              {readinessScore != null ? (
+                <div className="jd-finale-ring">
+                  <ReadinessScoreRing
+                    score={readinessScore}
+                    statusLabel={readinessScore >= 60 ? 'PROJECT READY' : 'NEEDS REVIEW'}
+                  />
+                </div>
+              ) : (
+                <div className="jd-finale-ring jd-finale-ring--pending">
+                  <p className="muted small">Awaiting final readiness from delivery gate…</p>
+                </div>
+              )}
               <p className="jd-finale-copy muted">
                 Opening delivery package automatically… stories, architecture, tests, sprint plan,
                 and exports.

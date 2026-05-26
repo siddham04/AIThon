@@ -180,6 +180,48 @@ All four should respond in under 3 s.
 
 ---
 
+## Step 4.5 — Production Hardening *(optional, ONLY before public launch — not for the hackathon judging URL)*
+
+The default deploy is configured for **judges**, not paying customers.
+Several security gates are intentionally relaxed so judges can register
+on the fly, use guest mode, and log in as `demo@demo.com`. If you
+keep the same Vercel + Render URL **after** the hackathon and open it
+to the public, flip these in the **Render dashboard → Environment**
+(do *not* commit them to `render.yaml` — they're per-deploy):
+
+| Env var | Production value | Why |
+|---|---|---|
+| `HELIX_PRODUCTION` | `1` | Master switch — disables hackathon-auth paths in `app/config.py:259-263`, blocks the default JWT secret, disables `/docs` |
+| `HELIX_HACKATHON_AUTH` | `false` | Closes the guest-login path and the auto-register-on-login fallback |
+| `HELIX_DEMO_EMAIL` *(remove)* | *(remove from Render env)* | Removes the seeded `demo@demo.com` account on next deploy |
+| `HELIX_DEMO_PASSWORD` *(remove)* | *(remove from Render env)* | Same — never leave a known password on a public deploy |
+| `HELIX_CORS_ORIGINS` | `https://<your-vercel>.vercel.app` | Replaces the permissive `*.vercel.app` regex |
+| `HELIX_CORS_ORIGIN_REGEX` *(remove)* | *(remove from Render env)* | Disable the wildcard — explicit allowlist only |
+| `JWT_SECRET` | *(Render auto-generates via `generateValue: true` in `render.yaml`)* | Verify in dashboard → should be a 64-char random string, never the repo default |
+| `HELIX_ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Shorten from the 7-day default |
+| Re-add **registration gating** in code | open `app/api/routes/auth.py:19-36` | Currently registration is always-open; add a `Depends(allow_hackathon_auth)` gate before public launch |
+
+After saving env vars → **Render dashboard → Manual Deploy → Clear
+build cache & deploy** so the new env actually takes effect (a normal
+redeploy reuses the cached worker).
+
+**Additional pre-public-launch items** (full list with file:line in
+[`docs/AUDIT_REPORT.md` §1.2](AUDIT_REPORT.md#12-security-subagent-evidenced)):
+
+- Fix SSRF on URL ingest (`app/services/ingestion_service.py:53-61` — disable redirects or revalidate each hop)
+- Switch `/api/export/csv` to `QUOTE_ALL` (the safer `/api/backlog/{id}/jira-csv` path is already correct)
+- Add `request.is_disconnected()` checks to SSE routes
+- Wrap LLM calls in `asyncio.wait_for(..., 120.0)` to bound hang time
+- Tighten password policy from `min_length=1` to a real complexity gate
+- Add structured metrics + Prometheus / OpenTelemetry exporter
+
+**For the hackathon judging URL specifically: do none of the above.**
+The judges need `demo@demo.com` to work, guest mode to work, and the
+showcase project to be seeded. Production hardening happens *after*
+you decide to keep the link live for actual users.
+
+---
+
 ## Step 5 — What to submit
 
 | Submission field | What to paste |

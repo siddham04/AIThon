@@ -6,6 +6,7 @@ import TeamFlowBar from './TeamFlowBar'
 import WorkspaceAmbient from './WorkspaceAmbient'
 import { isNativeShellPath } from '../../lib/productFlow'
 import { hasSeenOnboarding } from '../onboarding/onboardingStorage'
+import { useAuthStore } from '../../store/useStore'
 
 const CommandPalette = lazy(() => import('../command-palette/CommandPalette'))
 const OnboardingModal = lazy(() => import('../onboarding/OnboardingModal'))
@@ -27,8 +28,19 @@ export default function AppShell() {
   const location = useLocation()
   const nav = useNavigate()
   const reduceMotion = useReducedMotion()
-  const [showOnb, setShowOnb] = useState(() => !hasSeenOnboarding())
+  const user = useAuthStore((s) => s.user)
   const path = location.pathname
+  // Guest / demo / judge-demo sessions skip the 3-step onboarding modal
+  // — judges should land directly on the populated workspace, not on a
+  // tour they will dismiss anyway.
+  const isDemoSession =
+    user?.guest ||
+    user?.email === 'demo@demo.com' ||
+    path.includes('/judge-demo') ||
+    path.includes('/proj_demo_seed01')
+  const [showOnb, setShowOnb] = useState(
+    () => !isDemoSession && !hasSeenOnboarding(),
+  )
 
   const showTeamFlow = Boolean(id) && isNativeShellPath(path)
 
