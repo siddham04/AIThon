@@ -15,10 +15,26 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl build-essential \
     && rm -rf /var/lib/apt/lists/*
-COPY helix-backend/requirements.txt .
-RUN python -m pip install --upgrade pip setuptools wheel
-RUN --mount=type=cache,target=/root/.cache/pip python -m pip install -r requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip python -m spacy download en_core_web_sm
+
+# Allow callers to swap in `requirements.txt` (full ML stack — needs
+# Render Starter or larger) by passing `--build-arg REQUIREMENTS_FILE=requirements.txt`.
+# The default `requirements-render.txt` is the slim install that runs
+# safely on Render Free tier (512 MB RAM, ~25 min build budget).
+# See helix-backend/requirements-render.txt for the full reasoning
+# and the list of intentionally-omitted heavy ML deps.
+ARG REQUIREMENTS_FILE=requirements-render.txt
+COPY helix-backend/requirements.txt helix-backend/requirements-render.txt ./
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --no-cache-dir --prefer-binary -r "${REQUIREMENTS_FILE}"
+# Only download the spaCy model if spacy is actually installed
+# (it is in `requirements.txt` but NOT in `requirements-render.txt`).
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if python -c "import spacy" 2>/dev/null; then \
+        python -m spacy download en_core_web_sm ; \
+    else \
+        echo "[helix] spaCy not installed in this build — skipping en_core_web_sm download (nlp_service falls back to heuristic ambiguity detection)" ; \
+    fi
 COPY helix-backend/ /app/
 RUN chmod +x /app/docker-entrypoint.sh
 

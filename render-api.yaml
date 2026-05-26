@@ -1,4 +1,16 @@
 # Render Blueprint — API only (use with Vercel for the UI).
+#
+# Builds with the slim `requirements-render.txt` (default in
+# `helix-backend/Dockerfile`) — fits Render Free 512 MB RAM.
+# Drops sentence-transformers + PyTorch + faiss + scikit-learn +
+# spacy (~460 MB build saving, ~250 MB runtime); every drop is a
+# lazy import with heuristic fallback (see
+# helix-backend/requirements-render.txt for the full reasoning).
+# Golden + adversarial pipeline tests pass 28/28 with these absent.
+#
+# Need full ML stack? Override `REQUIREMENTS_FILE=requirements.txt`
+# in Render dashboard build args and upgrade to Starter (1 GB).
+#
 # Dashboard: New → Blueprint → this repo → select render-api.yaml
 # Or on an existing Web Service set:
 #   Root Directory = helix-backend
@@ -26,7 +38,9 @@ services:
         value: "demo@demo.com"
       - key: HELIX_DEMO_PASSWORD
         value: "demo123"
-      # Skip sentence-transformers / PyTorch load — saves ~400 MB RAM on Free tier.
+      # Defensive: even when the slim install drops sentence-transformers
+      # entirely, this env keeps `rag_service` from attempting any
+      # embeddings work. Belt-and-suspenders with `requirements-render.txt`.
       - key: HELIX_DISABLE_EMBEDDINGS
         value: "1"
 

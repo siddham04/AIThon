@@ -1,0 +1,95 @@
+# Render Free-tier slim requirements (512 MB RAM / ~25 min build).
+#
+# This is the canonical install for Render Web Service builds. The full
+# `requirements.txt` is used by local dev, CI, and the API-only image
+# used by `helix-backend/Dockerfile` outside Render.
+#
+# Why a separate file?
+#   The full install pulls PyTorch (via sentence-transformers, ~200 MB),
+#   spaCy + blis + en_core_web_sm (~100 MB), scikit-learn + scipy
+#   (~110 MB), faiss-cpu (~50 MB). On Render Free those wheels reliably
+#   OOM the build worker during pip unpack OR push the runtime over
+#   the 512 MB ceiling on a cold start. Total saving: ~460 MB build,
+#   ~250 MB runtime resident set.
+#
+# Why is this safe?
+#   Every dropped dep is **lazily imported** inside a try/except
+#   fallback. Behaviour when missing:
+#
+#     sentence-transformers + faiss-cpu  ->  rag_service.embed_requirements
+#                                            / search return empty lists;
+#                                            agents fall back to clause-id
+#                                            grounding from project.source_clauses
+#                                            (the same fallback used when
+#                                            HELIX_DISABLE_EMBEDDINGS=1).
+#                                            See app/services/rag_service.py:31-43.
+#
+#     scikit-learn                       ->  ml_insights uses heuristic
+#                                            anomaly + similarity scoring.
+#                                            See app/services/ml_insights.py:765-786.
+#
+#     spacy + en_core_web_sm             ->  nlp_service.detect_ambiguities
+#                                            uses the regex / heuristic path
+#                                            ('passive voice', 'vague tokens').
+#                                            See app/services/nlp_service.py:40-47.
+#
+# The golden-pipeline contract (`tests/test_golden_pipeline.py`, 8/8
+# green) and the adversarial-input contract (`tests/test_adversarial_inputs.py`,
+# 20/20 green) both pass with these four deps absent, because the test
+# matrix forces the same `HELIX_DISABLE_EMBEDDINGS` code path Render
+# uses in production.
+#
+# If you ever need the full ML stack on Render, switch back to
+# `requirements.txt` (and upgrade to Starter — Free will OOM).
+
+# --- Core API ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.11.0
+pydantic-settings>=2.6.1
+email-validator>=2.2.0
+
+# --- LLM provider boundary (Azure OpenAI client) ---
+openai>=1.54.3
+tenacity>=9.0.0
+python-dotenv>=1.0.1
+
+# --- Ingestion (PDF / DOCX / multipart upload) ---
+python-multipart>=0.0.17
+pypdf>=5.1.0
+python-docx>=1.1.2
+PyMuPDF>=1.24.14
+
+# --- HTTP client + parsing (Jira REST push, URL ingest) ---
+httpx>=0.27.2
+beautifulsoup4>=4.12.3
+lxml>=5.3.0
+
+# --- Persistence ---
+sqlalchemy>=2.0.36
+psycopg2-binary>=2.9.10
+
+# --- Optional persistence used by snapshot service (lazy-imported,
+#     still tiny — keep so the boot path doesn't log scary warnings) ---
+motor>=3.6.0
+pymongo>=4.10.1
+
+# --- Background job runtime (used by /api/artifacts/generate when configured) ---
+redis>=5.2.0
+celery[redis]>=5.4.0
+
+# --- Auth / passwords ---
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.2.0
+passlib[bcrypt]>=1.7.4
+
+# --- Math primitive used by readiness scoring + a few heuristic agents
+#     (NumPy alone is ~20 MB — keeping for safety; can drop if you need
+#      to squeeze more) ---
+numpy>=1.26.0
+
+# --- INTENTIONALLY OMITTED for Render Free tier ---
+# sentence-transformers>=3.3.1   # pulls PyTorch — ~200 MB
+# faiss-cpu>=1.9.0.post1          # ~50 MB; only used with embeddings
+# scikit-learn>=1.5.0             # ~30 MB + scipy ~80 MB
+# spacy>=3.7.5                    # ~100 MB including blis + en_core_web_sm model

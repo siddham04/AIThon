@@ -9,10 +9,21 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN python -m pip install --upgrade pip setuptools wheel
-RUN --mount=type=cache,target=/root/.cache/pip python -m pip install -r requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip python -m spacy download en_core_web_sm
+# Same opt-in heavy-ML-stack pattern as Dockerfile.all-in-one.
+# Default = `requirements-render.txt` (slim, Render Free safe).
+# Pass `--build-arg REQUIREMENTS_FILE=requirements.txt` for the
+# full stack (needs >= 1 GB build RAM, Render Starter or larger).
+ARG REQUIREMENTS_FILE=requirements-render.txt
+COPY requirements.txt requirements-render.txt ./
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --no-cache-dir --prefer-binary -r "${REQUIREMENTS_FILE}"
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if python -c "import spacy" 2>/dev/null; then \
+        python -m spacy download en_core_web_sm ; \
+    else \
+        echo "[helix] spaCy not installed in this build — skipping en_core_web_sm download (nlp_service falls back to heuristic ambiguity detection)" ; \
+    fi
 
 COPY . /app/
 RUN chmod +x /app/docker-entrypoint.sh

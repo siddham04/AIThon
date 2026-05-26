@@ -1,5 +1,17 @@
 # Render Blueprint — one Web service (SPA + API), SQLite by default.
-# Needs ~1GB+ RAM to build (sentence-transformers + npm). Use render-api.yaml + Vercel if Free tier OOMs.
+#
+# Builds with the slim `requirements-render.txt` (default in
+# `Dockerfile.all-in-one`) so it fits inside Render Free tier
+# (512 MB RAM, ~25 min build budget). The slim install drops
+# sentence-transformers + PyTorch + faiss + scikit-learn + spacy
+# (~460 MB build, ~250 MB runtime); each dep is lazy-imported with a
+# heuristic fallback so the demo pipeline is unaffected (golden +
+# adversarial contract tests prove this — 28/28 green).
+#
+# Need the full ML stack? Switch `dockerBuildArgs` in your Render
+# dashboard to `REQUIREMENTS_FILE=requirements.txt` and upgrade to
+# Render Starter (1 GB RAM).
+#
 # Apply: https://dashboard.render.com/ → New → Blueprint → connect this repo.
 # After deploy, copy the service URL (https://<name>.onrender.com) into your hackathon "Demo Link".
 

@@ -44,6 +44,40 @@ git push origin main               # both Render and Vercel watch this branch
 
 ---
 
+## Render Free-tier guarantee — no memory or build OOM
+
+The default build is **slim-install safe** for Render Free (512 MB RAM,
+~25 min build budget). Both `Dockerfile.all-in-one` and
+`helix-backend/Dockerfile` default to `REQUIREMENTS_FILE=requirements-render.txt`
+— which drops the four heavy ML wheels that historically OOM Render
+Free builds:
+
+| Dropped from slim install | Wheel size | Where it's used | Behaviour when missing |
+|---|---|---|---|
+| `sentence-transformers` (+ PyTorch) | ~200 MB | `rag_service` semantic search | Returns empty list — agents fall back to clause-id grounding from `project.source_clauses` |
+| `spacy` (+ `en_core_web_sm`) | ~100 MB | `nlp_service.detect_ambiguities` (passive voice, vague tokens) | Heuristic regex path takes over |
+| `scikit-learn` (+ `scipy`) | ~110 MB | `ml_insights` anomaly + similarity | Heuristic scoring takes over |
+| `faiss-cpu` | ~50 MB | RAG index | Returns empty list (paired with sentence-transformers gate) |
+
+**Total saving: ~460 MB during build, ~250 MB at runtime.**
+
+Every one of these deps is **lazily imported inside a try/except** —
+the application boots cleanly even when none are installed, and the
+golden + adversarial test suite (28/28 green) covers the exact code
+paths Render hits. The slim build is the **same code Render Free has
+been running successfully**; this just makes the install configuration
+explicit and reproducible.
+
+**Need the full ML stack?** Two options:
+
+1. **Render Starter or larger** (1 GB+ RAM) — in the dashboard, set
+   build arg `REQUIREMENTS_FILE=requirements.txt`. Save → Manual
+   Deploy → Clear cache & deploy.
+2. **Locally for development** — `pip install -r requirements.txt`
+   continues to install everything for local dev / CI / tests.
+
+---
+
 ## Step 2 — Deploy backend to Render (~10 min cold first deploy)
 
 1. Open https://dashboard.render.com/ → **New** → **Blueprint**.

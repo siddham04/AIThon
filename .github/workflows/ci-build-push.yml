@@ -10,9 +10,30 @@ jobs:
     permissions:
       contents: read
       packages: write
+    # Expose whether the optional K8s deploy is configured so the
+    # downstream `deploy-to-k8s` job can gate itself. GitHub Actions
+    # does NOT allow the `secrets` context in a job-level `if:`, so
+    # this is the canonical workaround — surface the check as a job
+    # output and let the dependent job read it.
+    outputs:
+      can_deploy_k8s: ${{ steps.k8s_gate.outputs.can_deploy }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Detect K8s deploy availability
+        id: k8s_gate
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          if [ -n "${KUBE_CONFIG_DATA:-}" ]; then
+            echo "can_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "K8s deploy will run — KUBE_CONFIG_DATA is present."
+          else
+            echo "can_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "K8s deploy will be skipped — KUBE_CONFIG_DATA not set."
+          fi
+        shell: bash
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -54,8 +75,10 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ai-thon-backend:cache,mode=max
 
   deploy-to-k8s:
-    if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
+    # `secrets` is NOT available in job-level `if:` — gate on the job
+    # output exposed by `build-and-push.k8s_gate` instead.
     needs: build-and-push
+    if: needs.build-and-push.outputs.can_deploy_k8s == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
