@@ -101,19 +101,15 @@ async def run_effort_for_project(
     return est
 
 
-@router.get("/effort/{project_id}", response_model=EffortEstimate)
+@router.get("/effort/{project_id}", response_model=Optional[EffortEstimate])
 def get_effort_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> EffortEstimate:
+) -> Optional[EffortEstimate]:
+    # See review_board.get_board for the 200-with-null vs 404 rationale.
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.requirement_estimate is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Effort estimate has not been generated yet.",
-        )
     return project.requirement_estimate
 
 
@@ -122,14 +118,11 @@ def get_effort_simple(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> dict:
+) -> Optional[dict]:
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
     if project.requirement_estimate is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Effort estimate has not been generated yet.",
-        )
+        return None
     return _effort_simple(project.requirement_estimate)
 
 
@@ -166,19 +159,14 @@ async def run_risk_for_project(
     return pred
 
 
-@router.get("/risk/{project_id}", response_model=RiskPrediction)
+@router.get("/risk/{project_id}", response_model=Optional[RiskPrediction])
 def get_risk_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> RiskPrediction:
+) -> Optional[RiskPrediction]:
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.requirement_risk is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Risk prediction has not been generated yet.",
-        )
     return project.requirement_risk
 
 
@@ -187,14 +175,11 @@ def get_risk_simple(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> dict:
+) -> Optional[dict]:
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
     if project.requirement_risk is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Risk prediction has not been generated yet.",
-        )
+        return None
     return _risk_simple(project.requirement_risk)
 
 
@@ -251,19 +236,14 @@ async def run_diagram_for_project(
     return diagram
 
 
-@router.get("/diagram/{project_id}", response_model=ArchitectureDiagram)
+@router.get("/diagram/{project_id}", response_model=Optional[ArchitectureDiagram])
 def get_diagram_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> ArchitectureDiagram:
+) -> Optional[ArchitectureDiagram]:
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.architecture_diagram is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Architecture diagram has not been generated yet.",
-        )
     return project.architecture_diagram
 
 

@@ -11,6 +11,8 @@ Interactive story-level planning (needs stories on project):
 """
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -83,19 +85,19 @@ async def auto_plan_for_project(
     return plan
 
 
-@router.get("/{project_id}/auto", response_model=AutoSprintPlan)
+@router.get("/{project_id}/auto", response_model=Optional[AutoSprintPlan])
 def get_auto_plan_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> AutoSprintPlan:
+) -> Optional[AutoSprintPlan]:
+    # 200-with-null when the project exists but no plan has been
+    # generated yet. The workspace UI fetches this on every page load;
+    # returning 404 here floods the browser console with red errors
+    # even though the empty-state UI is correct. (Project-missing /
+    # not-owned still 404s via get_owned_project_row.)
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.auto_sprint_plan is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Auto sprint plan has not been generated yet.",
-        )
     return project.auto_sprint_plan
 
 
@@ -133,19 +135,14 @@ async def plan_for_project(
     return plan
 
 
-@router.get("/{project_id}", response_model=TeamSprintPlan)
+@router.get("/{project_id}", response_model=Optional[TeamSprintPlan])
 def get_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> TeamSprintPlan:
+) -> Optional[TeamSprintPlan]:
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.team_sprint_plan is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "Sprint plan has not been generated yet for this project.",
-        )
     return project.team_sprint_plan
 
 
