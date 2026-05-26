@@ -86,6 +86,113 @@
   margin-bottom: 0.35rem;
 }
 
+/* Inline architecture layer + API contract panels (added so judges
+   can see the architecture / API generation outputs without leaving
+   the workspace). Color chips mirror standard REST tooling so
+   POST=green, GET=blue, etc. read as familiar at a glance. */
+.p5-arch-layers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.p5-arch-layer {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface, #fff);
+}
+
+.p5-arch-layer strong {
+  display: block;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.p5-list--inline {
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.p5-list--inline li {
+  margin: 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-soft, #f3f4f6);
+  font-size: 0.78rem;
+}
+
+.p5-list--apis {
+  padding-left: 0;
+  list-style: none;
+}
+
+.p5-list--apis li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border, #f3f4f6);
+}
+
+.p5-list--apis li:last-child {
+  border-bottom: none;
+}
+
+.p5-api-method {
+  display: inline-block;
+  min-width: 54px;
+  text-align: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, monospace);
+  color: #fff;
+  background: #6b7280;
+}
+
+.p5-api-method--get    { background: #2563eb; }
+.p5-api-method--post   { background: #059669; }
+.p5-api-method--put    { background: #d97706; }
+.p5-api-method--patch  { background: #c026d3; }
+.p5-api-method--delete { background: #dc2626; }
+
+.p5-api-endpoint {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 0.85rem;
+  color: var(--text, #111827);
+}
+
+.p5-mermaid-details {
+  margin-top: 0.6rem;
+}
+
+.p5-mermaid-details summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 0.4rem;
+}
+
+.p5-code-block {
+  background: var(--bg-soft, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.7rem 0.9rem;
+  overflow-x: auto;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+
 .p5-empty {
   text-align: center;
   padding: 3rem 1.5rem;

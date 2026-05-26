@@ -30,6 +30,8 @@ export default function AiWorkspace() {
   const [prd, setPrd] = useState(null)
   const [quality, setQuality] = useState(null)
   const [reviewBoard, setReviewBoard] = useState(null)
+  const [architectureDiagram, setArchitectureDiagram] = useState(null)
+  const [apiContracts, setApiContracts] = useState(null)
 
   const applySlice = useCallback((data) => {
     if (!data) return
@@ -43,6 +45,8 @@ export default function AiWorkspace() {
     if (data.prd !== undefined) setPrd(data.prd)
     if (data.quality !== undefined) setQuality(data.quality)
     if (data.reviewBoard !== undefined) setReviewBoard(data.reviewBoard)
+    if (data.architectureDiagram !== undefined) setArchitectureDiagram(data.architectureDiagram)
+    if (data.apiContracts !== undefined) setApiContracts(data.apiContracts)
     if (data.approved !== undefined) setApproved(data.approved)
   }, [])
 
@@ -522,6 +526,88 @@ export default function AiWorkspace() {
                     </span>
                   </li>
                 ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="p5-panel" id="architecture">
+            <div className="p5-section-head">
+              <h2>Architecture</h2>
+              {architectureDiagram?.nodes_count != null && (
+                <span className="muted small">
+                  {(architectureDiagram.layers || []).length} layers ·{' '}
+                  {architectureDiagram.nodes_count} nodes
+                </span>
+              )}
+            </div>
+            {!architectureDiagram ? (
+              <p className="muted">
+                Architecture appears after the pipeline runs (frontend · backend ·
+                database layers plus a Mermaid diagram).
+              </p>
+            ) : (
+              <>
+                {(architectureDiagram.layers || []).length > 0 && (
+                  <div className="p5-arch-layers">
+                    {architectureDiagram.layers.map((layer) => (
+                      <div key={layer.name} className="p5-arch-layer">
+                        <strong>{layer.name}</strong>
+                        <ul className="p5-list p5-list--inline">
+                          {(layer.items || []).map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {architectureDiagram.mermaid && (
+                  <details className="p5-mermaid-details">
+                    <summary>Mermaid diagram (raw)</summary>
+                    <pre className="p5-code-block">
+                      {architectureDiagram.mermaid}
+                    </pre>
+                  </details>
+                )}
+                {architectureDiagram.tree_text && (
+                  <details className="p5-mermaid-details">
+                    <summary>Component tree</summary>
+                    <pre className="p5-code-block">
+                      {architectureDiagram.tree_text}
+                    </pre>
+                  </details>
+                )}
+              </>
+            )}
+          </section>
+
+          <section className="p5-panel" id="api-contracts">
+            <div className="p5-section-head">
+              <h2>API Contracts ({(apiContracts?.contracts || []).length})</h2>
+            </div>
+            {!apiContracts || !(apiContracts.contracts || []).length ? (
+              <p className="muted">
+                API contracts appear after the pipeline runs (REST endpoints
+                derived from each user story).
+              </p>
+            ) : (
+              <ul className="p5-list p5-list--apis">
+                {apiContracts.contracts.slice(0, 16).map((c, i) => (
+                  <li key={`${c.method}-${c.endpoint}-${i}`}>
+                    <code className={`p5-api-method p5-api-method--${(c.method || 'get').toLowerCase()}`}>
+                      {c.method || 'GET'}
+                    </code>
+                    <code className="p5-api-endpoint">{c.endpoint}</code>
+                    {c.description && (
+                      <span className="muted small"> · {c.description}</span>
+                    )}
+                  </li>
+                ))}
+                {apiContracts.contracts.length > 16 && (
+                  <li className="muted small">
+                    + {apiContracts.contracts.length - 16} more — export OpenAPI for the full list
+                  </li>
+                )}
               </ul>
             )}
           </section>

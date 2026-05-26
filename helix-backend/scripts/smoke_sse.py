@@ -136,11 +136,39 @@ def main() -> None:
     s = next((e for e in events if e.get("step") == "stories" and e.get("status") == "done"), None)
     if s:
         a = s.get("artifact") or {}
+        story_count = a.get("story_count") or len(a.get("stories") or [])
+        task_count = a.get("task_count")
+        print(f"  Stories: {story_count}   Tasks: {task_count}   (target >= 5x ratio)")
         for story in (a.get("stories") or [])[:3]:
             persona = story.get("persona") or "?"
             goal = story.get("goal") or "?"
             benefit = story.get("benefit") or "?"
-            print(f"  As a {persona}, I want {goal}, so that {benefit}.")
+            print(f"    - As a {persona}, I want {goal}, so that {benefit}.")
+
+    print()
+    print("==== ARCHITECTURE STEP DETAIL (was 'not visible') ====")
+    arch = next((e for e in events if e.get("step") == "architecture" and e.get("status") == "done"), None)
+    if arch:
+        a = arch.get("artifact") or {}
+        print(f"  headline: {arch.get('headline')}")
+        for layer in (a.get("layers") or [])[:6]:
+            items = layer.get("items") or []
+            print(f"    {layer.get('name', '?'):<18} : {', '.join(items[:5])}{'...' if len(items) > 5 else ''}")
+
+    print()
+    print("==== APIS STEP DETAIL (was 'not visible') ====")
+    apis = next((e for e in events if e.get("step") == "apis" and e.get("status") == "done"), None)
+    if apis:
+        a = apis.get("artifact") or {}
+        print(f"  headline: {apis.get('headline')}")
+        for c in (a.get("contracts") or [])[:8]:
+            print(f"    {c.get('method', '?'):<6} {c.get('endpoint', '?')}")
+
+    print()
+    print("==== JIRA STEP DETAIL (was '11 tasks for 11 stories') ====")
+    jira = next((e for e in events if e.get("step") == "jira" and e.get("status") == "done"), None)
+    if jira:
+        print(f"  headline: {jira.get('headline')}")
 
 
 if __name__ == "__main__":

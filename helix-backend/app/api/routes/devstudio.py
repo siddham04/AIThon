@@ -107,19 +107,17 @@ async def run_contract_for_project(
     return suite
 
 
-@router.get("/contract/{project_id}", response_model=APIContractSuite)
+@router.get("/contract/{project_id}", response_model=Optional[APIContractSuite])
 def get_contract_for_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> APIContractSuite:
+) -> Optional[APIContractSuite]:
+    """Returns ``null`` (HTTP 200) instead of 404 when contracts haven't
+    been generated yet — keeps the workspace pre-load free of red console
+    errors before the pipeline has run."""
     row = get_owned_project_row(db, user, project_id)
     project = load_project_graph(db, row)
-    if project.api_contract_suite is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            "API contract has not been generated yet.",
-        )
     return project.api_contract_suite
 
 

@@ -66,7 +66,104 @@ _GENERIC_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("Database", ("Core Tables", "Config")),
 )
 
+
+# -----------------------------------------------------------------
+# Domain-specific layer profiles
+# -----------------------------------------------------------------
+# Judges flagged that even when the PRD was clearly a telecom order
+# management platform (TOMP) the rendered architecture said "Login,
+# Dashboard, Auth Service, User Service" because the cross-cutting
+# AUTH pattern matched first. We now check for the *dominant domain*
+# of the PRD first, and only fall back to cross-cutting auth /
+# payment / notification / CRUD patterns when no specific industry
+# profile matches.
+
+_TELECOM_OMS_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Customer Channels", ("Customer Portal", "Sales Agent Console", "Mobile App")),
+    ("Order Management", ("Order API", "Order Decomposition Engine", "Workflow Orchestrator")),
+    ("Fulfilment & Provisioning", ("Provisioning Orchestrator", "OSS / Network Inventory Adapter", "Field Technician Scheduler")),
+    ("Customer Lifecycle", ("KYC Service", "Notification Gateway", "Billing & Charging Integration")),
+    ("Data & Analytics", ("Orders DB", "Audit Log", "SLA / Assurance Monitor")),
+)
+
+_E_COMMERCE_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Storefront", ("Catalog UI", "Cart", "Checkout")),
+    ("Commerce Services", ("Catalog Service", "Order Service", "Pricing & Promotions")),
+    ("Fulfilment", ("Inventory Service", "Shipping & Logistics", "Returns")),
+    ("Payments & Risk", ("Payment Gateway", "Fraud Engine", "Tax Service")),
+    ("Database", ("Catalog", "Orders", "Inventory", "Customers")),
+)
+
+_HEALTHCARE_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Patient & Clinician Apps", ("Patient Portal", "Clinician Workstation", "Mobile App")),
+    ("Care Services", ("Appointment Service", "EHR Service", "Prescription Service")),
+    ("Clinical Integration", ("HL7 / FHIR Gateway", "Lab / Imaging Adapter", "Pharmacy Adapter")),
+    ("Compliance & Audit", ("Consent Service", "HIPAA Audit Log", "Identity Federation")),
+    ("Database", ("Patients", "Encounters", "Orders", "Audit")),
+)
+
+_BANKING_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Customer Channels", ("Web Banking", "Mobile Banking", "Branch Console")),
+    ("Core Banking", ("Accounts Service", "Transaction Service", "Cards Service")),
+    ("Risk & Compliance", ("KYC / AML Service", "Fraud Engine", "Regulatory Reporting")),
+    ("Integration", ("Payments Network Adapter", "Settlement Service", "Notification Gateway")),
+    ("Database", ("Accounts", "Transactions", "Audit Log")),
+)
+
+_LOGISTICS_LAYERS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Customer & Driver Apps", ("Shipper Portal", "Driver App", "Tracking UI")),
+    ("Fulfilment Services", ("Shipment Service", "Route Optimization", "Capacity Planner")),
+    ("Operations", ("Warehouse Service", "Dispatch Service", "Exception Handling")),
+    ("Integration", ("Carrier Adapters", "Customs Adapter", "Notification Gateway")),
+    ("Database", ("Shipments", "Routes", "Audit Log")),
+)
+
+
 _LAYER_PATTERNS: List[Tuple[re.Pattern[str], Tuple[Tuple[str, Tuple[str, ...]], ...]]] = [
+    # -------- Domain-specific (checked FIRST) --------
+    (
+        re.compile(
+            r"\b(telecom|telco|broadband|fiber|fibre|iptv|provisioning|"
+            r"oss|bss|sim|msisdn|imsi|order\s+management|order\s+decompos|"
+            r"service\s+order|activation|assurance)\b",
+            re.I,
+        ),
+        _TELECOM_OMS_LAYERS,
+    ),
+    (
+        re.compile(
+            r"\b(e[- ]?commerce|storefront|catalog|cart|checkout|sku|"
+            r"shopping|merchandis|marketplace|product\s+listing)\b",
+            re.I,
+        ),
+        _E_COMMERCE_LAYERS,
+    ),
+    (
+        re.compile(
+            r"\b(patient|clinician|ehr|emr|hl7|fhir|appointment|"
+            r"prescription|hipaa|clinical|hospital|pharmacy)\b",
+            re.I,
+        ),
+        _HEALTHCARE_LAYERS,
+    ),
+    (
+        re.compile(
+            r"\b(bank|banking|account\s+holder|fraud|aml|kyc|core\s+banking|"
+            r"transaction\s+ledger|settlement|swift|ach|card\s+issuance)\b",
+            re.I,
+        ),
+        _BANKING_LAYERS,
+    ),
+    (
+        re.compile(
+            r"\b(shipment|logistics|warehouse|carrier|dispatch|fleet|"
+            r"freight|delivery\s+route|driver\s+app|tracking\s+id)\b",
+            re.I,
+        ),
+        _LOGISTICS_LAYERS,
+    ),
+
+    # -------- Cross-cutting fallbacks (auth / payment / notification / CRUD) --------
     (
         re.compile(
             r"\b(authentication|authorize|login|sign[- ]?up|register|jwt|session|"
