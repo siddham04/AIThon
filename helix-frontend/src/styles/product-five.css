@@ -193,6 +193,271 @@
   white-space: pre;
 }
 
+/* ------------------------------------------------------------------ */
+/* Executive Delivery Dashboard                                        */
+/* ------------------------------------------------------------------ */
+/* One-screen "AI Delivery Manager" hero panel rendered at the top    */
+/* of the workspace. Conveys "is this project ready to ship?" in      */
+/* under five seconds via:                                             */
+/*   * GO / GO-WITH-CAVEATS / NO-GO badge (color-coded)                */
+/*   * 10 KPI tiles (Requirements, Epics, Stories, Tasks, APIs, etc.)  */
+/*   * Sprint plan tiles (up to 6 + overflow)                          */
+/*   * Delivery snapshot: weeks, cost, effort, value displaced         */
+.hx-exec-delivery {
+  position: relative;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin: 0.5rem 0 1.25rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  box-shadow: 0 12px 32px -16px rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hx-exec-delivery--go         { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); }
+.hx-exec-delivery--go_with_caveats { background: linear-gradient(135deg, #78350f 0%, #92400e 100%); }
+.hx-exec-delivery--no_go      { background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); }
+
+.hx-exec-delivery--empty {
+  background: var(--bg-soft, #f9fafb);
+  color: var(--text-muted, #6b7280);
+  border: 1px dashed var(--border, #e5e7eb);
+}
+
+.hx-exec-delivery__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.hx-exec-delivery__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+.hx-exec-delivery__title {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.hx-exec-delivery__verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.hx-exec-delivery__verdict-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+}
+
+.hx-exec-delivery__verdict--go .hx-exec-delivery__verdict-dot {
+  background: #4ade80;
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.28);
+}
+
+.hx-exec-delivery__verdict--go_with_caveats .hx-exec-delivery__verdict-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.28);
+}
+
+.hx-exec-delivery__verdict--no_go .hx-exec-delivery__verdict-dot {
+  background: #f87171;
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.28);
+}
+
+.hx-exec-delivery__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 1.1rem;
+}
+
+.hx-kpi-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
+}
+
+.hx-kpi-tile--ok   { border-left: 3px solid #4ade80; }
+.hx-kpi-tile--warn { border-left: 3px solid #fbbf24; }
+.hx-kpi-tile--crit { border-left: 3px solid #f87171; }
+.hx-kpi-tile--info { border-left: 3px solid rgba(255, 255, 255, 0.5); }
+
+.hx-kpi-tile__label {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+.hx-kpi-tile__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.05;
+}
+
+.hx-kpi-tile__detail {
+  font-size: 0.7rem;
+  color: rgba(248, 250, 252, 0.55);
+}
+
+.hx-exec-delivery__plan {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 760px) {
+  .hx-exec-delivery__plan {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hx-exec-delivery__plan-block h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+.hx-exec-delivery__sprints {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.45rem;
+}
+
+.hx-exec-delivery__sprint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+}
+
+.hx-exec-delivery__sprint--more {
+  background: rgba(255, 255, 255, 0.04);
+  border-style: dashed;
+}
+
+.hx-exec-delivery__sprint strong {
+  color: #ffffff;
+}
+
+.hx-exec-delivery__sprint-goal {
+  margin: 0.2rem 0 0;
+  font-size: 0.7rem;
+  color: rgba(248, 250, 252, 0.6);
+  line-height: 1.3;
+}
+
+.hx-exec-delivery__facts {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.hx-exec-delivery__facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.hx-exec-delivery__facts > div:last-child {
+  border-bottom: none;
+}
+
+.hx-exec-delivery__facts dt {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+.hx-exec-delivery__facts dd {
+  margin: 0;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: right;
+}
+
+.hx-exec-delivery__facts .muted {
+  color: rgba(248, 250, 252, 0.5) !important;
+  font-weight: 400;
+}
+
+.hx-exec-delivery__verdict-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 760px) {
+  .hx-exec-delivery__verdict-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hx-exec-delivery__verdict-detail strong {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.65);
+  margin-bottom: 0.3rem;
+}
+
+.hx-exec-delivery__verdict-detail ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.82rem;
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.hx-exec-delivery__verdict-detail li {
+  margin-bottom: 0.2rem;
+}
+
+.hx-exec-delivery__blockers li {
+  color: #fecaca;
+}
+
 .p5-empty {
   text-align: center;
   padding: 3rem 1.5rem;

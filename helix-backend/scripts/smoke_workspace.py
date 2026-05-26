@@ -135,6 +135,7 @@ def main() -> None:
     sprint_plan = _get(f"/sprint-plan/{project_id}/auto", token=token)
     arch = _get(f"/studio/diagram/{project_id}", token=token)
     apis = _get(f"/devstudio/contract/{project_id}", token=token)
+    summary = _get(f"/executive/{project_id}/delivery-summary", token=token)
 
     print("Step 5/5 — summary")
     print(f"  elapsed: {(time.monotonic() - t0):.2f}s")
@@ -190,6 +191,37 @@ def main() -> None:
         skills = (t.get("skills") or [])
         title = (t.get("title") or "")[:80]
         print(f"  - {title} [{', '.join(skills[:3])}]")
+
+    print()
+    print("==== EXECUTIVE DELIVERY SUMMARY (Approve & Export hero) ====")
+    if summary:
+        print(f"  Project           : {summary.get('project_name')}")
+        print(f"  Requirements      : {summary.get('requirements_count')}")
+        print(f"  Epics             : {summary.get('epics_count')}")
+        print(f"  Stories           : {summary.get('stories_count')}")
+        print(f"  Tasks             : {summary.get('tasks_count')}")
+        print(f"  APIs              : {summary.get('apis_count')}")
+        print(f"  Test Cases        : {summary.get('test_cases_count')}")
+        print(f"  Risks             : {summary.get('risks_count')}")
+        print(f"  Ambiguities       : {summary.get('ambiguities_count')}")
+        print(f"  Arch Components   : {summary.get('architecture_components_count')}")
+        print(f"  Readiness Score   : {summary.get('readiness_score')}/100")
+        print(f"  Quality Score     : {summary.get('quality_score')}/100")
+        print(f"  Confidence Score  : {summary.get('confidence_score')}/100")
+        print(f"  Sprints           : {summary.get('sprint_count')}")
+        print(f"  Delivery (weeks)  : {summary.get('estimated_delivery_weeks')}")
+        print(f"  Total Story Pts   : {summary.get('estimated_total_points')}")
+        print(f"  Total Hours       : {summary.get('estimated_total_hours')}")
+        print(f"  Projected Cost    : ${summary.get('projected_cost_usd'):,.0f} "
+              f"(@${summary.get('blended_hourly_rate_usd'):.0f}/hr)")
+        print(f"  Hours Saved       : {summary.get('hours_saved_vs_manual'):,}")
+        print(f"  Cost Saved        : ${summary.get('cost_saved_usd'):,.0f}")
+        print(f"  Weeks Saved       : {summary.get('weeks_saved_vs_manual')}")
+        print(f"  >>> VERDICT       : {summary.get('verdict_label', '?').upper()} <<<")
+        for r in (summary.get("verdict_reasons") or [])[:4]:
+            print(f"      + {r}")
+        for b in (summary.get("blocking_items") or [])[:4]:
+            print(f"      ! {b}")
 
 
 if __name__ == "__main__":

@@ -19,6 +19,15 @@ const DEFERRED_SLICES = [
   // not visible". These two slices now populate the corresponding panels.
   { key: 'architectureDiagram', url: (id) => `/studio/diagram/${id}`, fallback: null },
   { key: 'apiContracts', url: (id) => `/devstudio/contract/${id}`, fallback: null },
+  // Executive Delivery Summary — one-screen GO/NO-GO verdict + counts
+  // that powers the workspace hero panel and the Approve & Export
+  // confirmation. Always fetched last so the rest of the workspace
+  // can paint before this aggregator endpoint returns.
+  {
+    key: 'deliverySummary',
+    url: (id) => `/executive/${id}/delivery-summary`,
+    fallback: null,
+  },
 ]
 
 const EMPTY_RESULT = {
@@ -34,6 +43,7 @@ const EMPTY_RESULT = {
   prd: null,
   architectureDiagram: null,
   apiContracts: null,
+  deliverySummary: null,
   approved: false,
   failed: 1,
 }
@@ -90,6 +100,7 @@ export async function loadWorkspaceData(projectId, { onPartial } = {}) {
     prd: null,
     architectureDiagram: null,
     apiContracts: null,
+    deliverySummary: null,
     approved: false,
     failed: 0,
     loadingSlices: true,

@@ -1402,6 +1402,86 @@ class ExecutiveDashboard(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class DeliveryVerdict(str, Enum):
+    """Three-state GO/NO-GO verdict surfaced on the Approve & Export panel."""
+    GO = "GO"
+    GO_WITH_CAVEATS = "GO_WITH_CAVEATS"
+    NO_GO = "NO_GO"
+
+
+class DeliverySprintTile(BaseModel):
+    """One sprint tile rendered on the Executive Delivery dashboard."""
+    label: str = "Sprint 1"
+    number: int = 1
+    weeks: float = 2.0
+    planned_points: int = 0
+    goal: str = ""
+
+
+class DeliveryHeadlineMetric(BaseModel):
+    """A single hero KPI on the Executive Delivery dashboard."""
+    key: str
+    label: str
+    value: int = 0
+    detail: str = ""
+    severity: str = "info"  # info | ok | warn | crit
+
+
+class DeliverySummary(BaseModel):
+    """One-screen 'AI Delivery Manager' verdict surfaced on Approve & Export.
+
+    Aggregates every artifact the multi-agent pipeline produced into a
+    single counts-plus-verdict view so a judge can answer
+    'is this project ready to ship?' in under five seconds.
+    """
+    project_id: str
+    project_name: str = ""
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # ----- Headline counts (matches the user's wishlist) -----
+    requirements_count: int = 0
+    epics_count: int = 0
+    stories_count: int = 0
+    tasks_count: int = 0
+    apis_count: int = 0
+    test_cases_count: int = 0
+    risks_count: int = 0
+    ambiguities_count: int = 0
+    architecture_components_count: int = 0
+
+    # ----- Quality & readiness -----
+    readiness_score: int = 0
+    quality_score: int = 0
+    confidence_score: int = 0  # review board confidence
+
+    # ----- Plan -----
+    sprints: List[DeliverySprintTile] = Field(default_factory=list)
+    sprint_count: int = 0
+    estimated_delivery_weeks: float = 0.0
+    estimated_total_hours: float = 0.0
+    estimated_total_points: int = 0
+
+    # ----- Cost -----
+    projected_cost_usd: float = 0.0
+    blended_hourly_rate_usd: float = 150.0
+
+    # ----- GO / NO-GO verdict -----
+    verdict: DeliveryVerdict = DeliveryVerdict.GO_WITH_CAVEATS
+    verdict_label: str = "GO with caveats"
+    verdict_reasons: List[str] = Field(default_factory=list)
+    blocking_items: List[str] = Field(default_factory=list)
+
+    # ----- Value narrative -----
+    hours_saved_vs_manual: int = 0
+    cost_saved_usd: float = 0.0
+    weeks_saved_vs_manual: float = 0.0
+
+    # Pre-built hero tiles for the UI (key+label+value+severity) — keeps
+    # the React component dumb (one .map render) and lets us update the
+    # tile order/labels without re-shipping the frontend.
+    headline_metrics: List[DeliveryHeadlineMetric] = Field(default_factory=list)
+
+
 class CommandCenterSnapshot(BaseModel):
     """Single-screen SDLC health for a project."""
     project_id: str

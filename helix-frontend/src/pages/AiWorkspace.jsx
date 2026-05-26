@@ -6,6 +6,7 @@ import { api } from '../api/client'
 import { DEFAULT_SHOWCASE_PROJECT_ID, resolveDemoUseAi } from '../lib/demoConfig'
 import { loadWorkspaceData } from '../lib/loadWorkspaceData'
 import ApprovalChecklist from '../components/product/ApprovalChecklist'
+import ExecutiveDeliveryDashboard from '../components/executive/ExecutiveDeliveryDashboard'
 import JiraCsvPreview from '../components/export/JiraCsvPreview'
 import JiraPushPanel from '../components/export/JiraPushPanel'
 import TraceabilityFlowAnimator from '../components/traceability/TraceabilityFlowAnimator'
@@ -32,6 +33,7 @@ export default function AiWorkspace() {
   const [reviewBoard, setReviewBoard] = useState(null)
   const [architectureDiagram, setArchitectureDiagram] = useState(null)
   const [apiContracts, setApiContracts] = useState(null)
+  const [deliverySummary, setDeliverySummary] = useState(null)
 
   const applySlice = useCallback((data) => {
     if (!data) return
@@ -47,6 +49,7 @@ export default function AiWorkspace() {
     if (data.reviewBoard !== undefined) setReviewBoard(data.reviewBoard)
     if (data.architectureDiagram !== undefined) setArchitectureDiagram(data.architectureDiagram)
     if (data.apiContracts !== undefined) setApiContracts(data.apiContracts)
+    if (data.deliverySummary !== undefined) setDeliverySummary(data.deliverySummary)
     if (data.approved !== undefined) setApproved(data.approved)
   }, [])
 
@@ -219,6 +222,20 @@ export default function AiWorkspace() {
   const approveAndExport = async () => {
     await downloadExport('jira')
     await load()
+    // Echo the AI Delivery Manager's verdict next to the download
+    // toast so judges immediately see "GO" / "GO with caveats" /
+    // "NO-GO" at the moment they hit Approve & Export. The dashboard
+    // also re-renders at the top of the page after the load() above.
+    if (deliverySummary?.verdict_label) {
+      const verdict = deliverySummary.verdict
+      const msg = `Delivery verdict: ${deliverySummary.verdict_label.toUpperCase()}`
+      if (verdict === 'GO') toast.success(msg)
+      else if (verdict === 'NO_GO') toast.error(msg)
+      else toast(msg, { icon: '⚠' })
+    }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   const regenerate = async () => {
@@ -373,6 +390,16 @@ export default function AiWorkspace() {
 
       {!loading && (
         <>
+          {/* AI Delivery Manager hero: one-screen GO/NO-GO verdict with
+              counts (Requirements / Epics / Stories / Tasks / APIs /
+              Tests / Risks / Ambiguities / Architecture Components /
+              Readiness), sprint plan tiles, delivery snapshot (weeks,
+              cost, value displaced), and reasons/blockers. Rendered
+              before the checklist so judges see the verdict first. */}
+          {deliverySummary && (
+            <ExecutiveDeliveryDashboard summary={deliverySummary} />
+          )}
+
           {tasks.length > 0 && (
             <p className="hx-tasks-banner" role="status">
               <strong>{tasks.length} engineering tasks</strong> linked to stories — Jira export
