@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 
 from ..models import Project, Severity, Task, TaskType, UserStory
 from ..services.ingestion import render_clauses
+from ..services.story_voice import normalize_voice
 from .base import Agent
 
 
@@ -86,11 +87,20 @@ class DecomposerAgent(Agent):
         tasks: List[Task] = []
         for s in data.get("stories") or []:
             try:
+                # Normalise persona/goal/benefit so the standard template
+                # "As a {persona}, I want {goal}, so that {benefit}." reads
+                # as grammatical English regardless of how the LLM cased
+                # things or whether it prepended "to "/"Place"/etc.
+                persona_n, goal_n, benefit_n = normalize_voice(
+                    s.get("persona", "User"),
+                    s.get("goal", ""),
+                    s.get("benefit", ""),
+                )
                 story = UserStory(
                     title=s.get("title", "Untitled story"),
-                    persona=s.get("persona", "User"),
-                    goal=s.get("goal", ""),
-                    benefit=s.get("benefit", ""),
+                    persona=persona_n,
+                    goal=goal_n,
+                    benefit=benefit_n,
                     acceptance_criteria=list(s.get("acceptance_criteria") or []),
                     source_clause_ids=list(s.get("source_clause_ids") or []),
                 )

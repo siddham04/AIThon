@@ -11,11 +11,32 @@ import urllib.request
 
 BASE = "http://127.0.0.1:8000/api"
 
-PRD = (
-    "Telecom Order Management Platform. Customers must place orders via web, "
-    "mobile, IVR. Provisioning under 30 minutes. p95 order capture < 2s, "
-    "throughput 5000 orders/hour. PII encrypted at rest. 99.95% uptime."
-)
+PRD = """Telecom Order Management Platform (TOMP) PRD v1.
+
+User Roles. Customer can place service orders, track order status, upload
+documents, and schedule installation. Sales Agent can create orders, modify
+orders, and submit on behalf of customers. Provisioning Engineer can review
+provisioning requests and resolve failures. Field Technician can receive
+installation assignments and update status. Operations Administrator manages
+products, workflows, and integrations.
+
+Functional Requirements. FR-1 customers shall create service orders.
+FR-2 system shall validate network availability, coverage, eligibility.
+FR-3 system shall integrate with external KYC services and reject failures.
+FR-13 fallout shall be classified, routed to teams, tracked to resolution.
+
+Business Rules. BR-1 enterprise services above $50,000 require manager
+approval. BR-2 fiber orders require feasibility verification. BR-3 failed
+KYC cancels the order. BR-4 three provisioning failures escalate to ops.
+
+Non-Functional Requirements. Availability 99.99%. 95% of API responses
+under 2 seconds. Support 10 million subscribers, 1 million monthly orders.
+Security MFA, RBAC, encryption at rest and in transit, audit logging.
+Compliance GDPR, ISO 27001, PCI-DSS.
+
+Acceptance Criteria. Given coverage is available, When the customer submits
+a valid order, Then the order shall be accepted and installation scheduled.
+"""
 
 
 def _post(path: str, body: dict, token: str | None = None) -> dict:
@@ -64,16 +85,62 @@ def _stream(path: str, body: dict | None = None, token: str | None = None) -> No
 
 
 def main() -> None:
-    # Use the dev-mode guest token endpoint
     auth = _post("/auth/guest", {})
     token = auth["access_token"]
     print(f"  · guest token acquired")
 
     print()
     print(f"{'elapsed':>7}      {'step':<14} {'status':<7} {'pct':>4}  headline")
-    print("-" * 80)
-    _stream("/demo/run", body={"requirement": PRD, "use_ai": False}, token=token)
-    print("-" * 80)
+    print("-" * 90)
+    # Capture quality + story events so we can show the fixed outputs.
+    events: list[dict] = []
+    headers = {"Accept": "text/event-stream", "Authorization": f"Bearer {token}",
+               "Content-Type": "application/json"}
+    req = urllib.request.Request(f"{BASE}/demo/run",
+                                  data=json.dumps({"requirement": PRD, "use_ai": False}).encode("utf-8"),
+                                  headers=headers, method="POST")
+    t0 = time.monotonic()
+    with urllib.request.urlopen(req, timeout=60) as r:
+        for raw in r:
+            line = raw.decode("utf-8", errors="replace").rstrip()
+            if not line.startswith("data:"):
+                continue
+            payload = line[len("data:"):].strip()
+            if not payload:
+                continue
+            try:
+                ev = json.loads(payload)
+            except json.JSONDecodeError:
+                continue
+            events.append(ev)
+            dt = (time.monotonic() - t0) * 1000.0
+            step = ev.get("step", "?"); status = ev.get("status", "?")
+            pct = ev.get("percent", ""); headline = (ev.get("headline") or "")[:64]
+            print(f"{dt:7.0f} ms     {step:<14} {status:<7} {pct:>3}%  {headline}")
+            if status == "complete":
+                break
+    print("-" * 90)
+
+    # Spotlight the dimensions the user's last run showed regressions on.
+    print()
+    print("==== QUALITY STEP DETAIL (was '4% F') ====")
+    q = next((e for e in events if e.get("step") == "quality" and e.get("status") == "done"), None)
+    if q:
+        a = q.get("artifact") or {}
+        print(f"  overall_score: {a.get('overall_score')}    grade: {a.get('grade')}")
+        print(f"  clarity={a.get('clarity')} completeness={a.get('completeness')} testability={a.get('testability')} ambiguity={a.get('ambiguity')}")
+        print(f"  highlight_gaps: {a.get('highlight_gaps')}")
+
+    print()
+    print("==== STORIES STEP DETAIL (was 'I want Place ...') ====")
+    s = next((e for e in events if e.get("step") == "stories" and e.get("status") == "done"), None)
+    if s:
+        a = s.get("artifact") or {}
+        for story in (a.get("stories") or [])[:3]:
+            persona = story.get("persona") or "?"
+            goal = story.get("goal") or "?"
+            benefit = story.get("benefit") or "?"
+            print(f"  As a {persona}, I want {goal}, so that {benefit}.")
 
 
 if __name__ == "__main__":

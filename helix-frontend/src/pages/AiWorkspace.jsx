@@ -282,7 +282,16 @@ export default function AiWorkspace() {
   const summary = artifacts?.summary
   const riskCount =
     (risk?.reasons?.length || 0) + (project?.risks?.length || 0)
+  // The backend's AutoSprintPlan model exposes { tasks, total_story_points,
+  // suggested_sprint, suggested_sprint_number, sprint_capacity }; the legacy
+  // TeamSprintPlan model used { sprints | plan | total_sprints }. We check
+  // both shapes so the workspace checklist flips green whichever endpoint
+  // populated `sprintPlan` (was previously stuck at "pending" for every
+  // AutoSprintPlan because we only checked legacy field names).
   const sprintReady =
+    Boolean(sprintPlan?.tasks?.length) ||
+    Boolean(sprintPlan?.total_story_points) ||
+    Boolean(sprintPlan?.suggested_sprint) ||
     Boolean(sprintPlan?.sprints?.length) ||
     Boolean(sprintPlan?.plan?.length) ||
     Boolean(sprintPlan?.total_sprints)

@@ -16,6 +16,7 @@ from typing import Any, Dict, List
 
 from ..models import BacklogEpic, Project, RequirementSummary, UserStory
 from ..services.ingestion import render_clauses
+from ..services.story_voice import normalize_voice
 from .base import Agent
 from .clause_utils import filter_clause_ids
 
@@ -123,12 +124,21 @@ class ProductManagerAgent(Agent):
                 skipped += 1
                 continue
             try:
+                # Normalise persona/goal/benefit so the template
+                # "As a {persona}, I want {goal}, so that {benefit}."
+                # reads cleanly even when the LLM returned "Place a service
+                # order" or "to comply with X". See services/story_voice.py.
+                persona_n, goal_n, benefit_n = normalize_voice(
+                    s.get("persona", "User"),
+                    s.get("goal", ""),
+                    s.get("benefit", ""),
+                )
                 stories.append(
                     UserStory(
                         title=title,
-                        persona=s.get("persona", "User"),
-                        goal=s.get("goal", ""),
-                        benefit=s.get("benefit", ""),
+                        persona=persona_n,
+                        goal=goal_n,
+                        benefit=benefit_n,
                         acceptance_criteria=list(s.get("acceptance_criteria") or []),
                         source_clause_ids=filter_clause_ids(
                             project,

@@ -676,18 +676,50 @@ def _coerce_severity(raw: Any) -> Severity:
         return Severity.MEDIUM
 
 
+def _well_covered_dimensions(text: str, *, min_hits: int = 3) -> set[QualityDimension]:
+    """Dimensions whose cue lexicon has >= ``min_hits`` matches in the text.
+
+    Used to veto AI ``missing_information`` claims that contradict strong
+    deterministic evidence (e.g. the AI says "Missing actors" while the
+    text mentions "Customer", "user role", "Sales Agent", "Operator").
+
+    This is the heuristic floor that prevents a single hallucinated LLM
+    response from making a well-structured PRD look broken on stage.
+    """
+    if not text:
+        return set()
+    txt = text.lower()
+    out: set[QualityDimension] = set()
+    for dim, (_title, cues) in _DIMENSION_CUES.items():
+        if sum(1 for c in cues if c in txt) >= min_hits:
+            out.add(dim)
+    return out
+
+
 def _merge_missing(
     heuristic: List[MissingInformation],
     ai_missing: List[Dict[str, Any]],
+    *,
+    text: str = "",
 ) -> List[MissingInformation]:
-    """Prefer AI-attributed entries; fall back to heuristic ones for any
-    dimension the AI didn't already cover.
+    """Combine heuristic + AI missing-info entries with heuristic veto.
+
+    The AI gets to ENRICH entries (better titles + explanations + suggested
+    questions) but cannot INVENT a missing dimension that the heuristic has
+    strong keyword evidence for. Without this veto, an LLM occasionally
+    returns "Missing actors" for a PRD that lists six roles by name, which
+    makes the whole quality panel look untrustworthy to judges.
     """
+    well_covered = _well_covered_dimensions(text)
     by_dim: dict[QualityDimension, MissingInformation] = {}
-    # AI takes precedence
     for entry in ai_missing or []:
         try:
             dim = _coerce_dimension(entry.get("dimension"))
+            if dim in well_covered:
+                # Heuristic already proved this dimension is present —
+                # drop the AI's contradictory claim instead of letting it
+                # override the panel.
+                continue
             title = str(entry.get("title") or "").strip()
             if not title:
                 title = _DIMENSION_CUES.get(dim, ("Information missing",))[0]
@@ -703,7 +735,7 @@ def _merge_missing(
             continue
     # Fill in dimensions the AI didn't cover but the heuristic did
     for h in heuristic:
-        if h.dimension not in by_dim:
+        if h.dimension not in by_dim and h.dimension not in well_covered:
             by_dim[h.dimension] = h
     # Stable order
     ordered = []
@@ -766,13 +798,39 @@ def _build_report(
 ) -> QualityScoreReport:
     dims = _enterprise_dimensions(h, ambiguity=ambiguity)
     if ai_dims:
+        # Blend AI dims with the heuristic dims instead of overriding.
+        #
+        # The old code dropped the heuristic outright the moment the AI
+        # returned a number for a key — which meant a single low-temperature
+        # hallucination (overall_score=4) could turn an 80/B requirement
+        # into a 4/F on stage. The blend below gives the AI directional
+        # influence without ever letting it ignore strong heuristic
+        # evidence:
+        #
+        #   * close agreement                → 50/50 blend
+        #   * AI is much harsher than h euristic → 70/30 (heuristic wins)
+        #
+        # ``ambiguity`` is inverted (higher = worse), so "much harsher"
+        # means AI > heuristic + 25; for every other key it means
+        # AI < heuristic - 25.
         for k in ("clarity", "completeness", "testability", "ambiguity", "overall_score"):
             raw = ai_dims.get(k)
-            if raw is not None:
-                try:
-                    dims[k] = round(_clamp(float(raw), 0, 100), 1)
-                except (TypeError, ValueError):
-                    pass
+            if raw is None:
+                continue
+            try:
+                ai_val = round(_clamp(float(raw), 0, 100), 1)
+            except (TypeError, ValueError):
+                continue
+            heur_val = float(dims.get(k, ai_val))
+            if k == "ambiguity":
+                much_harsher = ai_val > heur_val + 25
+            else:
+                much_harsher = ai_val < heur_val - 25
+            if much_harsher:
+                blended = round(0.7 * heur_val + 0.3 * ai_val, 1)
+            else:
+                blended = round(0.5 * heur_val + 0.5 * ai_val, 1)
+            dims[k] = blended
     overall = dims["overall_score"]
     highlights = _highlight_gaps(merged_missing)
     radar = _compute_radar_scores(
@@ -825,7 +883,9 @@ async def score_requirement_text(
     if ai_payload:
         ai_missing = ai_payload.get("missing_information") or []
         ai_vague = ai_payload.get("vague_phrases") or []
-        merged_missing = _merge_missing(h_missing, ai_missing)
+        # Pass the raw text so _merge_missing can veto AI hallucinations
+        # against strong heuristic evidence (see _well_covered_dimensions).
+        merged_missing = _merge_missing(h_missing, ai_missing, text=text or "")
         merged_vague = _merge_vague(h_vague, ai_vague)
         clarifying = [
             str(q).strip()
