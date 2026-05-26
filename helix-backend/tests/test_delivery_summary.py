@@ -321,3 +321,202 @@ def test_headline_metrics_have_all_judge_facing_tiles() -> None:
         "architecture",
         "readiness",
     }
+
+
+# --------------------------------------------------------------------- #
+# Phase 2 additions — upgrade recs, wow metrics, agent contributions
+# --------------------------------------------------------------------- #
+
+
+def test_upgrade_recommendations_emitted_when_verdict_is_caveats() -> None:
+    """When the verdict is GO_WITH_CAVEATS, the dashboard MUST tell
+    judges the specific actions that flip it to GO."""
+    project = _make_project(
+        readiness=72,
+        quality=68,
+        risks=[Severity.HIGH],
+    )
+    summary = build_delivery_summary(project)
+    assert summary.verdict is DeliveryVerdict.GO_WITH_CAVEATS
+    recs = summary.upgrade_recommendations
+    assert len(recs) >= 2
+    joined = " ".join(recs).lower()
+    assert "readiness" in joined
+    assert "quality" in joined
+    assert "risk" in joined
+
+
+def test_upgrade_recommendations_empty_when_verdict_is_go() -> None:
+    project = _make_project(readiness=92, quality=85, risks=[])
+    summary = build_delivery_summary(project)
+    assert summary.verdict is DeliveryVerdict.GO
+    assert summary.upgrade_recommendations == []
+
+
+def test_agent_contributions_attribute_artifacts_to_agents() -> None:
+    """The per-agent breakdown is the receipts for the time-saved number.
+    Each agent listed must have produced >0 artifacts and have a
+    positive displaced-minutes count."""
+    project = _make_project(
+        stories=10,
+        tasks_per_story=5,
+        tests=40,
+        ambiguities=8,
+        clauses=30,
+        risks=[Severity.MEDIUM, Severity.LOW],
+        architecture_components=14,
+        apis=15,
+    )
+    summary = build_delivery_summary(project)
+
+    contributions = summary.agent_contributions
+    assert contributions, "Expected non-empty agent contributions list"
+    agents = {row.agent for row in contributions}
+    # All eight production-tracked agents should appear once each
+    # storied artifacts are present.
+    assert "Product Manager" in agents
+    assert "Scrum Master" in agents
+    assert "QA Engineer" in agents
+    assert "Solution Architect" in agents
+    assert "API Designer" in agents
+    for row in contributions:
+        assert row.artifacts_produced > 0
+        assert row.human_minutes_displaced > 0
+
+
+def test_wow_metrics_populate_when_pipeline_timings_present() -> None:
+    """Wall-clock vs manual + speedup multiplier must populate when the
+    pipeline captured timings on the Project — this is the 'AI Delivery
+    Manager wow factor' the dashboard renders front and centre."""
+    project = _make_project()
+    # Simulate a pipeline that took 18 seconds across 11 steps.
+    project.last_pipeline_timings_ms = {f"step_{i}": 1600 for i in range(11)}
+    summary = build_delivery_summary(project)
+
+    assert summary.helix_wall_clock_minutes > 0
+    assert summary.manual_equivalent_weeks > 0
+    assert summary.speedup_multiplier >= 1.0
+    assert summary.equivalent_team_size >= 1
+    # ROI = cost_saved / projected_cost. For a 5pt 8h/task project
+    # with the default fabricated counts this must be >= 0 (sometimes
+    # 0 when manual hours < project hours, that's OK).
+    assert summary.roi_multiplier >= 0
+
+
+# --------------------------------------------------------------------- #
+# Sprint planner — team-aware velocity & meaningful goals
+# --------------------------------------------------------------------- #
+
+
+def test_sprint_planner_keeps_sprint_count_under_seven_for_normal_backlog() -> None:
+    """Judges flagged 17-sprint plans as unrealistic. The team-aware
+    velocity must cap normal backlogs at <= 7 sprints (heuristic
+    target is 6, +1 tolerance for dependency-forced overflow)."""
+    from app.agents.sprint_planner import _heuristic_plan
+    from app.agents.scrum_master import _build_lane_tasks
+
+    project = _make_project(
+        stories=11,
+        tasks_per_story=0,  # we'll use lane fanout to build tasks instead
+    )
+    project.tasks = []
+    for s in project.stories:
+        project.tasks.extend(_build_lane_tasks(project, s))
+
+    plan = _heuristic_plan(project.tasks, velocity=20.0)
+    assert len(plan.items) <= 7, (
+        f"Expected <= 7 sprints from team-aware velocity, got "
+        f"{len(plan.items)} (total_points={plan.total_points})"
+    )
+    assert plan.velocity_points_per_sprint >= 48.0
+    # Goal text must not be the legacy "deliver next N tasks" string.
+    legacy = [i for i in plan.items if "deliver next" in (i.goal or "")]
+    assert not legacy, f"Found {len(legacy)} sprints with legacy 'deliver next' goal"
+
+
+def test_sprint_planner_respects_lane_dependencies() -> None:
+    """Database tasks must land before backend; backend before frontend;
+    frontend before QA — never the other way around."""
+    from app.agents.sprint_planner import _heuristic_plan
+    from app.agents.scrum_master import _build_lane_tasks
+
+    project = _make_project(stories=3, tasks_per_story=0)
+    project.tasks = []
+    for s in project.stories:
+        project.tasks.extend(_build_lane_tasks(project, s))
+
+    plan = _heuristic_plan(project.tasks, velocity=20.0)
+    by_id = {t.id: t for t in project.tasks}
+    sprint_index = {}
+    for s in plan.items:
+        for tid in s.task_ids:
+            sprint_index[tid] = s.sprint_number
+
+    for t in project.tasks:
+        for dep in t.dependencies:
+            if dep in sprint_index and t.id in sprint_index:
+                assert sprint_index[dep] <= sprint_index[t.id], (
+                    f"Task {t.title} (sprint {sprint_index[t.id]}) "
+                    f"scheduled before its dep {by_id[dep].title} "
+                    f"(sprint {sprint_index[dep]})"
+                )
+
+
+# --------------------------------------------------------------------- #
+# Lane fan-out — AC subtasks
+# --------------------------------------------------------------------- #
+
+
+def test_lane_fanout_adds_ac_verification_subtasks() -> None:
+    from app.agents.scrum_master import _build_lane_tasks
+
+    project = _make_project(stories=1, tasks_per_story=0)
+    story = project.stories[0]
+    story.acceptance_criteria = [
+        "Given a valid order, When the customer submits it, Then it is accepted.",
+        "Given KYC fails, When the order is created, Then it is rejected.",
+        "Given network is unavailable, When provisioning runs, Then it retries.",
+    ]
+    tasks = _build_lane_tasks(project, story)
+
+    base_lanes = [t for t in tasks if not t.title.startswith("QA: verify ")]
+    ac_subtasks = [t for t in tasks if t.title.startswith("QA: verify ")]
+    assert len(base_lanes) >= 6, "Expected at least 6 base-lane tasks"
+    assert len(ac_subtasks) == 3, (
+        f"Expected one verification subtask per AC, got {len(ac_subtasks)}"
+    )
+    # Each lane task must have an estimate (the seeded heuristic).
+    for t in tasks:
+        assert t.estimate_points is not None and t.estimate_points > 0
+        assert t.estimate_hours is not None and t.estimate_hours > 0
+
+
+def test_lane_fanout_stamps_dependency_chain() -> None:
+    """DB → Backend domain → Backend API → Frontend → QA wiring must
+    be present so the sprint planner can respect ordering without
+    the LLM."""
+    from app.agents.scrum_master import _build_lane_tasks
+
+    project = _make_project(stories=1, tasks_per_story=0)
+    story = project.stories[0]
+    story.acceptance_criteria = []  # focus on base lanes only
+    tasks = _build_lane_tasks(project, story)
+    by_title_prefix = {}
+    for t in tasks:
+        prefix = t.title.split(":", 1)[0]
+        by_title_prefix.setdefault(prefix, []).append(t)
+
+    db = by_title_prefix["Database"][0]
+    be_domain = next(t for t in tasks if t.title.startswith("Backend: design"))
+    be_api = next(t for t in tasks if t.title.startswith("Backend: implement"))
+    fe_state = next(t for t in tasks if t.title.startswith("Frontend: wire"))
+    qa = next(t for t in tasks if t.title.startswith("QA: test plan"))
+
+    # Backend domain depends on DB
+    assert db.id in be_domain.dependencies
+    # Backend API depends on backend domain
+    assert be_domain.id in be_api.dependencies
+    # Frontend state depends on backend API
+    assert be_api.id in fe_state.dependencies
+    # QA depends on backend API (and frontend UI)
+    assert be_api.id in qa.dependencies

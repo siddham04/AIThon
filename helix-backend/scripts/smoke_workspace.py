@@ -222,6 +222,28 @@ def main() -> None:
             print(f"      + {r}")
         for b in (summary.get("blocking_items") or [])[:4]:
             print(f"      ! {b}")
+        for u in (summary.get("upgrade_recommendations") or [])[:4]:
+            print(f"      \u2191 TO REACH GO: {u}")
+
+        print()
+        print("==== WOW METRICS (delivery comparison) ====")
+        print(f"  Helix wall-clock  : {summary.get('helix_wall_clock_minutes', 0)} min")
+        print(f"  Manual equivalent : {summary.get('manual_equivalent_weeks', 0)} weeks")
+        print(f"  Speedup           : {summary.get('speedup_multiplier', 0)}x")
+        print(f"  Team-equivalent   : {summary.get('equivalent_team_size', 0)} FTEs")
+        print(f"  ROI               : {summary.get('roi_multiplier', 0)}x build cost")
+
+        agents = summary.get("agent_contributions") or []
+        if agents:
+            print()
+            print("==== AGENT CONTRIBUTIONS (where the savings came from) ====")
+            for a in agents[:6]:
+                print(
+                    f"  {a.get('agent', '?'):<22} "
+                    f"{a.get('artifacts_produced', 0):>3} {a.get('artifact_label', '?'):<11} "
+                    f"\u2192 {a.get('human_minutes_displaced', 0):>5} min displaced "
+                    f"({a.get('speedup_multiplier', 0):.0f}x)"
+                )
 
 
 if __name__ == "__main__":

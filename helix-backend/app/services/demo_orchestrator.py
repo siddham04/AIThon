@@ -764,6 +764,11 @@ async def run_demo(
     total = len(_STEP_RUNNERS)
     completed = 0
 
+    # Capture per-step wall-clock time so the Executive Delivery
+    # Dashboard can compute the "8 min vs 14 weeks" wow comparison.
+    # Stamped onto project.last_pipeline_timings_ms before finalize().
+    pipeline_timings_ms: Dict[str, int] = {}
+
     for item in plan:
         if (
             isinstance(item, tuple)
@@ -797,6 +802,10 @@ async def run_demo(
                 )
             results = await asyncio.gather(*tasks)
             for result in results:
+                sid = result.get("step")
+                ems = result.get("elapsed_ms")
+                if sid and isinstance(ems, (int, float)):
+                    pipeline_timings_ms[str(sid)] = int(ems)
                 yield result
             completed += len(batch_runners)
             continue
@@ -817,11 +826,17 @@ async def run_demo(
             detail="",
         )
 
-        yield await _run_step(
+        result = await _run_step(
             project, step_id, runner, kwargs, done_pct=done_pct
         )
+        sid = result.get("step")
+        ems = result.get("elapsed_ms")
+        if sid and isinstance(ems, (int, float)):
+            pipeline_timings_ms[str(sid)] = int(ems)
+        yield result
         completed += 1
 
+    project.last_pipeline_timings_ms = dict(pipeline_timings_ms)
     finalize_demo_project(project)
     await ensure_project_prd(project, use_ai=use_ai)
     n_tasks = len(project.tasks or [])

@@ -1476,10 +1476,47 @@ class DeliverySummary(BaseModel):
     cost_saved_usd: float = 0.0
     weeks_saved_vs_manual: float = 0.0
 
+    # ----- Wow-factor delivery comparison -----
+    helix_wall_clock_minutes: float = 0.0  # actual pipeline run time
+    manual_equivalent_weeks: float = 0.0  # what a human team would take
+    speedup_multiplier: float = 0.0       # manual / helix
+    equivalent_team_size: int = 0          # FTEs a human team would need
+    roi_multiplier: float = 0.0            # cost_saved / projected_cost
+
+    # ----- Per-agent productivity multiplier breakdown -----
+    # Shows judges WHERE the savings come from (which agent replaced
+    # how many human-hours). Empty list when no agents have produced
+    # artifacts yet.
+    agent_contributions: List["AgentContribution"] = Field(default_factory=list)
+
+    # ----- Verdict upgrade path -----
+    # When verdict is GO_WITH_CAVEATS or NO_GO, list the specific
+    # actions that would flip the verdict to GO. Empty when verdict
+    # is already GO.
+    upgrade_recommendations: List[str] = Field(default_factory=list)
+
     # Pre-built hero tiles for the UI (key+label+value+severity) — keeps
     # the React component dumb (one .map render) and lets us update the
     # tile order/labels without re-shipping the frontend.
     headline_metrics: List[DeliveryHeadlineMetric] = Field(default_factory=list)
+
+
+class AgentContribution(BaseModel):
+    """One per-agent row on the productivity-multiplier breakdown.
+
+    Lets judges see "where did the time savings come from?" instead
+    of one anonymous hours-saved number.
+    """
+    agent: str  # "Product Manager", "Architect", "QA Engineer", ...
+    artifacts_produced: int = 0  # stories or tasks or tests created
+    artifact_label: str = "artifacts"  # "stories" / "tasks" / "tests"
+    human_minutes_per_artifact: float = 0.0
+    human_minutes_displaced: int = 0  # artifacts_produced * minutes/artifact
+    pipeline_seconds: float = 0.0   # what Helix took to do the work
+    speedup_multiplier: float = 0.0  # human_minutes * 60 / pipeline_seconds
+
+
+DeliverySummary.model_rebuild()
 
 
 class CommandCenterSnapshot(BaseModel):

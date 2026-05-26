@@ -12,6 +12,22 @@ import { useMemo } from 'react'
  * `delivery_summary.build_delivery_summary` so the UI stays dumb and
  * the verdict logic remains deterministic and testable.
  */
+// Map each KPI tile's key to the in-page section anchor judges scroll
+// to when they click the tile. Keeps the dashboard truly interactive
+// instead of a static read-only board.
+const KPI_TILE_TARGETS = {
+  requirements: 'stories',
+  epics: 'stories',
+  stories: 'stories',
+  tasks: 'tasks',
+  apis: 'api-contracts',
+  tests: 'tests',
+  risks: 'risks',
+  ambiguities: 'risks',
+  architecture: 'architecture',
+  readiness: 'summary',
+}
+
 export default function ExecutiveDeliveryDashboard({ summary }) {
   const metrics = summary?.headline_metrics || []
   const sprints = summary?.sprints || []
@@ -20,6 +36,22 @@ export default function ExecutiveDeliveryDashboard({ summary }) {
 
   const visibleSprints = useMemo(() => sprints.slice(0, 6), [sprints])
   const sprintOverflow = sprints.length - visibleSprints.length
+
+  const agentRows = useMemo(
+    () => (summary?.agent_contributions || []).slice(0, 8),
+    [summary?.agent_contributions],
+  )
+
+  const handleTileClick = (key) => {
+    const targetId = KPI_TILE_TARGETS[key]
+    if (!targetId || typeof document === 'undefined') return
+    const el = document.getElementById(targetId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      el.classList.add('p5-panel--flash')
+      setTimeout(() => el.classList.remove('p5-panel--flash'), 1400)
+    }
+  }
 
   if (!summary) {
     return (
@@ -48,7 +80,12 @@ export default function ExecutiveDeliveryDashboard({ summary }) {
 
       <div className="hx-exec-delivery__kpis">
         {metrics.map((m) => (
-          <KpiTile key={m.key} metric={m} />
+          <KpiTile
+            key={m.key}
+            metric={m}
+            scrollable={Boolean(KPI_TILE_TARGETS[m.key])}
+            onClick={() => handleTileClick(m.key)}
+          />
         ))}
       </div>
 
@@ -139,7 +176,37 @@ export default function ExecutiveDeliveryDashboard({ summary }) {
         </div>
       </div>
 
-      {(summary.verdict_reasons?.length || summary.blocking_items?.length) && (
+      {summary.speedup_multiplier > 0 && (
+        <div className="hx-exec-delivery__wow" role="status">
+          <span>
+            <strong>{formatNumber(summary.helix_wall_clock_minutes)} min</strong>
+            <em>Helix pipeline</em>
+          </span>
+          <span className="hx-exec-delivery__wow-vs">vs</span>
+          <span>
+            <strong>{formatNumber(summary.manual_equivalent_weeks)} weeks</strong>
+            <em>manual SDLC team</em>
+          </span>
+          <span className="hx-exec-delivery__wow-mult">
+            <strong>{formatNumber(summary.speedup_multiplier)}×</strong>
+            <em>speedup</em>
+          </span>
+          {summary.equivalent_team_size > 0 && (
+            <span>
+              <strong>{summary.equivalent_team_size}-person</strong>
+              <em>team equivalent</em>
+            </span>
+          )}
+          {summary.roi_multiplier > 0 && (
+            <span>
+              <strong>{formatNumber(Math.round(summary.roi_multiplier * 100))}%</strong>
+              <em>of build cost displaced</em>
+            </span>
+          )}
+        </div>
+      )}
+
+      {(summary.verdict_reasons?.length || summary.blocking_items?.length || summary.upgrade_recommendations?.length) && (
         <div className="hx-exec-delivery__verdict-detail">
           {summary.blocking_items?.length > 0 && (
             <div className="hx-exec-delivery__blockers">
@@ -161,7 +228,50 @@ export default function ExecutiveDeliveryDashboard({ summary }) {
               </ul>
             </div>
           )}
+          {summary.upgrade_recommendations?.length > 0 && (
+            <div className="hx-exec-delivery__upgrade">
+              <strong>To reach GO</strong>
+              <ul>
+                {summary.upgrade_recommendations.map((u, i) => (
+                  <li key={i}>{u}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
+      )}
+
+      {agentRows.length > 0 && (
+        <details className="hx-exec-delivery__agents">
+          <summary>Where the savings came from · per-agent breakdown</summary>
+          <table className="hx-agent-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th className="num">Artifacts</th>
+                <th className="num">Min / each</th>
+                <th className="num">Hours displaced</th>
+                <th className="num">Speedup</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agentRows.map((row) => (
+                <tr key={row.agent}>
+                  <td>{row.agent}</td>
+                  <td className="num">
+                    {row.artifacts_produced}{' '}
+                    <span className="muted small">{row.artifact_label}</span>
+                  </td>
+                  <td className="num">{formatNumber(row.human_minutes_per_artifact)}</td>
+                  <td className="num">
+                    {formatNumber(Math.round(row.human_minutes_displaced / 60))}h
+                  </td>
+                  <td className="num">{formatNumber(row.speedup_multiplier)}×</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
       )}
     </section>
   )
@@ -180,16 +290,34 @@ function VerdictBadge({ verdict, label }) {
   )
 }
 
-function KpiTile({ metric }) {
-  return (
-    <div
-      className={`hx-kpi-tile hx-kpi-tile--${metric.severity || 'info'}`}
-      data-key={metric.key}
-    >
+function KpiTile({ metric, scrollable = false, onClick }) {
+  const className = `hx-kpi-tile hx-kpi-tile--${metric.severity || 'info'}${
+    scrollable ? ' hx-kpi-tile--clickable' : ''
+  }`
+  const content = (
+    <>
       <span className="hx-kpi-tile__label">{metric.label}</span>
       <span className="hx-kpi-tile__value">{formatNumber(metric.value)}</span>
       {metric.detail && <span className="hx-kpi-tile__detail">{metric.detail}</span>}
-    </div>
+    </>
+  )
+  if (!scrollable) {
+    return (
+      <div className={className} data-key={metric.key}>
+        {content}
+      </div>
+    )
+  }
+  return (
+    <button
+      type="button"
+      className={className}
+      data-key={metric.key}
+      onClick={onClick}
+      aria-label={`Scroll to ${metric.label} section`}
+    >
+      {content}
+    </button>
   )
 }
 
