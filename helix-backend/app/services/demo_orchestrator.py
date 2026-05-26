@@ -635,10 +635,51 @@ _STEP_RUNNERS: List[Tuple[str, Any, Dict[str, Any]]] = [
 ]
 
 # Independent steps safe to run concurrently (P2 parallel orchestrator).
+#
+# Dependency proof for each batch — kept here because the parallel
+# orchestrator is the single most quality-sensitive piece of code in
+# the demo and a future contributor should never widen these batches
+# without re-verifying.
+#
+# Batch 1 — (quality, review, ambiguity):
+#   * All three READ only ``project.source_clauses`` which is set
+#     during the prior ``ingest`` step and is never mutated again.
+#   * All three WRITE to distinct fields:
+#       quality   → ``project.quality_score_report``
+#       review    → ``project.review_board_report``
+#       ambiguity → ``project.ambiguities`` and ``project.risks``
+#   * No agent in this batch reads any field another writes, so the
+#     three coroutines are functionally equivalent to sequential runs
+#     under cooperative scheduling. ``stories`` is intentionally
+#     EXCLUDED — it mutates ``project.summary`` / ``requirement_brief``
+#     which the review_board agent transitively reads, so widening to
+#     a four-way batch reintroduces the B-H7 race we shipped a fix for.
+#
+# Batch 2 — (architecture, effort_sprint, apis, tests):
+#   * All four run AFTER ``stories`` completes (the orchestrator's
+#     contiguous-order check enforces this), so ``project.stories``
+#     and ``project.tasks`` are frozen for the duration of the batch.
+#   * All four WRITE to distinct fields:
+#       architecture  → ``project.architecture_brief`` /
+#                       ``project.architecture_diagram``
+#       effort_sprint → ``project.requirement_estimate`` /
+#                       ``project.auto_sprint_plan``
+#       apis          → ``project.api_contract_suite``
+#       tests         → ``project.test_cases`` /
+#                       ``project.generated_test_suite``
+#   * No agent in this batch reads any field another writes.
+#
+# Sequential tail — jira → readiness:
+#   * jira writes ``project.requirement_risk`` (a single overall risk
+#     score, distinct from the Risk Agent's clause-level
+#     ``project.risks`` written in Batch 1).
+#   * readiness's ``assess_readiness`` may read ``requirement_risk``
+#     when computing the final go/no-go gate, so we keep these
+#     sequential. Parallelising them would need moving the
+#     ``predict_risk`` call out of ``jira`` first.
 _PARALLEL_BATCHES: Tuple[Tuple[str, ...], ...] = (
-    ("quality", "review"),
-    ("architecture", "effort_sprint"),
-    ("apis", "tests"),
+    ("quality", "review", "ambiguity"),
+    ("architecture", "effort_sprint", "apis", "tests"),
 )
 
 
