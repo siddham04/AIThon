@@ -216,8 +216,14 @@ Default demo experience is **dark-first** and cohesive. Light mode is functional
 1. **P2 — `jd-cta-pulse` and reduced motion**  
    - Add `animation: none` under `prefers-reduced-motion: reduce`.
 
-2. **P3 — Finale readiness**  
-   - UI may show `JUDGE_READINESS_SCORE` (94) constant — document for judges vs live API.
+2. **P3 — Finale readiness**
+   - **Resolved (2026-05-26):** `WinningDemoScreen.jsx` now reads
+     `j.artifact?.readiness ?? j.percent` from the SSE `readiness` event
+     and renders it via `<ReadinessScoreRing score={readinessScore ?? 0} />`.
+     The on-screen label is *"Readiness X% from live delivery gates
+     after this run — not a placeholder."* Backend matches:
+     `_step_readiness` returns `display_score = center.readiness`
+     (`helix-backend/app/services/demo_orchestrator.py`).
 
 **Screenshot notes:** Strongest visual polish; clear judge narrative copy ✅
 

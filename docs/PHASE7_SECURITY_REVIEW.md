@@ -27,7 +27,7 @@ Defined in `helix-backend/app/config.py` and documented in `helix-backend/.env.e
 | Variable | Purpose | Risk if leaked |
 |----------|---------|----------------|
 | `AZURE_OPENAI_API_KEY` / `AZURE_OAI_KEY` | LLM calls | **Critical** — billing + data exfil via prompts |
-| `ANTHROPIC_API_KEY` | Optional Claude path | **Critical** |
+| `ANTHROPIC_API_KEY` | Reserved (not wired in code today — see `docs/PATH_TO_PRODUCTION.md` §2.3) | **Critical** if ever set |
 | `JWT_SECRET` | Signs session JWTs | **Critical** — forge any user session |
 | `HELIX_API_KEY` | Optional global API gate | **High** — full API access when set |
 | `JIRA_TOKEN`, `GITHUB_TOKEN` | Integrations | **High** — write to external systems |

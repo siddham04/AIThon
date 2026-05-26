@@ -1,0 +1,4 @@
+task_id,title,type,priority,story_id,estimate_points,estimate_hours,confidence,skills,description,approved_for_export
+task_demo_001,Integrate payment webhook idempotency,feature,high,story_demo_001,5,6.0,0.82,FastAPI;webhooks,Handle duplicate callbacks without double charge.,no
+task_demo_002,Atomic inventory decrement,feature,critical,story_demo_001,8,8.0,0.75,PostgreSQL;transactions,Use transaction / compare-and-swap to prevent oversell.,no
+task_demo_003,Delivery estimate API,feature,high,story_demo_002,5,5.0,0.8,FastAPI;caching,Compute shipping ETA from warehouse + carrier rules.,no

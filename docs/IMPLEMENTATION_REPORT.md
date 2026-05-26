@@ -12,7 +12,7 @@
 
 Helix is an AI-assisted platform that turns unstructured requirements (text, files, URLs, optional browser voice-to-text) into a **traceable** set of engineering artifacts: summaries, user stories, tasks with acceptance criteria, automated test scenarios, ambiguity findings, risk notes, and effort estimates. A React workspace lets teams review, refine, query via a conversational copilot, and export to CSV/Markdown and (when configured) Jira or GitHub.
 
-The system is implemented as a **FastAPI** backend with **PostgreSQL** (or SQLite for single-container demos), optional **Redis** for task progress, optional **MongoDB** for version snapshots and chunk storage, in-process **RAG** (FAISS + embeddings), and a **Vite + React** frontend. Multi-stage generation runs through an orchestrator with **Server-Sent Events** for live progress; **Azure OpenAI** and/or **Anthropic** APIs are used when keys are present, with a deterministic **mock/demo** path when they are not.
+The system is implemented as a **FastAPI** backend with **PostgreSQL** (or SQLite for single-container demos), optional **Redis** for task progress, optional **MongoDB** for version snapshots and chunk storage, in-process **RAG** (FAISS + embeddings), and a **Vite + React** frontend. Multi-stage generation runs through an orchestrator with **Server-Sent Events** for live progress. The LLM tier is **Azure OpenAI** (`o3`, JSON mode) wired through a pluggable `AIService` boundary; when no key is present (or the model returns empty JSON) the orchestrator falls back to a deterministic **clause-grounded mock** plus heuristic guarantors (`_ensure_project_tasks`) so the Delivery Package is never empty. See `docs/GOLDEN_DOMAIN.md` for the CI-gated contract.
 
 ---
 
@@ -71,7 +71,7 @@ Helix addresses each of these explicitly (see Section 4).
         +-- Optional Redis -> task progress (in-memory fallback if absent)
         +-- Optional MongoDB -> chunks / requirement snapshots
         +-- In-process FAISS + sentence-transformers (per-project RAG)
-        +-- Azure OpenAI / Anthropic / mock agents
+        +-- Azure OpenAI (o3, JSON mode) → clause-grounded mock → heuristic guarantors (3-tier)
 ```
 
 ### 5.2 Key backend modules

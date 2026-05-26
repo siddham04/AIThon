@@ -1,0 +1,27 @@
+"Work Item Type","Title","Description","Parent","Priority","Story Points","Remaining Work","Tags","Helix ID"
+"Epic","One-click checkout & stock integrity","Increase conversion while preventing overselling.","","2","","","","epic_4d1a63bb"
+"User Story","Pay and confirm order","As a Returning shopper, I want Complete purchase quickly, so that Fewer abandoned carts.
+
+Acceptance criteria:
+- Given items in cart, when user pays, then order is confirmed
+- Receipt shown within 2s of provider callback","epic_4d1a63bb","2","","","","story_demo_001"
+"User Story","Show delivery date before payment","As a Shopper, I want See accurate delivery estimate, so that Reduce cart abandonment.
+
+Acceptance criteria:
+- Given cart with address, when viewing checkout, then delivery date displays
+- Estimate renders within 200ms P95","epic_4d1a63bb","2","","","","story_demo_002"
+"Task","Integrate payment webhook idempotency","Handle duplicate callbacks without double charge.","story_demo_001","2","5","6.0","FastAPI, webhooks","task_demo_001"
+"Task","Atomic inventory decrement","Use transaction / compare-and-swap to prevent oversell.","story_demo_001","1","8","8.0","PostgreSQL, transactions","task_demo_002"
+"Task","Delivery estimate API","Compute shipping ETA from warehouse + carrier rules.","story_demo_002","2","5","5.0","FastAPI, caching","task_demo_003"
+"Sub-task","Design API contract and data flow","Sub-step of 'Integrate payment webhook idempotency': Design API contract and data flow.","task_demo_001","2","","1.5","FastAPI, webhooks","sub_cc6b8b42"
+"Sub-task","Implement core logic","Sub-step of 'Integrate payment webhook idempotency': Implement core logic.","task_demo_001","2","","1.5","FastAPI, webhooks","sub_a431b24a"
+"Sub-task","Wire up UI / integrate with existing surface","Sub-step of 'Integrate payment webhook idempotency': Wire up UI / integrate with existing surface.","task_demo_001","2","","1.5","FastAPI, webhooks","sub_a3284284"
+"Sub-task","Add unit + integration tests","Sub-step of 'Integrate payment webhook idempotency': Add unit + integration tests.","task_demo_001","2","","1.5","FastAPI, webhooks","sub_b9c7771d"
+"Sub-task","Design API contract and data flow","Sub-step of 'Atomic inventory decrement': Design API contract and data flow.","task_demo_002","2","","2.0","PostgreSQL, transactions","sub_e58f432f"
+"Sub-task","Implement core logic","Sub-step of 'Atomic inventory decrement': Implement core logic.","task_demo_002","2","","2.0","PostgreSQL, transactions","sub_b65477e3"
+"Sub-task","Wire up UI / integrate with existing surface","Sub-step of 'Atomic inventory decrement': Wire up UI / integrate with existing surface.","task_demo_002","2","","2.0","PostgreSQL, transactions","sub_e60404c5"
+"Sub-task","Add unit + integration tests","Sub-step of 'Atomic inventory decrement': Add unit + integration tests.","task_demo_002","2","","2.0","PostgreSQL, transactions","sub_0ebfc9e8"
+"Sub-task","Design API contract and data flow","Sub-step of 'Delivery estimate API': Design API contract and data flow.","task_demo_003","2","","1.2","FastAPI, caching","sub_2d4c8f2a"
+"Sub-task","Implement core logic","Sub-step of 'Delivery estimate API': Implement core logic.","task_demo_003","2","","1.2","FastAPI, caching","sub_c4710ccb"
+"Sub-task","Wire up UI / integrate with existing surface","Sub-step of 'Delivery estimate API': Wire up UI / integrate with existing surface.","task_demo_003","2","","1.2","FastAPI, caching","sub_3d5df256"
+"Sub-task","Add unit + integration tests","Sub-step of 'Delivery estimate API': Add unit + integration tests.","task_demo_003","2","","1.2","FastAPI, caching","sub_8fdb8ee3"

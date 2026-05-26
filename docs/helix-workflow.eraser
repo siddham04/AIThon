@@ -1,0 +1,237 @@
+// =====================================================================
+//  Helix — Intelligent SDLC Copilot
+//  eraser.io source for the canonical workflow + system architecture
+//
+//  Paste this file into https://app.eraser.io (New file → Diagram-as-Code)
+//  to render both diagrams below side-by-side.
+//
+//  This file is the single source of truth for the visuals in:
+//    - docs/WORKFLOW.md          (workflow narrative)
+//    - ARCHITECTURE.md           (system architecture narrative)
+//    - README.md                 ("Architecture" section)
+//
+//  Keep in sync with:
+//    - helix-backend/app/services/demo_orchestrator.py  (DEMO_STEPS)
+//    - helix-backend/app/agents/orchestrator.py         (CONTROL_TOWER_STAGES)
+//    - docker-compose.yml                               (containers + ports)
+// =====================================================================
+
+
+// ─────────────────────────────────────────────────────────────────────
+//  DIAGRAM 1 — Cloud Architecture
+//  Renders with eraser.io "Cloud Architecture" mode.
+// ─────────────────────────────────────────────────────────────────────
+
+title Helix — Cloud Architecture
+
+Clients [color: slate] {
+  Browser [icon: chrome, label: "PM · Dev · QA · Tech Lead"]
+  Voice [icon: mic, label: "Web Speech API\n(Chrome / Edge)"]
+}
+
+Edge [color: blue] {
+  Nginx [icon: nginx, label: "Nginx\nstatic SPA + /api proxy"]
+}
+
+Frontend [icon: react, color: cyan, label: "React 19 + Vite 8"] {
+  SPA          [icon: react,    label: "React SPA\n(TypeScript)"]
+  Mission      [icon: monitor,  label: "Mission Control\n(SSE timeline)"]
+  Workspace    [icon: layout,   label: "Workspace\n(Kanban · Trace · Chat)"]
+  Delivery     [icon: package,  label: "Delivery Package\n(parallel GETs)"]
+  Charts       [icon: bar-chart,label: "Dashboard\nRecharts + Chart.js"]
+}
+
+API [icon: python, color: green, label: "FastAPI · Pydantic v2 · Uvicorn"] {
+  Auth         [icon: lock,     label: "JWT auth"]
+  Ingest       [icon: upload,   label: "/api/ingest/*\n(text · file · URL)"]
+  Demo         [icon: play,     label: "/api/demo/{id}/run\n(SSE · 11 stages)"]
+  Analyze      [icon: cpu,      label: "/api/analyze\n(SSE · multi-agent)"]
+  Chat         [icon: message-circle, label: "/api/chat\n(RAG copilot)"]
+  Artifacts    [icon: file-text,label: "/api/artifacts/*\n+ approval PATCH"]
+  Export       [icon: share,    label: "/api/export\nJira · ADO · GitHub · CSV"]
+  Health       [icon: heart,    label: "/api/health"]
+  Insights     [icon: trending-up, label: "/api/insights/{id}\n(sklearn)"]
+}
+
+Agents [icon: users, color: purple, label: "Multi-Agent Orchestrator"] {
+  Quality       [icon: check-circle, label: "Quality Scorer"]
+  Review        [icon: users,        label: "Review Board\n(BA · Arch · QA · Sec · PM)"]
+  Ambiguity     [icon: help-circle,  label: "Ambiguity Agent"]
+  RiskA         [icon: alert-triangle, label: "Risk Agent"]
+  Analyst       [icon: clipboard,    label: "Requirement Analyst"]
+  ProdMgr       [icon: briefcase,    label: "Product Manager"]
+  Architect     [icon: layers,       label: "Solution Architect"]
+  Estimator     [icon: clock,        label: "Estimator"]
+  Scrum         [icon: calendar,     label: "Scrum Master /\nSprint Planner"]
+  TestArch      [icon: shield,       label: "Test Architect"]
+}
+
+Data [icon: database, color: orange] {
+  Postgres [icon: postgresql, label: "PostgreSQL\nSQLAlchemy ORM\n+ pipeline_json"]
+  Redis    [icon: redis,      label: "Redis\nCelery · progress · cache"]
+  Mongo    [icon: mongodb,    label: "MongoDB\noptional snapshots"]
+  Faiss    [icon: search,     label: "FAISS\nin-process RAG"]
+  Embed    [icon: package,    label: "sentence-transformers\nall-MiniLM-L6-v2"]
+}
+
+AI [color: red, label: "AI — 3-tier resilience"] {
+  Azure     [icon: azure,     label: "Tier 1\nAzure OpenAI (o3)\nJSON mode · all agents\nretry + backoff"]
+  MockMode  [icon: cpu,       label: "Tier 2\nClause-grounded mock\ndeterministic synthesis\n(no-key + CI fallback)"]
+  Heuristic [icon: shield,    label: "Tier 3\nHeuristic guarantors\n_ensure_project_tasks\n(never-empty backlog)"]
+}
+
+ML [icon: scikit-learn, color: yellow, label: "Classical ML / analytics"] {
+  Isolation [icon: alert-octagon, label: "IsolationForest\ntask anomalies"]
+  Dupes     [icon: copy,           label: "TF-IDF + cosine\nduplicate stories"]
+}
+
+// ── Edges ────────────────────────────────────────────────────────────
+
+Browser  > Nginx: HTTPS
+Voice    > SPA: transcript
+Nginx    > SPA: static assets
+Nginx    > API: /api proxy
+
+SPA      > Mission
+SPA      > Workspace
+SPA      > Delivery
+SPA      > Charts
+
+Mission   > Demo:  POST run · SSE stream
+Workspace > Analyze: POST · SSE
+Workspace > Chat:  POST · token stream
+Workspace > Artifacts: GET · PATCH (approve)
+Delivery  > Artifacts: parallel GET
+Delivery  > Export:  CSV · Jira · GitHub
+Charts    > Insights: GET ml metrics
+
+Ingest    > Postgres: clauses + raw_input
+Auth      > Postgres: users · JWT
+Artifacts > Postgres: pipeline_json
+Demo      > Agents:  orchestrate 11 stages
+Analyze   > Agents:  5-stage pipeline
+Chat      > Faiss:   retrieve clauses
+Chat      > Azure:   answer w/ citations
+Insights  > ML:      sklearn pipelines
+ML        > Postgres: read artifacts
+
+Agents    > Quality
+Agents    > Review
+Agents    > Ambiguity
+Agents    > RiskA
+Agents    > Analyst
+Agents    > ProdMgr
+Agents    > Architect
+Agents    > Estimator
+Agents    > Scrum
+Agents    > TestArch
+
+Quality   > Azure:  JSON score (optional)
+Review    > Azure:  5× parallel JSON
+Ambiguity > Azure:  JSON
+RiskA     > Azure:  JSON
+Analyst   > Azure:  JSON
+ProdMgr   > Azure:  JSON
+Architect > Azure:  JSON
+TestArch  > Azure:  JSON
+Estimator > Azure:  JSON
+Scrum     > Azure:  JSON
+
+Azure     > MockMode:  no keys / empty JSON
+MockMode  > Heuristic: still empty
+
+Ingest   > Embed:  chunk + encode
+Embed    > Faiss:  per-project index
+
+Demo     > Redis:  Celery job + progress
+Demo     > Mongo:  optional snapshot
+
+
+// ─────────────────────────────────────────────────────────────────────
+//  DIAGRAM 2 — Workflow Sequence
+//  Renders with eraser.io "Sequence Diagram" mode.
+//  Mirrors helix-backend/app/services/demo_orchestrator.py::DEMO_STEPS.
+// ─────────────────────────────────────────────────────────────────────
+
+title Helix — End-to-End Workflow (Mission Control → Delivery Package)
+
+User       [icon: user]
+UI         [icon: react,    label: "React SPA"]
+APIx       [icon: python,   label: "FastAPI"]
+Orchx      [icon: cpu,      label: "demo_orchestrator"]
+LLM        [icon: cpu,      label: "Azure OpenAI (o3, JSON mode)"]
+RAG        [icon: search,   label: "FAISS + embeddings"]
+DB         [icon: postgresql, label: "PostgreSQL"]
+Export     [icon: share,    label: "Jira / ADO / GitHub / CSV"]
+
+// ── Phase 1: Capture ────────────────────────────────────────────────
+User  > UI:    Paste / voice / file / URL
+UI    > APIx:  POST /api/ingest/text
+APIx  > APIx:  split_into_clauses + sensitive_scan
+APIx  > DB:    save project + source_clauses
+APIx  > RAG:   embed clauses (sentence-transformers)
+APIx  > UI:    project_id + sensitive_hints
+
+// ── Phase 2: Launch the 11-step demo pipeline (SSE) ─────────────────
+User  > UI:    Click "Launch AI Team"
+UI    > APIx:  POST /api/demo/{id}/run   (use_ai flag)
+APIx  > Orchx: yield boot · loading agents
+
+// Step 1 — Ingest (idempotent: re-extracts clauses if needed)
+Orchx > Orchx: 1. ingest        · clauses extracted
+Orchx > UI:    SSE done · 9 %
+
+// Step 2 + 3 — parallel batch (Phase-2 orchestrator)
+Orchx > LLM:   2. quality       · QualityScorer (heuristic + optional AI)
+Orchx > LLM:   3. review        · Review Board ×5 (BA·Arch·QA·Sec·PM)
+LLM   > Orchx: scores · grade · gaps
+Orchx > UI:    SSE done · 18 % / 27 %
+
+// Step 4 — Ambiguities + Risks
+Orchx > LLM:   4. ambiguity     · AmbiguityAgent + RiskAgent
+LLM   > Orchx: ambiguities[] · risks[]
+Orchx > UI:    SSE done · 36 %
+
+// Step 5 — Stories + tasks
+Orchx > LLM:   5. stories       · Analyst → PM → ScrumMaster
+LLM   > Orchx: epic · stories[] · tasks[]
+Orchx > UI:    SSE done · 45 %
+
+// Step 6 + 7 — parallel batch
+Orchx > LLM:   6. architecture  · Architect + diagram generator (Mermaid)
+Orchx > LLM:   7. effort_sprint · Estimator + Sprint Planner
+LLM   > Orchx: layers · diagram · story_points · sprint_plan
+Orchx > UI:    SSE done · 55 % / 64 %
+
+// Step 8 + 9 — parallel batch
+Orchx > LLM:   8. apis          · API contract specs
+Orchx > LLM:   9. tests         · Test Architect (Given/When/Then)
+LLM   > Orchx: contracts[] · test_cases[]
+Orchx > UI:    SSE done · 73 % / 82 %
+
+// Step 10 — Jira-ready backlog + risk prediction
+Orchx > LLM:   10. jira         · backlog (Epic → Stories → Tasks → Subtasks)
+Orchx > Orchx: build_traceability + predict_risk
+Orchx > UI:    SSE done · 91 %
+
+// Step 11 — Delivery readiness gate
+Orchx > Orchx: 11. readiness    · assess_readiness + readiness_center + defect_pred
+Orchx > DB:    persist full Project graph (pipeline_json + normalized rows)
+Orchx > UI:    SSE done · 100 % · "PROJECT READY"
+
+// ── Phase 3: Review + Refine ────────────────────────────────────────
+UI    > APIx:  GET /api/artifacts/{id}  (Delivery Package parallel fetch)
+UI    > APIx:  POST /api/chat (q&a)
+APIx  > RAG:   semantic retrieve over clauses
+APIx  > LLM:   answer with source_clause_ids citations
+LLM   > UI:    streamed answer
+
+User  > UI:    Mark stories/tasks "approved_for_export"
+UI    > APIx:  PATCH /api/artifacts/{id}  (human gate)
+APIx  > DB:    update approved_for_export
+
+// ── Phase 4: Export ─────────────────────────────────────────────────
+User  > UI:    Click Export (CSV · Jira CSV · ADO JSON · GitHub Issues)
+UI    > APIx:  GET /api/export?approved_only=true
+APIx  > Export: render selected format
+Export > User: download / push to tracker

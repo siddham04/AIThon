@@ -28,8 +28,17 @@ services:
       # Skip sentence-transformers / PyTorch load — saves ~400 MB RAM on Free tier.
       - key: HELIX_DISABLE_EMBEDDINGS
         value: "1"
-      # Optional — add in dashboard if you want live LLM (not required for mock/demo path):
-      # - key: ANTHROPIC_API_KEY
+      # Optional — add in dashboard if you want the live LLM tier (Azure OpenAI).
+      # Without these, the 3-tier resilience drops to the clause-grounded
+      # mock + heuristic guarantors and the demo still works end-to-end.
+      # See docs/NOVELTY.md pillar 3 and docs/PATH_TO_PRODUCTION.md §2.3.
+      # - key: AZURE_OPENAI_ENDPOINT
       #   sync: false
+      # - key: AZURE_OPENAI_API_KEY
+      #   sync: false
+      # - key: AZURE_OPENAI_DEPLOYMENT
+      #   value: "o3"
+      # - key: AZURE_OPENAI_API_VERSION
+      #   value: "2024-12-01-preview"
 
 databases: []

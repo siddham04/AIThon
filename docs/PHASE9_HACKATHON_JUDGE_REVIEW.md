@@ -12,7 +12,7 @@
 | Category | Score (/10) | One-line rationale |
 |----------|-------------|-------------------|
 | **Innovation** | **8.5** | Multi-agent SDLC with provenance, review gates, and autonomous “AI team” — not another single-prompt summarizer |
-| **Technical Complexity** | **9.0** | Large FastAPI surface, orchestrated agents, dual LLM providers, ML insights, exports, SSE — ambitious and mostly working |
+| **Technical Complexity** | **9.0** | Large FastAPI surface, orchestrated agents, 3-tier provider resilience (Azure → clause-grounded mock → heuristic guarantors), ML insights, exports, SSE — ambitious and CI-gated by `tests/test_golden_pipeline.py` |
 | **Business Impact** | **8.0** | Clear time-to-backlog story and export path; impact claims need tighter live proof on tasks/traceability |
 | **User Experience** | **7.5** | Strong visual identity and judge flow; mobile polish, latency, and empty states hold it back |
 | **Demo Quality** | **8.5** | Dedicated judge demo, sample path, 10/10 API workflow, Playwright on core pages — a confident live pitch is possible |
@@ -34,7 +34,7 @@
 
 ### Technical Complexity — 9.0 / 10
 
-**Strengths:** 130+ API routes, Pydantic models, `demo_orchestrator` with 11+ steps, optional Azure + Anthropic, sklearn-backed insights, Jira/ADO CSV, WebSocket progress, ingestion (file/URL/text), mock mode for offline judging.
+**Strengths:** 130+ API routes, Pydantic models, `demo_orchestrator` with 11+ steps, Azure OpenAI live path with clause-grounded mock + heuristic guarantor fallback (3-tier resilience — see `docs/NOVELTY.md`), sklearn-backed insights, Jira/ADO CSV, WebSocket progress, ingestion (file/URL/text), CI-gated golden-pipeline contract for offline judging.
 
 **Deductions:** Known gaps from internal audit — Scrum produced **0 tasks** in validated run; unauthenticated LLM routes; hardcoded readiness in one step; ~35 orphan UI pages still on disk. Complexity is **real but unevenly hardened**.
 
@@ -84,7 +84,7 @@
 2. **Multi-agent architecture with substance** — distinct agents, SSE stage labels, quality/review board before backlog generation.
 3. **Traceability & governance** — `source_clause_id`, citation rate, export approval flags — speaks to enterprise trust.
 4. **Judge-conscious UX** — Landing guest login, sample prefill, Judge Demo page, health/mock mode when keys absent.
-5. **Technical depth under the hood** — FastAPI + Pydantic + optional Claude/Azure + sklearn insights + real export schemas (Phase 6 validated).
+5. **Technical depth under the hood** — FastAPI + Pydantic + Azure OpenAI live path + clause-grounded mock fallback + heuristic guarantors + sklearn insights + real export schemas (Phase 6 validated).
 6. **Verification discipline** — Eight phase reports (build, UI, workflow, components, AI audit, exports, security, performance) signal maturity rare in hackathons.
 
 ---
@@ -106,7 +106,7 @@
 
 ## Judge Q&A — suggested answers
 
-- **“Is it real AI?”** — Yes when `AZURE_OAI_*` or `ANTHROPIC_API_KEY` set; deterministic mock otherwise; show `/api/health` + live SSE with keys.
+- **“Is it real AI?”** — Yes when `AZURE_OPENAI_*` is set (Tier-1 Azure OpenAI `o3`, JSON mode). Without keys, the Tier-2 clause-grounded mock keeps the pipeline populated and the contract green. Show `/api/health` + live SSE with keys, or `pytest tests/test_golden_pipeline.py -v` for the offline proof.
 - **“How is this different from ChatGPT?”** — Structured artifacts, per-role agents, clause citations, export to Jira, human approval gate.
 - **“Can I use it Monday?”** — Pilot-ready for demo tenants; production needs security P0s from Phase 7 and task-generation fix.
 - **“Prove time saved”** — Walk one sample requirement → 5 stories + 20 tests + CSV in <5 min (pre-run project id on sticky note).

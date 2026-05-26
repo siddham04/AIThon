@@ -288,11 +288,10 @@ export default function WinningDemoScreen() {
       <header className="jd-hero">
         <div className="jd-hero-copy">
           <span className="jd-eyebrow">Hackathon · Judge Demo Mode</span>
-          <h1>Autonomous SDLC Team</h1>
+          <h1>Messy requirement → release-ready package. Under 10 minutes.</h1>
           <p className="jd-tagline">
-            One messy requirement in → PM, Architect, QA, and Scrum Master run autonomously →
-            delivery-ready package out.{' '}
-            <strong>No dashboard tour. No page switching.</strong>
+            Upload → launch the AI team → get a release-ready Delivery Package with full
+            traceability. <strong>No dashboard tour. No page switching.</strong>
           </p>
           <p className="jd-pitch muted small">
             Say: &ldquo;Helix is an autonomous SDLC team — not another requirements tool.&rdquo;

@@ -24,18 +24,20 @@ import {
 import Counter from '../components/fx/Counter'
 import Tilt from '../components/fx/Tilt'
 import MagneticButton from '../components/fx/MagneticButton'
-import { HERO_TITLE, POSITIONING_LINE, APPROVE_EXPORT_CTA } from '../lib/productMessaging'
+import {
+  HERO_TITLE,
+  POSITIONING_LINE,
+  APPROVE_EXPORT_CTA,
+  NARRATIVE_PITCH,
+  NARRATIVE_BEATS,
+  SURFACE_STEPS,
+} from '../lib/productMessaging'
 import { formatGuestSessionError, RENDER_BLUEPRINT_URL } from '../lib/formatApiError'
 import { checkApiHealth } from '../lib/apiHealth'
 
 const HeroParticles = lazy(() => import('../components/landing/HeroParticles'))
 
-const STATS = [
-  { value: '1', label: 'upload — you give messy requirements' },
-  { value: '4', label: 'agents — PM, Architect, QA, Scrum' },
-  { value: '100%', label: 'delivery readiness when all gates pass' },
-  { value: '0', label: 'dashboard tours — one package, one flow' },
-]
+const STATS = NARRATIVE_BEATS
 
 const FEATURES = [
   {
@@ -58,25 +60,7 @@ const FEATURES = [
   },
 ]
 
-const WORKFLOW = [
-  {
-    step: '01',
-    title: 'Upload & Launch',
-    description: 'Upload your requirement. Launch the AI team — agents do the SDLC work.',
-  },
-  {
-    step: '02',
-    title: 'Autonomous pipeline',
-    description:
-      'PM → architecture → stories → sprint plan → tests → risks — autonomous by default.',
-  },
-  {
-    step: '03',
-    title: 'Approve & Export',
-    description:
-      'Checklist of what the AI produced. One click approves scope and downloads Jira CSV — you control the import.',
-  },
-]
+const WORKFLOW = SURFACE_STEPS
 
 const USE_CASES = [
   {
@@ -338,11 +322,7 @@ export default function Landing() {
               </span>
             ))}
           </h1>
-          <p className="lp-hero-sub">
-            Not another dashboard with twenty-five features. Helix is PM, Architect, QA,
-            and Scrum Master in one flow — you upload, the team builds your delivery package,
-            you review and export.
-          </p>
+          <p className="lp-hero-sub">{NARRATIVE_PITCH}</p>
           <div className="lp-hero-cta-row">
             <MagneticButton>
               <button
@@ -437,9 +417,9 @@ export default function Landing() {
 
       <Section
         id="workflow"
-        eyebrow="How it works"
-        title="Three surfaces. Zero tool sprawl."
-        kicker="Mission Control → Workspace → Delivery Package. That is the product."
+        eyebrow="How it works · under 10 minutes"
+        title="Upload → Launch → Approve."
+        kicker="Mission Control → Workspace → Delivery Package. Three surfaces, one continuous story — every artifact cites the source clause it came from."
       >
         <div className="lp-workflow">
           {WORKFLOW.map((w, idx) => (
@@ -569,10 +549,10 @@ export default function Landing() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.55 }}
         >
-          <h2>Stop translating documents. Start shipping outcomes.</h2>
+          <h2>One upload. One AI team. One release-ready package.</h2>
           <p>
-            Spin up a guest workspace in one click, or create a permanent account to keep
-            your projects.
+            Spin up a guest workspace in one click — paste a requirement, watch the AI
+            team run, approve and export. Under 10 minutes.
           </p>
           <div className="lp-hero-cta-row" style={{ justifyContent: 'center' }}>
             <MagneticButton>

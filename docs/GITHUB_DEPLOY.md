@@ -9,8 +9,7 @@ What was added
 Required repository secrets
 
 - `GITHUB_TOKEN` (provided automatically by Actions) — used to authenticate to GHCR. Ensure the token has `packages: write` permission in repository settings if restricted.
-- `AZURE_OPENAI_API_KEY` — backend AI key (do NOT commit this to the repo).
-- `ANTHROPIC_API_KEY` — optional.
+- `AZURE_OPENAI_API_KEY` — backend AI key (do NOT commit this to the repo). Optional: without it, the orchestrator runs the deterministic 3-tier fallback (see `docs/NOVELTY.md` pillar 3).
 - `JWT_SECRET` — application JWT secret.
 - `DATABASE_URL`, `REDIS_URL`, `MONGO_URL` — runtime database/redis/mongo connection strings for deployment.
 
@@ -39,7 +38,6 @@ Kubernetes deployment
   - `AZURE_OPENAI_API_KEY`
   - `AZURE_OPENAI_DEPLOYMENT`
   - `AZURE_OPENAI_API_VERSION`
-  - `ANTHROPIC_API_KEY` (optional)
 
 To deploy:
 

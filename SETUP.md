@@ -6,7 +6,9 @@ From the **repository root** (`AI-Thon/`):
 
 ```bash
 cp .env.example .env
-# Edit `.env` and set ANTHROPIC_API_KEY for live AI (streaming, chat, generation).
+# Edit `.env` and set AZURE_OPENAI_API_KEY (+ AZURE_OPENAI_ENDPOINT and
+# AZURE_OPENAI_DEPLOYMENT) for live AI. Leave them blank to run the
+# deterministic offline demo path — see docs/GOLDEN_DOMAIN.md.
 docker compose up --build
 ```
 
@@ -30,7 +32,9 @@ docker compose up --build
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | **Yes** for AI features | Claude API key for generation, streaming, chat |
+| `AZURE_OPENAI_API_KEY` | **Optional** — required only for live LLM generation | Azure OpenAI key. With it: Tier-1 live generation. Without it: Tier-2 clause-grounded mock takes over. See `docs/GOLDEN_DOMAIN.md`. |
+| `AZURE_OPENAI_ENDPOINT` | With the key | e.g. `https://your-resource.openai.azure.com` |
+| `AZURE_OPENAI_DEPLOYMENT` | With the key | Deployment name (default `o3`) |
 | `JWT_SECRET` | Recommended | Secret for signing JWTs (set in `.env` for production demos) |
 | `MONGO_URL` | No (defaults in Compose) | Requirement snapshots; stack includes **MongoDB** — Compose defaults to `mongodb://mongo:27017/helix` |
 | `POSTGRES_URL` | Same as DB | Accepted as alias for **`DATABASE_URL`** / SQLAlchemy (`helix-backend/app/config.py`) |
@@ -55,7 +59,7 @@ python -m venv .venv
 .venv\Scripts\activate   # Windows
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
-copy .env.example .env   # configure DATABASE_URL, REDIS_URL, ANTHROPIC_API_KEY, JWT_SECRET
+copy .env.example .env   # configure DATABASE_URL, REDIS_URL, AZURE_OPENAI_* keys (optional), JWT_SECRET
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 

@@ -1,0 +1,68 @@
+name: Golden Pipeline Contract
+
+# The Helix bulletproof contract — runs the full 11-step demo
+# orchestrator end-to-end against the canonical e-commerce checkout
+# sample requirement in mock mode (no LLM keys) and asserts every
+# pipeline step stays non-empty, well-formed, and traceable.
+#
+# If this job fails, the live judge demo is no longer guaranteed.
+# See docs/GOLDEN_DOMAIN.md for the contract.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'helix-backend/**'
+      - 'helix-frontend/src/constants/sampleRequirement.js'
+      - '.github/workflows/golden-pipeline.yml'
+  pull_request:
+    paths:
+      - 'helix-backend/**'
+      - 'helix-frontend/src/constants/sampleRequirement.js'
+      - '.github/workflows/golden-pipeline.yml'
+  workflow_dispatch:
+
+jobs:
+  golden:
+    name: Golden e-commerce pipeline (mock mode, no LLM keys)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: helix-backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            helix-backend/requirements.txt
+            helix-backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run golden-pipeline contract
+        env:
+          # Force the mock / offline path; the test asserts the
+          # bulletproof contract WITHOUT any LLM provider calls.
+          # Empty strings override any helix-backend/.env values.
+          AZURE_OPENAI_API_KEY: ''
+          AZURE_OPENAI_ENDPOINT: ''
+          AZURE_OAI_KEY: ''
+          AZURE_OAI_ENDPOINT: ''
+          ANTHROPIC_API_KEY: ''
+          HELIX_USE_AI: 'false'
+          HELIX_DEMO_FAST: 'true'
+          HELIX_ALLOW_INSECURE_JWT: '1'
+          DATABASE_URL: 'sqlite:///./helix_test.db'
+        run: |
+          pytest tests/test_golden_pipeline.py -v --tb=short

@@ -383,31 +383,35 @@ Uses same SSE stream; `JUDGE_READINESS_SCORE = 94` constant for finale ring — 
 
 ## Findings by severity
 
+> **Resolution sweep (2026-05-26).** The High and several Medium/Low
+> items below have been addressed in code. Original findings preserved
+> for traceability; **Status** column tracks current state.
+
 ### High
 
-| ID | Finding | Recommendation |
-|----|---------|----------------|
-| H1 | UI ignores SSE `status: 'error'` | Handle in `applyDemoEvent`; show toast + mark agent failed |
-| H2 | `LLMService` has no retry | Align with AIService retry policy |
-| H3 | Readiness **hardcoded 94%** | Use `assess_readiness` score or cap mock; bind Judge UI to API |
+| ID | Finding | Status | Resolution |
+|----|---------|--------|------------|
+| H1 | UI ignores SSE `status: 'error'` | **Open** | Handle in `applyDemoEvent`; show toast + mark agent failed |
+| H2 | `LLMService` has no retry | **Open** | Align with AIService retry policy |
+| H3 | Readiness hardcoded 94% | **RESOLVED** | `_step_readiness` now uses `display_score = center.readiness` (live). UI label: *"Readiness X% from live delivery gates after this run — not a placeholder"* (`helix-frontend/src/pages/WinningDemoScreen.jsx`). |
 
 ### Medium
 
-| ID | Finding | Recommendation |
-|----|---------|----------------|
-| M1 | **0 tasks** after Scrum (Phase 3) | Validate `story_id`; log skipped tasks; fix Estimator interaction |
-| M2 | Duplicate generators (arch, tests) | Run architect OR generator; merge test paths |
-| M3 | `source_clause_ids` not validated | Filter against `project.source_clauses` ids |
-| M4 | Empty JSON `{}` → empty artifacts | Surface parse failure in SSE `error` |
-| M5 | Quality/review not on Delivery Package | Add summary cards or link to workspace |
+| ID | Finding | Status | Resolution |
+|----|---------|--------|------------|
+| M1 | 0 tasks after Scrum (Phase 3) | **RESOLVED** | `_heuristic_tasks_from_stories` fallback inside `ScrumMasterAgent.run` (`helix-backend/app/agents/scrum_master.py`) + `ensure_engineering_tasks` safety net in `project_bridge.py` invoked by `_step_jira`, `finalize_demo_project`, and `backlog_generator`. |
+| M2 | Duplicate generators (arch, tests) | **Open / by design** | Architect produces brief; diagram generator produces Mermaid for UI. Both kept for richer Delivery Package; cost gated by `HELIX_DEMO_FAST=true`. |
+| M3 | `source_clause_ids` not validated | **RESOLVED** | `helix-backend/app/agents/clause_utils.py` (`filter_clause_ids`, `resolve_story_id`, `valid_story_ids`) now filters all LLM-supplied IDs against the project's real clause/story IDs. Wired through Product Manager, Scrum Master, Test Architect, Risk, Ambiguity. |
+| M4 | Empty JSON `{}` → empty artifacts | **Partial** | Heuristic fallbacks now fire on empty results (Scrum tasks, Architecture diagram, Test suite). SSE `error` surface still TODO. |
+| M5 | Quality/review not on Delivery Package | **Open** | Cards still TODO; data persisted on `project.quality_score_report` and `project.review_board_report`. |
 
 ### Low
 
-| ID | Finding | Recommendation |
-|----|---------|----------------|
-| L1 | Risk runs in `ambiguity` but narrated on `jira` | Rename logs or split SSE step |
-| L2 | `use_ai` in UI always `true` (Mission Control) vs tests with `false` | Env toggle or label “fast mode” |
-| L3 | PRD endpoint 404 | Implement `GET /delivery/prd/{id}` or remove section |
+| ID | Finding | Status | Resolution |
+|----|---------|--------|------------|
+| L1 | Risk runs in `ambiguity` but narrated on `jira` | **Open / cosmetic** | Naming kept for narrative pacing during demo. |
+| L2 | `use_ai` in UI always `true` vs tests with `false` | **Resolved by runbook** | `scripts/judge_demo.ps1` / `.sh` set `HELIX_USE_AI=false` + `HELIX_DEMO_FAST=true` for the offline-safe path; live path remains the UI default. See [`docs/JUDGE_MODE.md`](JUDGE_MODE.md). |
+| L3 | PRD endpoint 404 | **RESOLVED** | `get_prd` in `helix-backend/app/api/routes/delivery.py` lazily generates and persists the PRD if missing; `_step_readiness` also pre-generates it during the pipeline. |
 
 ---
 

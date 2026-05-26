@@ -1,0 +1,538 @@
+{
+  "id": "proj_demo_seed01",
+  "name": "Showcase \u2014 Checkout & OTP (pre-baked)",
+  "created_at": "2026-05-26T08:55:21.261646",
+  "raw_input": "Customers must pay with card or wallet within 10 seconds.\n\nInventory must decrement atomically when an order is confirmed.\n\nSLA: p95 checkout API latency under 300ms for 1k concurrent users.",
+  "source_clauses": [
+    {
+      "id": "clause_demo_001",
+      "index": 0,
+      "text": "Customers must pay with card or wallet within 10 seconds."
+    },
+    {
+      "id": "clause_demo_002",
+      "index": 1,
+      "text": "Inventory must decrement atomically when an order is confirmed."
+    },
+    {
+      "id": "clause_demo_003",
+      "index": 2,
+      "text": "SLA: p95 checkout API latency under 300ms for 1k concurrent users."
+    }
+  ],
+  "requirement_brief": null,
+  "pipeline_epic": null,
+  "summary": {
+    "title": "One-click checkout & stock integrity",
+    "one_liner": "Fast checkout with consistent inventory under load.",
+    "objective": "Increase conversion while preventing overselling.",
+    "in_scope": [
+      "Card/wallet payments",
+      "Inventory reservation",
+      "Latency SLO"
+    ],
+    "out_of_scope": [
+      "Tax jurisdictions outside EU",
+      "Offline mode"
+    ],
+    "primary_personas": [
+      "Returning shopper",
+      "Ops analyst"
+    ],
+    "success_metrics": [
+      "Checkout completion rate",
+      "Oversell incidents = 0"
+    ],
+    "assumptions": [
+      "Payment provider SLA 99.9%",
+      "Single-region deploy"
+    ]
+  },
+  "architecture_brief": null,
+  "stories": [
+    {
+      "id": "story_demo_001",
+      "title": "Pay and confirm order",
+      "persona": "Returning shopper",
+      "goal": "Complete purchase quickly",
+      "benefit": "Fewer abandoned carts",
+      "acceptance_criteria": [
+        "Given items in cart, when user pays, then order is confirmed",
+        "Receipt shown within 2s of provider callback"
+      ],
+      "source_clause_ids": [
+        "clause_demo_001"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "story_demo_002",
+      "title": "Show delivery date before payment",
+      "persona": "Shopper",
+      "goal": "See accurate delivery estimate",
+      "benefit": "Reduce cart abandonment",
+      "acceptance_criteria": [
+        "Given cart with address, when viewing checkout, then delivery date displays",
+        "Estimate renders within 200ms P95"
+      ],
+      "source_clause_ids": [
+        "clause_demo_003"
+      ],
+      "approved_for_export": false
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_demo_001",
+      "title": "Integrate payment webhook idempotency",
+      "description": "Handle duplicate callbacks without double charge.",
+      "type": "feature",
+      "priority": "high",
+      "story_id": "story_demo_001",
+      "estimate_hours": 6.0,
+      "estimate_points": 5,
+      "confidence": 0.82,
+      "skills": [
+        "FastAPI",
+        "webhooks"
+      ],
+      "dependencies": [],
+      "source_clause_ids": [
+        "clause_demo_001"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "task_demo_002",
+      "title": "Atomic inventory decrement",
+      "description": "Use transaction / compare-and-swap to prevent oversell.",
+      "type": "feature",
+      "priority": "critical",
+      "story_id": "story_demo_001",
+      "estimate_hours": 8.0,
+      "estimate_points": 8,
+      "confidence": 0.75,
+      "skills": [
+        "PostgreSQL",
+        "transactions"
+      ],
+      "dependencies": [],
+      "source_clause_ids": [
+        "clause_demo_002"
+      ],
+      "approved_for_export": false
+    },
+    {
+      "id": "task_demo_003",
+      "title": "Delivery estimate API",
+      "description": "Compute shipping ETA from warehouse + carrier rules.",
+      "type": "feature",
+      "priority": "high",
+      "story_id": "story_demo_002",
+      "estimate_hours": 5.0,
+      "estimate_points": 5,
+      "confidence": 0.8,
+      "skills": [
+        "FastAPI",
+        "caching"
+      ],
+      "dependencies": [],
+      "source_clause_ids": [
+        "clause_demo_003"
+      ],
+      "approved_for_export": false
+    }
+  ],
+  "test_cases": [
+    {
+      "id": "test_demo_001",
+      "title": "Successful checkout deducts stock once",
+      "type": "integration",
+      "given": "SKU A has qty 1",
+      "when": "Two parallel checkouts race",
+      "then": "Exactly one succeeds; the other gets sold-out",
+      "edge_cases": [
+        "retry same payment intent"
+      ],
+      "story_id": "story_demo_001",
+      "task_id": "task_demo_002",
+      "source_clause_ids": [
+        "clause_demo_002"
+      ],
+      "status": "pending"
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "amb_demo_001",
+      "kind": "unquantified",
+      "severity": "medium",
+      "excerpt": "1k concurrent users",
+      "explanation": "Peak vs sustained load not specified.",
+      "suggested_question": "Is 1k concurrent checkout sessions or total active users?",
+      "suggested_resolution": null,
+      "source_clause_ids": [
+        "clause_demo_003"
+      ],
+      "resolved": false
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk_demo_001",
+      "category": "scalability",
+      "severity": "high",
+      "title": "Hot SKU contention",
+      "description": "High concurrency may bottleneck row locks.",
+      "mitigation": "Partition inventory or queue reservations.",
+      "source_clause_ids": [
+        "clause_demo_002"
+      ]
+    }
+  ],
+  "sprint_plan": null,
+  "team_sprint_plan": null,
+  "auto_sprint_plan": null,
+  "sprint_kanban": null,
+  "review_board_report": null,
+  "quality_score_report": null,
+  "impact_report": null,
+  "jira_backlog": {
+    "project_id": "proj_demo_seed01",
+    "generated_at": "2026-05-26T08:56:42.303303",
+    "method": "heuristic",
+    "epic": {
+      "id": "epic_4d1a63bb",
+      "title": "One-click checkout & stock integrity",
+      "description": "Increase conversion while preventing overselling.",
+      "key_results": [
+        "Checkout completion rate",
+        "Oversell incidents = 0"
+      ],
+      "labels": [],
+      "jira_key": null
+    },
+    "stories": [
+      {
+        "id": "story_demo_001",
+        "title": "Pay and confirm order",
+        "persona": "Returning shopper",
+        "goal": "Complete purchase quickly",
+        "benefit": "Fewer abandoned carts",
+        "acceptance_criteria": [
+          "Given items in cart, when user pays, then order is confirmed",
+          "Receipt shown within 2s of provider callback"
+        ],
+        "task_ids": [
+          "task_demo_001",
+          "task_demo_002"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "story_demo_002",
+        "title": "Show delivery date before payment",
+        "persona": "Shopper",
+        "goal": "See accurate delivery estimate",
+        "benefit": "Reduce cart abandonment",
+        "acceptance_criteria": [
+          "Given cart with address, when viewing checkout, then delivery date displays",
+          "Estimate renders within 200ms P95"
+        ],
+        "task_ids": [
+          "task_demo_003"
+        ],
+        "jira_key": null
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task_demo_001",
+        "title": "Integrate payment webhook idempotency",
+        "description": "Handle duplicate callbacks without double charge.",
+        "type": "feature",
+        "priority": "high",
+        "story_id": "story_demo_001",
+        "estimate_points": 5,
+        "estimate_hours": 6.0,
+        "skills": [
+          "FastAPI",
+          "webhooks"
+        ],
+        "subtask_ids": [
+          "sub_cc6b8b42",
+          "sub_a431b24a",
+          "sub_a3284284",
+          "sub_b9c7771d"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "task_demo_002",
+        "title": "Atomic inventory decrement",
+        "description": "Use transaction / compare-and-swap to prevent oversell.",
+        "type": "feature",
+        "priority": "critical",
+        "story_id": "story_demo_001",
+        "estimate_points": 8,
+        "estimate_hours": 8.0,
+        "skills": [
+          "PostgreSQL",
+          "transactions"
+        ],
+        "subtask_ids": [
+          "sub_e58f432f",
+          "sub_b65477e3",
+          "sub_e60404c5",
+          "sub_0ebfc9e8"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "task_demo_003",
+        "title": "Delivery estimate API",
+        "description": "Compute shipping ETA from warehouse + carrier rules.",
+        "type": "feature",
+        "priority": "high",
+        "story_id": "story_demo_002",
+        "estimate_points": 5,
+        "estimate_hours": 5.0,
+        "skills": [
+          "FastAPI",
+          "caching"
+        ],
+        "subtask_ids": [
+          "sub_2d4c8f2a",
+          "sub_c4710ccb",
+          "sub_3d5df256",
+          "sub_8fdb8ee3"
+        ],
+        "jira_key": null
+      }
+    ],
+    "subtasks": [
+      {
+        "id": "sub_cc6b8b42",
+        "title": "Design API contract and data flow",
+        "description": "Sub-step of 'Integrate payment webhook idempotency': Design API contract and data flow.",
+        "parent_task_id": "task_demo_001",
+        "estimate_hours": 1.5,
+        "skills": [
+          "FastAPI",
+          "webhooks"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_a431b24a",
+        "title": "Implement core logic",
+        "description": "Sub-step of 'Integrate payment webhook idempotency': Implement core logic.",
+        "parent_task_id": "task_demo_001",
+        "estimate_hours": 1.5,
+        "skills": [
+          "FastAPI",
+          "webhooks"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_a3284284",
+        "title": "Wire up UI / integrate with existing surface",
+        "description": "Sub-step of 'Integrate payment webhook idempotency': Wire up UI / integrate with existing surface.",
+        "parent_task_id": "task_demo_001",
+        "estimate_hours": 1.5,
+        "skills": [
+          "FastAPI",
+          "webhooks"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_b9c7771d",
+        "title": "Add unit + integration tests",
+        "description": "Sub-step of 'Integrate payment webhook idempotency': Add unit + integration tests.",
+        "parent_task_id": "task_demo_001",
+        "estimate_hours": 1.5,
+        "skills": [
+          "FastAPI",
+          "webhooks"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_e58f432f",
+        "title": "Design API contract and data flow",
+        "description": "Sub-step of 'Atomic inventory decrement': Design API contract and data flow.",
+        "parent_task_id": "task_demo_002",
+        "estimate_hours": 2.0,
+        "skills": [
+          "PostgreSQL",
+          "transactions"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_b65477e3",
+        "title": "Implement core logic",
+        "description": "Sub-step of 'Atomic inventory decrement': Implement core logic.",
+        "parent_task_id": "task_demo_002",
+        "estimate_hours": 2.0,
+        "skills": [
+          "PostgreSQL",
+          "transactions"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_e60404c5",
+        "title": "Wire up UI / integrate with existing surface",
+        "description": "Sub-step of 'Atomic inventory decrement': Wire up UI / integrate with existing surface.",
+        "parent_task_id": "task_demo_002",
+        "estimate_hours": 2.0,
+        "skills": [
+          "PostgreSQL",
+          "transactions"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_0ebfc9e8",
+        "title": "Add unit + integration tests",
+        "description": "Sub-step of 'Atomic inventory decrement': Add unit + integration tests.",
+        "parent_task_id": "task_demo_002",
+        "estimate_hours": 2.0,
+        "skills": [
+          "PostgreSQL",
+          "transactions"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_2d4c8f2a",
+        "title": "Design API contract and data flow",
+        "description": "Sub-step of 'Delivery estimate API': Design API contract and data flow.",
+        "parent_task_id": "task_demo_003",
+        "estimate_hours": 1.2,
+        "skills": [
+          "FastAPI",
+          "caching"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_c4710ccb",
+        "title": "Implement core logic",
+        "description": "Sub-step of 'Delivery estimate API': Implement core logic.",
+        "parent_task_id": "task_demo_003",
+        "estimate_hours": 1.2,
+        "skills": [
+          "FastAPI",
+          "caching"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_3d5df256",
+        "title": "Wire up UI / integrate with existing surface",
+        "description": "Sub-step of 'Delivery estimate API': Wire up UI / integrate with existing surface.",
+        "parent_task_id": "task_demo_003",
+        "estimate_hours": 1.2,
+        "skills": [
+          "FastAPI",
+          "caching"
+        ],
+        "jira_key": null
+      },
+      {
+        "id": "sub_8fdb8ee3",
+        "title": "Add unit + integration tests",
+        "description": "Sub-step of 'Delivery estimate API': Add unit + integration tests.",
+        "parent_task_id": "task_demo_003",
+        "estimate_hours": 1.2,
+        "skills": [
+          "FastAPI",
+          "caching"
+        ],
+        "jira_key": null
+      }
+    ],
+    "summary": "Backlog ready: 1 epic \u00b7 2 stories \u00b7 3 tasks \u00b7 12 subtasks."
+  },
+  "requirement_estimate": null,
+  "requirement_risk": null,
+  "architecture_diagram": null,
+  "api_contract_suite": null,
+  "database_schema": null,
+  "generated_test_suite": null,
+  "defect_prediction": null,
+  "delivery_readiness": null,
+  "delivery_readiness_center": null,
+  "meeting_extraction": null,
+  "traceability_matrix": null,
+  "risk_center": null,
+  "prd_document": {
+    "title": "Showcase \u2014 Checkout & OTP (pre-baked)",
+    "one_liner": "Customers must pay with card or wallet within 10 seconds.",
+    "executive_summary": "Showcase \u2014 Checkout & OTP (pre-baked) captures 2 in-scope items, 0 explicit out-of-scope items, and 0 risks flagged from the source text.",
+    "problem_statement": "Customers must pay with card or wallet within 10 seconds.",
+    "goals": [
+      "Customers must pay with card or wallet within 10 seconds.",
+      "Inventory must decrement atomically when an order is confirmed."
+    ],
+    "success_metrics": [],
+    "in_scope": [
+      "Customers must pay with card or wallet within 10 seconds.",
+      "Inventory must decrement atomically when an order is confirmed."
+    ],
+    "out_of_scope": [],
+    "target_users": [],
+    "user_stories": [
+      {
+        "id": "prd_st_ad5e9a",
+        "title": "Customers must pay with card or wallet within 10 seconds.",
+        "persona": "end user",
+        "goal": "Customers must pay with card or wallet within 10 seconds.",
+        "benefit": "deliver the stated outcome",
+        "acceptance_criteria": [
+          "Given the requirement scope, when implemented, then the behaviour described above is observable."
+        ],
+        "priority": "medium"
+      },
+      {
+        "id": "prd_st_ccb557",
+        "title": "Inventory must decrement atomically when an order is confirmed.",
+        "persona": "end user",
+        "goal": "Inventory must decrement atomically when an order is confirmed.",
+        "benefit": "deliver the stated outcome",
+        "acceptance_criteria": [
+          "Given the requirement scope, when implemented, then the behaviour described above is observable."
+        ],
+        "priority": "medium"
+      }
+    ],
+    "acceptance_criteria": [
+      "Given the requirement scope, when implemented, then the behaviour described above is observable.",
+      "Given the requirement scope, when implemented, then the behaviour described above is observable."
+    ],
+    "risks": [],
+    "dependencies": [],
+    "open_questions": [],
+    "timeline": "",
+    "method": "heuristic",
+    "generated_at": "2026-05-26T08:56:42.112664"
+  },
+  "digital_twin": null,
+  "pm_forecast": null,
+  "metrics": {
+    "manual_minutes": 240,
+    "helix_minutes": 12,
+    "minutes_saved": 228,
+    "hours_saved": 3.8,
+    "cost_saved_usd": 380.0,
+    "artifacts_generated": 12,
+    "coverage_score": 0.86,
+    "citation_item_rate": 0.92
+  },
+  "chat_history": [],
+  "last_pipeline_timings_ms": null
+}

@@ -18,7 +18,7 @@ I (the repo) **cannot** create a live `https://…` address without **your** clo
 
 **Data:** Default image uses **SQLite** under `/app/data` (ephemeral on free tier — fine for judges, not for production).
 
-**Optional AI keys:** In the Render service → **Environment**, add `ANTHROPIC_API_KEY` and/or Azure OpenAI vars from `.env.example` if you want real model calls instead of mock/demo behavior.
+**Optional AI keys:** In the Render service → **Environment**, add `AZURE_OPENAI_API_KEY` (plus `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT`) from `.env.example` if you want Tier-1 live LLM calls instead of the deterministic clause-grounded mock. The mock path is fully usable for judges — see `docs/GOLDEN_DOMAIN.md`.
 
 ---
 

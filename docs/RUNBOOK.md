@@ -1,6 +1,8 @@
 # Helix — canonical runbook (judges & maintainers)
 
-**Use this file first.** Other docs (`GITHUB_PUSH.md`, `GITHUB_DEPLOY.md`, `ARCHITECTURE.md`) are deep dives; this runbook matches the **code that exists in this repo** (`helix-frontend/`, `helix-backend/`).
+**Use this file first.** Other docs (`GITHUB_PUSH.md`, `GITHUB_DEPLOY.md`, `ARCHITECTURE.md`, `WORKFLOW.md`) are deep dives; this runbook matches the **code that exists in this repo** (`helix-frontend/`, `helix-backend/`).
+
+For the full end-to-end pipeline (11 demo steps + 5-stage analyze) and the eraser.io diagram source, see [`docs/WORKFLOW.md`](WORKFLOW.md) and [`docs/helix-workflow.eraser`](helix-workflow.eraser).
 
 ---
 

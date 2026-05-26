@@ -75,12 +75,26 @@ Requires prior `python scripts/phase3_workflow_test.py` and frontend on `:4173` 
 
 ## Known gaps / warnings
 
-| Item | Severity | Notes |
-|------|----------|-------|
-| `GET /api/delivery/prd/{id}` → 404 | Medium | Executive Summary falls back to artifacts summary in UI |
-| Tasks count = 0 after demo | Low | Stories generated (5); Jira step reports 0 tasks |
-| `use_ai=true` in Mission Control UI | Not tested | API run used `HELIX_USE_AI=false` (~220s); UI hardcodes `use_ai: true` |
-| PRD / backlog objects empty in API check | Low | Readiness 94% and CSV export still succeed |
+> **Update (2026-05-26):** the three credibility-affecting items below
+> have since been **fixed in code**. The original Phase-3 run output is
+> preserved above for traceability; the table below records the
+> resolution and where to verify it.
+
+| Item | Status | Resolution |
+|------|--------|------------|
+| `GET /api/delivery/prd/{id}` → 404 | **RESOLVED** | `get_prd` in `helix-backend/app/api/routes/delivery.py` now lazily generates the PRD on first request (`generate_prd_for_project`) and persists it. `_step_readiness` also pre-generates the PRD so post-pipeline GETs are instant. |
+| Tasks count = 0 after demo | **RESOLVED** | `ensure_engineering_tasks` (`helix-backend/app/services/project_bridge.py`) deterministically builds tasks from stories when the Scrum step returns none. Called by `_step_jira`, `finalize_demo_project`, and `backlog_generator.generate_backlog`. Heuristic fallback also wired inside `ScrumMasterAgent.run`. |
+| Hardcoded readiness `94` (originally reported in audit) | **RESOLVED** | `_step_readiness` now uses `display_score = center.readiness` (live from `build_readiness_center`). UI label in `WinningDemoScreen.jsx`: *"Readiness X% from live delivery gates after this run — not a [placeholder]"*. |
+| `use_ai=true` in Mission Control UI | By design | UI default exercises the live path; for offline / fast demos, run via `scripts/judge_demo.ps1` (sets `HELIX_USE_AI=false` + `HELIX_DEMO_FAST=true`). See [`docs/JUDGE_MODE.md`](JUDGE_MODE.md). |
+| PRD / backlog objects empty in API check | **RESOLVED** | See PRD and Tasks rows above. |
+
+To re-verify after the fixes:
+
+```powershell
+cd helix-backend; .\run.ps1
+python ..\scripts\phase3_workflow_test.py
+# Then GET /api/delivery/prd/{id} and /api/backlog/{id}/jira-csv to confirm.
+```
 
 ## Reproduce
 

@@ -75,8 +75,8 @@ Earlier rounds (already merged on `main` before this audit):
 | `HELIX_RATE_LIMIT_PER_MINUTE` | optional | `120` | POST limiter on `/generate`, `/analyze`, `/demo`. |
 | `HELIX_MAX_UPLOAD_BYTES` | optional | `20 MB` | Hard cap for `/api/ingest/file`. |
 | `DATABASE_URL` | optional | `sqlite:////app/data/helix.db` | Use Postgres URL for persistence beyond container restarts. |
-| `ANTHROPIC_API_KEY` | optional | unset | Real LLM path (set only if you want non-heuristic generation). |
-| `AZURE_OPENAI_ENDPOINT` / `_API_KEY` / `_DEPLOYMENT` | optional | unset | Azure-flavored LLM. |
+| `AZURE_OPENAI_ENDPOINT` / `_API_KEY` / `_DEPLOYMENT` | optional | unset | Tier-1 live LLM (Azure OpenAI `o3`, JSON mode). With unset keys, the orchestrator runs the Tier-2 clause-grounded mock — see `docs/GOLDEN_DOMAIN.md`. |
+| `ANTHROPIC_API_KEY` | optional, reserved | unset | Not wired in code today. Reserved for the multi-provider router roadmap in `docs/PATH_TO_PRODUCTION.md` §2.3. |
 | `MONGO_URL` | optional | unset | External chunk store; falls back to local file if unset. |
 | `REDIS_URL` | optional | `redis://localhost:6379/0` | Celery broker (unused for hackathon path). |
 | `JIRA_BASE_URL` / `_EMAIL` / `_TOKEN` / `_PROJECT_KEY` | optional | unset | Jira REST integration (export only). |
@@ -144,7 +144,7 @@ Expected:
 1. **Click "Deploy Blueprint"** in your Render dashboard once. Free tier sleeps after 15 min idle — the SPA now shows a clear cold-start message during retry.
 2. **Set `HELIX_BACKEND_ORIGIN`** on Vercel **only if** your Render service name is not `helix-demo`. Otherwise the default in `vercel.json` is correct.
 3. **Trigger one Vercel redeploy** after pulling latest `main` so the new build script bakes the API base into `dist/`.
-4. *(Optional)* Add `ANTHROPIC_API_KEY` or Azure OpenAI vars on Render if you want LLM-driven generation instead of the fast heuristic path. The demo timing is tuned for heuristic mode.
+4. *(Optional)* Add `AZURE_OPENAI_API_KEY` (plus `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT`) on Render if you want Tier-1 live LLM generation instead of the deterministic clause-grounded mock + heuristic path. The demo timing is tuned for the mock path.
 5. *(Optional)* Attach a Render **persistent disk** at `/app/data` to keep the SQLite database between deploys.
 
 ---

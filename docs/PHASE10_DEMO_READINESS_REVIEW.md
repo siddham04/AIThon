@@ -126,12 +126,17 @@ Optional config (team size, tech stack) on Mission Control adds cognitive load �
 
 ## Top 10 bugs (demo-impacting)
 
-1. **Judge UI timer vs SSE desync** — `runPipelineAutoPlay` (~26 s) vs backend ~220 s (`WinningDemoScreen.jsx`).
-2. **Hardcoded 94% readiness** — `_step_readiness` sets `center.readiness = 94` (`demo_orchestrator.py`) — credibility if questioned.
-3. **0 tasks after pipeline** — Phase 3 validated run; empty Jira task rows.
-4. **`GET /api/delivery/prd/{id}` → 404** — PRD section empty unless artifacts fallback.
-5. **Mission Control: no SSE abort on unmount** — navigating away leaves stream running.
-6. **SSE `error` steps not surfaced in UI** — pipeline can fail silently in Mission Control.
+> **Resolution status (2026-05-26).** Items 2, 3, 4 — the three
+> credibility-affecting bugs flagged here — have been fixed in code.
+> See `docs/PHASE3_WORKFLOW_EXECUTION.md` and `docs/PHASE5_AI_WORKFLOW_AUDIT.md`
+> for the resolution table with code references.
+
+1. **Judge UI timer vs SSE desync** — `runPipelineAutoPlay` (~26 s) vs backend ~220 s (`WinningDemoScreen.jsx`). *Open.*
+2. **Hardcoded 94% readiness** — **RESOLVED.** `_step_readiness` uses `display_score = center.readiness` (live). UI now shows the credibility line *"Readiness X% from live delivery gates after this run — not a placeholder"* (`helix-frontend/src/pages/WinningDemoScreen.jsx`).
+3. **0 tasks after pipeline** — **RESOLVED.** `_heuristic_tasks_from_stories` + `ensure_engineering_tasks` guarantee tasks whenever stories exist; verified through `_step_jira`, `finalize_demo_project`, and `backlog_generator`.
+4. **`GET /api/delivery/prd/{id}` → 404** — **RESOLVED.** `get_prd` lazily generates and persists the PRD on first request; `_step_readiness` also pre-generates it during the pipeline.
+5. **Mission Control: no SSE abort on unmount** — *Open.* Navigating away leaves stream running.
+6. **SSE `error` steps not surfaced in UI** — *Open.* Pipeline can fail silently in Mission Control.
 7. **Guest + auto-register auth** — fine for demo; accidental double-login toast edge cases.
 8. **Mission Control mobile** — config/input row overflows 390px (Phase 2).
 9. **Delivery Package loading** — 10 parallel GETs; slowest blocks entire page spinner.

@@ -362,15 +362,15 @@ export default function MissionControl() {
     <div className={`mc-landing${showRunning ? ' mc-landing--running' : ''}`}>
       <div className="mc-hero">
         <div className="mc-hero-glow" aria-hidden />
-        <p className="mc-hero-brand">HELIX</p>
-        <h1 className="mc-hero-title">Mission Control</h1>
+        <p className="mc-hero-brand">HELIX · STEP 1 OF 3</p>
+        <h1 className="mc-hero-title">Upload messy requirements.</h1>
         <p className="mc-hero-sub">
-          Upload your own requirement here.{' '}
-          <strong>Judges:</strong> use{' '}
+          Paste, drop a PDF, or speak it. Hit <strong>Launch AI team</strong> and the
+          11-stage pipeline starts streaming. <strong>Judges:</strong> the{' '}
           <Link to="/judge-demo" className="mc-judge-link">
             Judge Demo
           </Link>{' '}
-          for the 5-minute autonomous path — no input choices needed.
+          runs the same flow end-to-end in under 5 minutes — no input choices needed.
         </p>
       </div>
 
