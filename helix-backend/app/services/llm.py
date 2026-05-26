@@ -47,7 +47,15 @@ async def _retry_llm(coro_factory, *, label: str = "llm"):
 class LLMService:
     def __init__(self) -> None:
         s = get_settings()
-        self._enabled = s.is_configured
+        # Mirror AIService: honor the HELIX_USE_AI kill-switch even when
+        # Azure keys are present. Without this, agents that call through
+        # this service (decomposer, solution_architect, etc.) bypass the
+        # use_ai=False parameter threaded through run_demo and hit the
+        # live LLM whenever the developer has Azure keys in .env or
+        # leaked into their shell session — which (a) makes the golden
+        # contract take 30+ minutes and (b) causes connection errors
+        # when running scripts offline.
+        self._enabled = s.is_configured and getattr(s, "helix_use_ai", True)
         self._deployment = s.azure_openai_deployment
         if self._enabled:
             self._client = AsyncAzureOpenAI(

@@ -143,18 +143,88 @@ def _ambiguity_dict(project: Project) -> Dict[str, Any]:
     return {"issues": issues[:12]}
 
 
+# Words we use to detect that a clause is just a noun phrase / fragment
+# rather than something we can plausibly turn into a story.
+_STORY_STOPWORDS = {
+    "the", "a", "an", "and", "or", "of", "for", "with", "to", "in", "on",
+    "by", "from", "this", "that", "these", "those", "is", "are", "was",
+    "were", "be", "been", "being", "as", "at", "it", "its",
+}
+
+
+def _title_phrase(text: str, max_words: int = 9) -> str:
+    """Compact a clause into a story-title-shaped phrase.
+
+    Mock decomposer used to prepend a literal ``"Deliver: "`` to every
+    raw clause fragment, which on real PRDs produced nonsense like
+    ``Deliver: Their goal was to make data-driven decisions on, promotions``.
+    We instead strip stopwords from the head, take the first
+    ``max_words`` content tokens, and capitalize. Imperfect on prose but
+    universally more readable than the raw fragment.
+    """
+    cleaned = re.sub(r"[\[\]\(\)\*•·]", " ", text or "").strip()
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" .;:,")
+    if not cleaned:
+        return "Unspecified capability"
+    tokens = cleaned.split()
+    # Drop leading stopwords so titles don't start with "The" / "A".
+    while tokens and tokens[0].lower() in _STORY_STOPWORDS:
+        tokens.pop(0)
+    if not tokens:
+        tokens = cleaned.split()
+    head = tokens[:max_words]
+    phrase = " ".join(head).rstrip(",;:")
+    if len(tokens) > max_words:
+        phrase = phrase + "…"
+    return phrase[:1].upper() + phrase[1:]
+
+
+def _is_story_worthy_clause(text: str) -> bool:
+    """Filter for clauses substantive enough to spawn a story.
+
+    Skips very short fragments, single-word headers, and clauses that
+    are only stopwords / numerals. The ingestion splitter already
+    removes the obvious noise (page footers, copyright, headers), so
+    this is just the second line of defense in case something slipped
+    through.
+    """
+    txt = (text or "").strip()
+    if len(txt) < 20:
+        return False
+    content_tokens = [
+        w
+        for w in re.split(r"\W+", txt)
+        if w and w.lower() not in _STORY_STOPWORDS and not w.isdigit()
+    ]
+    return len(content_tokens) >= 3
+
+
 def _decomposer_dict(project: Project) -> Dict[str, Any]:
-    clauses = project.source_clauses[:8]
+    # Pre-filter clauses so we don't generate a "Deliver: All rights reserved"
+    # story for footers that slipped past the splitter. Cap at 6 substantive
+    # clauses (was 8) — a real PRD distilled into 8 prose-fragment stories
+    # is unreadable as a Jira preview; 5–6 fits a slide.
+    candidate_clauses = [c for c in project.source_clauses if _is_story_worthy_clause(c.text)]
+    clauses = (candidate_clauses or project.source_clauses)[:6]
     if not clauses:
         return {"stories": []}
+    # Deduplicate by the first 5 content tokens — real PRDs often
+    # repeat the same idea in adjacent sentences and we don't want
+    # eight near-identical stories.
     stories_raw: List[Dict[str, Any]] = []
+    seen_keys: set[str] = set()
     for i, c in enumerate(clauses):
         cid = c.id
         txt = c.text
-        title = _clip(txt, 80)
+        phrase = _title_phrase(txt, max_words=9)
+        key = " ".join(phrase.lower().split()[:5])
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        title = phrase
         stories_raw.append(
             {
-                "title": f"Deliver: {title}",
+                "title": title,
                 "persona": "Primary stakeholder",
                 "goal": f"Realize the capability described in [{cid}].",
                 "benefit": "Reduces ambiguity and speeds delivery with traceable scope.",

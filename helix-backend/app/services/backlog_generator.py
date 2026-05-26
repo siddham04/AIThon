@@ -59,11 +59,66 @@ _EPIC_SCHEMA = """{
 }"""
 
 
+_GENERIC_EPIC_TITLES = {
+    "",
+    "ingested document",
+    "untitled initiative",
+    "untitled project",
+    "new project",
+    "[helix team configuration]",
+    # Common section headers that the summary agent has historically
+    # picked up as a "title" because they were the first capitalised
+    # line in the source PRD. Treating them as generic forces us to
+    # walk further into the clauses for a real candidate.
+    "overview",
+    "summary",
+    "introduction",
+    "background",
+    "abstract",
+    "executive summary",
+    "our solution",
+    "our approach",
+    "our solution and approach",
+    "solution and approach",
+    "key highlights",
+    "key features",
+    "key results",
+    "business impact",
+    "technology stack",
+    "tech stack",
+}
+
+
+def _first_substantive_clause_title(project: Project) -> str:
+    """Pick a readable title from the first non-trivial clause."""
+    for clause in project.source_clauses or []:
+        txt = (clause.text or "").strip().rstrip(":.")
+        if not txt or len(txt) < 6:
+            continue
+        if txt.lower().startswith("[helix team configuration]"):
+            continue
+        words = txt.split()
+        if len(words) > 12:
+            txt = " ".join(words[:12]).rstrip(",;:")
+        return txt[:120]
+    return ""
+
+
 def _heuristic_epic(project: Project) -> BacklogEpic:
     s = project.summary
-    title = (
-        (s.title if s and s.title else project.name) or "Untitled initiative"
-    ).strip()
+    summary_title = (s.title or "").strip() if s else ""
+    project_name = (project.name or "").strip()
+    title = summary_title or project_name
+    # If the project was ingested without a name the API used to fall
+    # back to "Ingested document" — that string then becomes the epic
+    # title in Jira. Detect any of the known-generic placeholders and
+    # promote a real candidate from the source clauses instead.
+    if title.lower() in _GENERIC_EPIC_TITLES:
+        candidate = _first_substantive_clause_title(project)
+        if candidate:
+            title = candidate
+    if not title:
+        title = "Untitled initiative"
     if title.endswith("."):
         title = title[:-1]
     description = (
@@ -195,16 +250,69 @@ _HEURISTIC_PATTERNS: dict[TaskType, tuple[str, ...]] = {
 }
 
 
+_TASK_TITLE_PREFIXES = (
+    "implement: ",
+    "implement ",
+    "deliver: ",
+    "deliver ",
+    "build: ",
+    "build ",
+    "fix: ",
+    "fix ",
+    "chore: ",
+    "spike: ",
+)
+
+
+def _task_domain_hint(task: Task, max_words: int = 6) -> str:
+    """Derive a short domain phrase from a task title.
+
+    Used to make heuristic sub-task titles concrete — instead of every
+    feature task getting the same four subtasks ("Design API contract /
+    Implement core logic / Wire up UI / Add tests"), we tag each title
+    with the parent task's subject so the Jira preview reads like
+    "Design API contract for demand forecasting" rather than the
+    generic version that prompted this fix.
+    """
+    raw = (task.title or "").strip()
+    if not raw:
+        return ""
+    lower = raw.lower()
+    for prefix in _TASK_TITLE_PREFIXES:
+        if lower.startswith(prefix):
+            raw = raw[len(prefix):].lstrip()
+            break
+    # Drop trailing punctuation and clamp length
+    raw = raw.rstrip(".:;,")
+    words = raw.split()
+    if len(words) > max_words:
+        raw = " ".join(words[:max_words]).rstrip(",;:") + "…"
+    return raw.strip()
+
+
 def _heuristic_subtasks_for_task(task: Task) -> List[BacklogSubtask]:
     titles = _HEURISTIC_PATTERNS.get(task.type, _HEURISTIC_PATTERNS[TaskType.FEATURE])
     out: List[BacklogSubtask] = []
     # Distribute estimated hours roughly evenly across subtasks.
     total_h = float(task.estimate_hours or 0)
     each = round(total_h / len(titles), 1) if total_h else None
+    hint = _task_domain_hint(task)
     for title in titles:
+        # Only suffix the hint when the canned template doesn't already
+        # bake in a "the change" / "the bug" / "the resource" pronoun —
+        # otherwise we get awkward "Plan rollout for demand forecasting
+        # of the change" duplication. Heuristic: skip suffixing for the
+        # BUG / CHORE templates that already reference "the X".
+        if hint and "the bug" not in title.lower() and "the change" not in title.lower() and "the resource" not in title.lower():
+            scoped_title = f"{title} for {hint}"
+        else:
+            scoped_title = title
+        # Jira sub-task summary cap is 255; keep us well under that.
+        if len(scoped_title) > 140:
+            scoped_title = scoped_title[:137].rstrip() + "…"
         out.append(
             BacklogSubtask(
-                title=title,
+                title=scoped_title,
                 description=(
                     f"Sub-step of '{task.title}': {title}."
                 ),

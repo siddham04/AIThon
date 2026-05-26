@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 from ...database import get_db
 from ...models import Project
 from ...schemas.ingest import IngestTextBody, IngestUrlBody
-from ...services.ingestion import split_into_clauses
+from ...services.ingestion import (
+    split_into_clauses,
+    _strip_team_config_preamble,
+    _looks_like_header,
+    _looks_like_noise,
+)
 from ...services.ingestion_service import IngestSource, extract_clean_chunk_and_store, extract_text, extract_text_from_url
 from ...services.project_bridge import ensure_project_row, new_project_id, save_project_to_db
 from ...services.quality_scorer import score_requirement_text
@@ -36,6 +41,50 @@ def _quality_summary(report) -> dict:
     }
 
 
+def _derive_project_name(text: str, fallback: str = "Ingested document") -> str:
+    """Best-effort project name from the first substantive line.
+
+    Mission Control sometimes posts the PRD without a name (the form
+    field is optional). The old behaviour was to default to the literal
+    string ``"Ingested document"``, which then bubbled up to the Jira
+    epic title — embarrassing on demo day. We now lift the first non-
+    trivial line (≤ 14 words after trimming) as the title, and only
+    fall back to the generic default if no candidate is found.
+
+    Defensive: also strips the Mission Control team-config preamble
+    in case the caller forgot to do it (the ``/ingest/text`` route
+    does, but stand-alone scripts / future callers may not).
+
+    Uses the same header / noise classifiers as the clause splitter so
+    a section header like ``"Our Solution and Approach"`` can never be
+    promoted to a project title.
+    """
+    if not text:
+        return fallback
+    text, _ = _strip_team_config_preamble(text)
+    for raw in text.splitlines():
+        line = raw.strip().rstrip(":.")
+        if not line:
+            continue
+        if line.startswith("[Helix team configuration]"):
+            continue
+        if _looks_like_noise(line) or _looks_like_header(line):
+            continue
+        if len(line) < 6:
+            continue
+        # Accept long lines but clip to a readable title length —
+        # the previous "reject >120 chars" rule meant the PRD's own
+        # marketing title (often the best candidate) was silently
+        # passed over in favour of the next section header.
+        words = line.split()
+        if len(words) > 14:
+            line = " ".join(words[:14]).rstrip(",;:") + "…"
+        elif len(line) > 140:
+            line = line[:137].rstrip() + "…"
+        return line
+    return fallback
+
+
 async def _apply_text_to_project(
     db: Session,
     user: User,
@@ -47,11 +96,21 @@ async def _apply_text_to_project(
     if not text:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty text")
     enforce_no_secrets_in_prompt(text)
-    clauses = split_into_clauses(text)
+    # Strip the Mission Control team-config preamble *before* deriving
+    # the project name OR persisting raw_input. Otherwise the team-
+    # config block ends up in:
+    #   - the project title  ("[Helix team configuration]")
+    #   - the Jira epic description (entire 5-line block prepended)
+    #   - any LLM prompt that interpolates raw_input.
+    # The team-config values are not lost; the planners take team_size
+    # and sprint_weeks as explicit parameters, not from raw_input.
+    text_clean, _ = _strip_team_config_preamble(text)
+    text_clean = text_clean.strip() or text
+    clauses = split_into_clauses(text_clean)
     if project_id:
         row = get_owned_project_row(db, user, project_id)
         proj = load_project_graph(db, row)
-        proj.raw_input = text
+        proj.raw_input = text_clean
         proj.source_clauses = clauses
         if name:
             proj.name = name
@@ -68,10 +127,11 @@ async def _apply_text_to_project(
             await get_store().create(proj)
         return row.id, quality
     pid = new_project_id()
+    derived = (name or "").strip() or _derive_project_name(text_clean)
     proj = Project(
         id=pid,
-        name=name or "Ingested document",
-        raw_input=text,
+        name=derived,
+        raw_input=text_clean,
         source_clauses=clauses,
     )
     row = ProjectRecord(id=pid, name=proj.name, owner_id=user.id)
